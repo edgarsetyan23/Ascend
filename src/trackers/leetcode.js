@@ -1,0 +1,81 @@
+export default {
+  id: 'leetcode',
+  name: 'LeetCode',
+  icon: '🧩',
+  color: '#6c63ff',
+  dateField: 'date',
+  defaultSort: { key: 'date', dir: 'desc' },
+  columns: [
+    {
+      key: 'problem',
+      label: 'Problem',
+      type: 'text',
+      required: true,
+      placeholder: 'e.g. Two Sum',
+    },
+    {
+      key: 'difficulty',
+      label: 'Difficulty',
+      type: 'select',
+      required: true,
+      options: ['Easy', 'Medium', 'Hard'],
+      badge: {
+        Easy: { bg: '#d1fae5', color: '#065f46' },
+        Medium: { bg: '#fef3c7', color: '#92400e' },
+        Hard: { bg: '#fee2e2', color: '#991b1b' },
+      },
+    },
+    {
+      key: 'category',
+      label: 'Category',
+      type: 'select',
+      options: [
+        'Array', 'String', 'Hash Map', 'Two Pointers', 'Sliding Window',
+        'Stack', 'Queue', 'Linked List', 'Tree', 'Graph', 'Dynamic Programming',
+        'Backtracking', 'Binary Search', 'Heap', 'Greedy', 'Math', 'Other',
+      ],
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select',
+      required: true,
+      options: ['Solved', 'Attempted', 'Revisit'],
+      badge: {
+        Solved: { bg: '#d1fae5', color: '#065f46' },
+        Attempted: { bg: '#fef3c7', color: '#92400e' },
+        Revisit: { bg: '#ede9fe', color: '#5b21b6' },
+      },
+    },
+    {
+      key: 'timeComplexity',
+      label: 'Time Complexity',
+      type: 'text',
+      placeholder: 'e.g. O(n)',
+    },
+    {
+      key: 'spaceComplexity',
+      label: 'Space Complexity',
+      type: 'text',
+      placeholder: 'e.g. O(1)',
+    },
+    {
+      key: 'attempts',
+      label: 'Attempts',
+      type: 'number',
+      placeholder: '1',
+    },
+    {
+      key: 'notes',
+      label: 'Notes',
+      type: 'textarea',
+      placeholder: 'Key insight or approach...',
+    },
+    {
+      key: 'date',
+      label: 'Date',
+      type: 'date',
+      required: true,
+    },
+  ],
+}

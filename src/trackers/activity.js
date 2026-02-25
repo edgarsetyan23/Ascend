@@ -1,0 +1,63 @@
+export default {
+  id: 'activity',
+  name: 'Daily Activity',
+  icon: '📅',
+  color: '#10b981',
+  dateField: 'date',
+  defaultSort: { key: 'date', dir: 'desc' },
+  columns: [
+    {
+      key: 'title',
+      label: 'Title',
+      type: 'text',
+      required: true,
+      placeholder: 'e.g. Morning workout',
+    },
+    {
+      key: 'category',
+      label: 'Category',
+      type: 'select',
+      required: true,
+      options: ['Coding', 'Exercise', 'Reading', 'Learning', 'Work', 'Personal', 'Health', 'Other'],
+      badge: {
+        Coding: { bg: '#ede9fe', color: '#5b21b6' },
+        Exercise: { bg: '#d1fae5', color: '#065f46' },
+        Reading: { bg: '#fef3c7', color: '#92400e' },
+        Learning: { bg: '#dbeafe', color: '#1e40af' },
+        Work: { bg: '#f3f4f6', color: '#374151' },
+        Personal: { bg: '#fce7f3', color: '#9d174d' },
+        Health: { bg: '#fee2e2', color: '#991b1b' },
+        Other: { bg: '#f9fafb', color: '#6b7280' },
+      },
+    },
+    {
+      key: 'impact',
+      label: 'Impact',
+      type: 'select',
+      options: ['High', 'Medium', 'Low'],
+      badge: {
+        High: { bg: '#d1fae5', color: '#065f46' },
+        Medium: { bg: '#fef3c7', color: '#92400e' },
+        Low: { bg: '#f3f4f6', color: '#374151' },
+      },
+    },
+    {
+      key: 'duration',
+      label: 'Duration (min)',
+      type: 'number',
+      placeholder: '30',
+    },
+    {
+      key: 'date',
+      label: 'Date',
+      type: 'date',
+      required: true,
+    },
+    {
+      key: 'notes',
+      label: 'Notes',
+      type: 'textarea',
+      placeholder: 'Any reflections...',
+    },
+  ],
+}

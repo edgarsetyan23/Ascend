@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "test": "node --test lambda/__tests__/*.test.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.758.0",

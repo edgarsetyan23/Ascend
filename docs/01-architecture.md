@@ -118,7 +118,7 @@ Everything in `infra/` is defined in TypeScript CDK:
 
 ```
 infra/
-├── bin/app.ts              CDK app entry — instantiates the stack
+├── bin/ascend.ts           CDK app entry — loads .env, instantiates the stack
 ├── lib/
 │   ├── ascend-stack.ts     Top-level stack — wires table + auth + API together
 │   └── constructs/
@@ -131,21 +131,23 @@ infra/
     ├── entries-update.mjs
     ├── entries-delete.mjs
     ├── public-entries-list.mjs   Unauthenticated public handler
+    ├── __tests__/          Unit tests (Node built-in test runner)
+    │   ├── validate.test.mjs
+    │   └── public-entries-list.test.mjs
     └── shared/
         ├── auth.mjs        JWT sub extraction
         ├── db.mjs          Singleton DynamoDB client
-        └── response.mjs    ok() / err() helpers
+        ├── logger.mjs      Structured JSON logging (CloudWatch Logs Insights compatible)
+        ├── response.mjs    ok() / err() helpers
+        └── validate.mjs    Input validation — validateTrackerId, validateBody
 ```
 
 Deploy command:
 ```bash
-OWNER_USER_ID="<cognito-sub>" npx cdk deploy --require-approval never
+cd infra && npx cdk deploy --require-approval never
 ```
 
-**Important:** `OWNER_USER_ID` must be set on every CDK deploy or the public Lambda loses its environment variable and returns 500. The value is saved in `infra/.env` — source it before deploying:
-```bash
-source infra/.env && npx cdk deploy --require-approval never
-```
+**`OWNER_USER_ID` is auto-loaded.** `bin/ascend.ts` uses `dotenv` to load `infra/.env` at the start of every CDK run — no manual `source` step needed. If the file is missing, the Lambda will deploy with an empty env var and return 500 on public routes.
 
 To look up the value if lost:
 ```bash
@@ -154,6 +156,19 @@ aws dynamodb scan --table-name AscendData --projection-expression "PK" \
 ```
 
 CDK synthesizes a CloudFormation template and uploads Lambda bundles to S3. CloudFormation handles the actual resource creation/update.
+
+---
+
+## Testing
+
+| Layer | Tool | Command | What's covered |
+|---|---|---|---|
+| Lambda shared utils | Node `node:test` (built-in) | `cd infra && npm test` | `validateTrackerId`, `validateBody`, public tracker whitelist, `OWNER_USER_ID` guard |
+| React components | Vitest + Testing Library | `npm test` (root) | `StatsBar` rendering, null/empty states, inline color styles |
+
+Lambda tests use Node's built-in test runner — no extra dependencies, runs natively with ESM on Node 22.
+
+Frontend tests use Vitest (same config as Vite, zero overhead) with jsdom for a browser-like environment.
 
 ---
 

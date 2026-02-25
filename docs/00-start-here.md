@@ -79,7 +79,7 @@ Read in this order:
 
 **Key concept:** CDK is TypeScript code that generates a CloudFormation template. You write `new HttpApi(...)` and CDK figures out what JSON CloudFormation needs. `cdk deploy` uploads Lambda bundles to S3 and tells CloudFormation to create/update resources. You never click in the AWS console.
 
-**Critical gotcha:** Every `cdk deploy` needs `OWNER_USER_ID` set or the public Lambda breaks. It's saved in `infra/.env` — always `source infra/.env` before deploying.
+**Critical gotcha:** The public Lambda needs `OWNER_USER_ID` set or it returns 500. `bin/ascend.ts` auto-loads `infra/.env` via dotenv on every CDK run — no manual step needed. Just make sure `infra/.env` exists and has the correct value.
 
 ---
 
@@ -127,11 +127,12 @@ Read in this order:
 
 | What changed | What to run |
 |---|---|
-| Frontend only (React, CSS) | `npx vercel --prod` |
-| Vercel serverless functions (`api/*.js`) | `npx vercel --prod` |
-| AWS infrastructure (Lambda, DynamoDB, CORS) | `source infra/.env && cd infra && npx cdk deploy --require-approval never` |
-| Added a new domain / changed domain | Update CORS in `infra/lib/constructs/api.ts` → CDK deploy |
-| Changed OAuth redirect URI | Update Google Cloud Console → Credentials → OAuth Client |
+| Frontend only (React, CSS) | `git push` (Vercel auto-deploys from GitHub) |
+| Vercel serverless functions (`api/*.js`) | `git push` |
+| AWS infrastructure (Lambda, DynamoDB, CORS) | `cd infra && npx cdk deploy --require-approval never` |
+| Added a new domain / changed domain | Update CORS in `infra/lib/constructs/api.ts` → CDK deploy + update Google Cloud Console |
+| Changed OAuth redirect URI | Google Cloud Console → Credentials → OAuth Client → add the new URI |
+| Run all tests | `cd infra && npm test` (Lambda) · `npm test` at root (React) |
 
 ---
 

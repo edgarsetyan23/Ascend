@@ -1,6 +1,11 @@
 #!/usr/bin/env node
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 import * as cdk from 'aws-cdk-lib';
 import { AscendStack } from '../lib/ascend-stack';
+
+// Auto-load infra/.env so OWNER_USER_ID is always available during deploys
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = new cdk.App();
 

@@ -15,9 +15,9 @@
   --sidebar-width: 230px;
   --topbar-height: 64px;
   --accent: #6c63ff;
-  --accent-glow: rgba(108, 99, 255, 0.30);
+  --accent-glow: rgba(108, 99, 255, 0.32);
   --gold: #d4a843;
-  --gold-glow: rgba(212, 168, 67, 0.28);
+  --gold-glow: rgba(212, 168, 67, 0.30);
 }
 
 [data-theme="dark"] {
@@ -31,9 +31,9 @@
   --shadow: 0 1px 4px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4);
   --shadow-lg: 0 12px 40px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4);
   --accent: #7c6aff;
-  --accent-glow: rgba(124, 106, 255, 0.28);
+  --accent-glow: rgba(124, 106, 255, 0.34);
   --gold: #d4a843;
-  --gold-glow: rgba(212, 168, 67, 0.25);
+  --gold-glow: rgba(212, 168, 67, 0.30);
 }
 
 /* ─── Reset ──────────────────────────────────────────────────────────────── */
@@ -96,7 +96,8 @@ a {
 }
 
 [data-theme="dark"] .sidebar {
-  background: linear-gradient(180deg, #0e1828 0%, #080c14 100%);
+  background: linear-gradient(180deg, #0c1a30 0%, #070a12 100%);
+  box-shadow: 1px 0 0 var(--border), 4px 0 24px rgba(0,0,0,0.25);
 }
 
 .sidebar-header {
@@ -110,13 +111,13 @@ a {
 
 .sidebar-logo {
   font-size: 1.5rem;
-  filter: drop-shadow(0 0 10px rgba(212, 168, 67, 0.65));
+  filter: drop-shadow(0 0 14px rgba(212, 168, 67, 0.85));
 }
 
 .sidebar-title {
-  font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: -0.02em;
+  font-weight: 900;
+  font-size: 1.15rem;
+  letter-spacing: -0.03em;
   background: linear-gradient(135deg, var(--accent), var(--gold));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -155,11 +156,13 @@ a {
 }
 
 .sidebar-item--active {
-  background: color-mix(in srgb, var(--tracker-color, var(--accent)) 15%, transparent);
+  background: color-mix(in srgb, var(--tracker-color, var(--accent)) 16%, transparent);
   color: var(--tracker-color, var(--accent));
-  font-weight: 600;
+  font-weight: 700;
   border-left-color: var(--tracker-color, var(--accent));
-  box-shadow: inset 0 0 24px color-mix(in srgb, var(--tracker-color, var(--accent)) 6%, transparent);
+  box-shadow:
+    inset 0 0 28px color-mix(in srgb, var(--tracker-color, var(--accent)) 12%, transparent),
+    -1px 0 8px color-mix(in srgb, var(--tracker-color, var(--accent)) 18%, transparent);
 }
 
 .sidebar-item-icon {
@@ -278,10 +281,10 @@ a {
   flex-direction: column;
   min-width: 0;
   position: relative;
-  /* Very faint radial glow anchored top-right — barely perceptible */
+  /* Ambient accent glow anchored top-right */
   background-image: radial-gradient(
     ellipse 60% 40% at 80% 0%,
-    color-mix(in srgb, var(--accent) 5%, transparent),
+    color-mix(in srgb, var(--accent) 8%, transparent),
     transparent 70%
   );
 }
@@ -303,8 +306,8 @@ a {
 }
 
 [data-theme="dark"] .topbar {
-  background: linear-gradient(90deg, #0e1421 0%, #0a1020 100%);
-  box-shadow: 0 1px 0 var(--border), 0 4px 20px rgba(0,0,0,0.3);
+  background: linear-gradient(90deg, #0e1828 0%, #090e1c 100%);
+  box-shadow: 0 1px 0 var(--border), 0 4px 32px rgba(0,0,0,0.4), 0 0 80px rgba(124,106,255,0.04);
 }
 
 .topbar-left {
@@ -315,13 +318,20 @@ a {
 
 .tracker-icon {
   font-size: 1.5rem;
-  filter: drop-shadow(0 0 8px rgba(212, 168, 67, 0.5));
+  filter: drop-shadow(0 0 10px rgba(212, 168, 67, 0.75));
 }
 
 .tracker-name {
   font-size: 1.2rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+[data-theme="dark"] .tracker-name {
+  background: linear-gradient(135deg, #e8edf8 60%, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .theme-toggle {
@@ -377,7 +387,7 @@ a {
 
 .stat-chip:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--stat-color, var(--accent)) 30%, transparent);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--stat-color, var(--accent)) 42%, transparent);
 }
 
 .stat-value {
@@ -416,8 +426,8 @@ a {
 }
 
 [data-theme="dark"] .tracker-table-wrap {
-  background: #0e1421;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
+  background: #0b1120;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px var(--border), 0 0 60px rgba(124,106,255,0.04);
 }
 
 /* ─── Toolbar ────────────────────────────────────────────────────────────── */
@@ -481,12 +491,12 @@ a {
   background: linear-gradient(135deg, var(--accent), #c49a45);
   color: #fff;
   border-color: var(--accent);
-  box-shadow: 0 2px 8px var(--accent-glow);
+  box-shadow: 0 2px 12px var(--accent-glow), 0 0 0 1px rgba(108, 99, 255, 0.15);
 }
 
 .btn--primary:hover {
   opacity: 0.92;
-  box-shadow: 0 4px 20px var(--accent-glow), 0 0 28px var(--gold-glow);
+  box-shadow: 0 6px 24px var(--accent-glow), 0 0 36px var(--gold-glow);
   transform: translateY(-1px);
 }
 
@@ -584,7 +594,7 @@ a {
 }
 
 [data-theme="dark"] .table-row:hover {
-  background: linear-gradient(90deg, rgba(124, 106, 255, 0.06), transparent);
+  background: linear-gradient(90deg, rgba(124, 106, 255, 0.10), transparent);
 }
 
 .table-td {

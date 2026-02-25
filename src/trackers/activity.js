@@ -31,17 +31,6 @@ export default {
       },
     },
     {
-      key: 'impact',
-      label: 'Impact',
-      type: 'select',
-      options: ['High', 'Medium', 'Low'],
-      badge: {
-        High: { bg: '#d1fae5', color: '#065f46' },
-        Medium: { bg: '#fef3c7', color: '#92400e' },
-        Low: { bg: '#f3f4f6', color: '#374151' },
-      },
-    },
-    {
       key: 'duration',
       label: 'Duration (min)',
       type: 'number',

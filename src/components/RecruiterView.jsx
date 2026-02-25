@@ -128,7 +128,6 @@ const LEETCODE_COLS = [
 const ACTIVITY_COLS = [
   { key: 'title',    label: 'Title'    },
   { key: 'category', label: 'Category' },
-  { key: 'impact',   label: 'Impact'   },
   { key: 'duration', label: 'Duration' },
   { key: 'date',     label: 'Date'     },
 ]

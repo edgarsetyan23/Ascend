@@ -89,10 +89,7 @@ aws dynamodb scan \
   --output json | grep -o '"USER#[^"]*"' | sort -u
 ```
 
-Strip `USER#` prefix → that's the Cognito sub. It's saved in `infra/.env`. Always source it before deploying — if you forget, the public Lambda loses the variable and returns 500:
-```bash
-source infra/.env && npx cdk deploy --require-approval never
-```
+Strip `USER#` prefix → that's the Cognito sub. It's saved in `infra/.env`. It's saved in `infra/.env`. `bin/ascend.ts` auto-loads it via dotenv on every CDK run — no manual step needed.
 
 ---
 
@@ -138,15 +135,3 @@ Browser → POST /api/analyze-resume → Vercel Serverless → Anthropic Claude 
 
 Nothing is saved. The recruiter page has no DynamoDB write path.
 
----
-
-## How to describe this in an interview
-
-**Short version (30 seconds):**
-> "I added a public recruiter page to my personal tracking app. It's a separate unauthenticated route backed by a dedicated read-only Lambda. The owner's user ID is baked into the Lambda environment so no user input ever touches the DynamoDB partition key. There's a whitelist that rejects any tracker not in the allowed list — returns 404, not 403, so it doesn't leak which trackers exist."
-
-**If they ask about the frontend:**
-> "React Router handles the routing. The public route comes before the catch-all auth route so it never hits the auth gate. I added a vercel.json SPA rewrite so direct URL loads work — without it, Vercel's CDN would return 404 since there's no physical file at /portfolio."
-
-**If they ask about the Claude integration:**
-> "The resume scorer is a Vercel serverless function that POSTs to the Anthropic API. On the recruiter page, visitors can drop any PDF — the text gets extracted client-side with pdf.js, sent to the function, scored across six weighted categories, and the results render with the same animated components from the main app. Nothing is stored."

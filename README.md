@@ -136,10 +136,6 @@ See `.env.example` and `infra/.env.example` for templates.
 
 ## Docs
 
-Full write-ups in `docs/`:
-
-- `00-start-here.md` — how to understand the codebase in a week
-- `01-architecture.md` — system design and decisions
-- `03-recruiter-layer.md` — public portfolio layer and security model
-- `05-gmail-scanner.md` — OAuth flow, Gmail API, Claude extraction
-- `04-positioning.md` — interview narrative and talking points
+- `docs/01-architecture.md` — system design, data model, auth flow, infrastructure
+- `docs/03-recruiter-layer.md` — public portfolio layer and security model
+- `docs/05-gmail-scanner.md` — OAuth flow, Gmail API, Claude extraction

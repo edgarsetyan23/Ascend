@@ -167,15 +167,3 @@ The app does **not** need to pass Google verification as long as you stay in Tes
 | Client ID leakage | Intentionally public; protected by allowed origins in Google Cloud Console |
 | Unauthorized domain use | Google rejects OAuth requests from origins not in the allow-list |
 
----
-
-## How to describe this in an interview
-
-**Short version (30 seconds):**
-> "I added a Gmail scanner to the job tracker. It uses a redirect-based OAuth implicit grant — opens a new tab for sign-in, the callback stores the token in localStorage so a storage event delivers it back to the original tab, and then we fetch metadata for up to 50 matching emails, send subject/from/date/snippet to a Vercel function backed by Claude Haiku, and show a review modal to bulk-import. Email body is never fetched, nothing is stored server-side."
-
-**If they ask about the OAuth approach:**
-> "The original implementation used the Google Identity Services popup model. That approach is silently broken by browsers with strict security configurations that enforce Cross-Origin-Opener-Policy — the GIS library polls window.closed on the OAuth popup, which COOP blocks, so the token callback never fires. I switched to a redirect-into-new-tab flow: the callback page writes the token to localStorage and closes itself, which fires a storage event that the original tab catches. No popup, no cross-window property access needed."
-
-**If they ask about security:**
-> "Three things keep it safe: the scope is gmail.readonly so there's no write access at all, format=metadata means the email body never leaves Gmail's servers, and the access token is written to localStorage only momentarily — it's deleted the moment the storage event handler reads it."

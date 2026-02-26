@@ -149,12 +149,6 @@ cd infra && npx cdk deploy --require-approval never
 
 **`OWNER_USER_ID` is auto-loaded.** `bin/ascend.ts` uses `dotenv` to load `infra/.env` at the start of every CDK run — no manual `source` step needed. If the file is missing, the Lambda will deploy with an empty env var and return 500 on public routes.
 
-To look up the value if lost:
-```bash
-aws dynamodb scan --table-name AscendData --projection-expression "PK" \
-  --region us-east-1 --output json | grep -o '"USER#[^"]*"' | sort -u
-```
-
 CDK synthesizes a CloudFormation template and uploads Lambda bundles to S3. CloudFormation handles the actual resource creation/update.
 
 ---

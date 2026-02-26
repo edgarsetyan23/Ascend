@@ -85,7 +85,7 @@ export function AuthGate({ children }) {
       <div className="auth-card">
         <div className="auth-logo">🔱</div>
         <h1 className="auth-title">Ascend</h1>
-        <p className="auth-tagline">Chronicle your rise</p>
+        <p className="auth-tagline">Track what matters.</p>
 
         {mode === 'login' && (
           <p className="auth-blurb">

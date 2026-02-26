@@ -289,7 +289,7 @@ export function RecruiterView() {
           </div>
           <div className="rc-hero-links">
             <a
-              href="https://github.com/eddysetyan23"
+              href="https://github.com/edgarsetyan23"
               target="_blank"
               rel="noopener noreferrer"
               className="rc-contact-link"

@@ -20,7 +20,7 @@ function formatDateHeader(dateStr) {
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
-export function ActivityLog({ tracker, entries, onAdd, onEdit, onDelete }) {
+export function ActivityLog({ tracker, entries, onAdd, onEdit, onDelete, readOnly = false }) {
   const [search, setSearch] = useState('')
 
   const categoryCol = tracker.columns.find((c) => c.key === 'category')
@@ -59,18 +59,20 @@ export function ActivityLog({ tracker, entries, onAdd, onEdit, onDelete }) {
 
   return (
     <div className="activity-log">
-      {/* ── Toolbar ── */}
-      <div className="activity-log-toolbar">
-        <input
-          className="search-input"
-          placeholder="Search activities..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <button className="btn btn--primary" onClick={onAdd}>
-          + Add Entry
-        </button>
-      </div>
+      {/* ── Toolbar — hidden in read-only mode ── */}
+      {!readOnly && (
+        <div className="activity-log-toolbar">
+          <input
+            className="search-input"
+            placeholder="Search activities..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <button className="btn btn--primary" onClick={onAdd}>
+            + Add Entry
+          </button>
+        </div>
+      )}
 
       {/* ── Groups ── */}
       {groups.length === 0 ? (
@@ -114,18 +116,20 @@ export function ActivityLog({ tracker, entries, onAdd, onEdit, onDelete }) {
                     {entry.notes && (
                       <p className="activity-entry-notes">{entry.notes}</p>
                     )}
-                    <div className="activity-entry-actions">
-                      <button
-                        className="row-action"
-                        onClick={() => onEdit(entry)}
-                        title="Edit"
-                      >✎</button>
-                      <button
-                        className="row-action"
-                        onClick={() => onDelete(entry.id)}
-                        title="Delete"
-                      >🗑</button>
-                    </div>
+                    {!readOnly && (
+                      <div className="activity-entry-actions">
+                        <button
+                          className="row-action"
+                          onClick={() => onEdit(entry)}
+                          title="Edit"
+                        >✎</button>
+                        <button
+                          className="row-action"
+                          onClick={() => onDelete(entry.id)}
+                          title="Delete"
+                        >🗑</button>
+                      </div>
+                    )}
                   </div>
                 )
               })}

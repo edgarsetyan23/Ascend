@@ -4,6 +4,8 @@ import { listPublicEntries } from '../lib/publicApi.js'
 import { useTheme } from '../hooks/useTheme.js'
 import { ThemeToggle } from './ThemeToggle.jsx'
 import { LeetCodeProfile } from './LeetCodeProfile.jsx'
+import { ActivityLog } from './ActivityLog.jsx'
+import activityTracker from '../trackers/activity.js'
 import {
   ScoreCircle,
   CatBar,
@@ -455,7 +457,11 @@ export function RecruiterView() {
                   <span className="rc-data-title">Daily Activity Log</span>
                   <span className="rc-count-badge">{activity.length} entries</span>
                 </div>
-                <RecruiterTable entries={activity} columns={ACTIVITY_COLS} />
+                <ActivityLog
+                  tracker={activityTracker}
+                  entries={activity}
+                  readOnly
+                />
               </div>
             </>
           )}

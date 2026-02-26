@@ -3311,7 +3311,6 @@ a {
   color: var(--tracker-color, var(--accent));
   white-space: nowrap;
   margin-left: auto;
-  padding-right: 40px;
 }
 
 .activity-entry-notes {

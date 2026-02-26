@@ -18,6 +18,13 @@
   --accent-glow: rgba(108, 99, 255, 0.32);
   --gold: #d4a843;
   --gold-glow: rgba(212, 168, 67, 0.30);
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
 }
 
 [data-theme="dark"] {
@@ -3072,6 +3079,7 @@ a {
 .lc-profile {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-5);
   background: var(--bg-surface);
   border: 1px solid var(--border);
@@ -3118,7 +3126,7 @@ a {
 .lc-solved-wrap { display: flex; align-items: center; gap: var(--space-4); }
 .lc-donut { flex-shrink: 0; }
 .lc-difficulty-col { display: flex; flex-direction: column; gap: 4px; }
-.lc-diff { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-muted); }
+.lc-diff { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted); min-width: 100px; }
 .lc-diff strong { color: var(--text); }
 .lc-diff-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .lc-diff--easy   .lc-diff-dot { background: #10b981; }

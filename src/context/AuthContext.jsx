@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { signIn, signUp, confirmSignUp, signOut, getSession, forgotPassword, confirmPassword } from '../lib/cognito.js';
+import { signIn, signUp, confirmSignUp, resendConfirmationCode, signOut, getSession, forgotPassword, confirmPassword } from '../lib/cognito.js';
 
 const AuthContext = createContext(null);
 
@@ -36,6 +36,10 @@ export function AuthProvider({ children }) {
     await confirmSignUp(email, code);
   }, []);
 
+  const resendCode = useCallback(async (email) => {
+    await resendConfirmationCode(email);
+  }, []);;
+
   const resetPassword = useCallback(async (email) => {
     await forgotPassword(email)
   }, [])
@@ -51,7 +55,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, confirm, resetPassword, confirmReset, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, register, confirm, resendCode, resetPassword, confirmReset, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

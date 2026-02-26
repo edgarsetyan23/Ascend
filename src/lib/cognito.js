@@ -35,6 +35,17 @@ export function confirmSignUp(email, code) {
   });
 }
 
+/** Resend the confirmation code to an unconfirmed account. */
+export function resendConfirmationCode(email) {
+  return new Promise((resolve, reject) => {
+    const user = new CognitoUser({ Username: email, Pool: pool, Storage: localStorage });
+    user.resendConfirmationCode((error, result) => {
+      if (error) reject(error);
+      else resolve(result);
+    });
+  });
+}
+
 /** Authenticate and return { user: CognitoUser, session: CognitoUserSession }. */
 export function signIn(email, password) {
   return new Promise((resolve, reject) => {

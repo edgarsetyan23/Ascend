@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export function AuthGate({ children }) {
-  const { user, loading, login, register, confirm, resetPassword, confirmReset } = useAuth();
+  const { user, loading, login, register, confirm, resendCode, resetPassword, confirmReset } = useAuth();
   const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'confirm' | 'forgot' | 'reset'
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +24,18 @@ export function AuthGate({ children }) {
       if (mode === 'login') {
         await login(email, password);
       } else if (mode === 'signup') {
-        await register(email, password);
+        try {
+          await register(email, password);
+        } catch (e) {
+          // Account exists but is unconfirmed — resend code and let them confirm
+          if (e.name === 'UsernameExistsException') {
+            await resendCode(email);
+            setInfo('Account already registered — a new verification code has been sent.');
+            setMode('confirm');
+            return;
+          }
+          throw e;
+        }
         setMode('confirm');
       } else if (mode === 'confirm') {
         await confirm(email, code);
@@ -193,7 +204,23 @@ export function AuthGate({ children }) {
               Already have an account? <strong>Sign in</strong>
             </button>
           )}
-          {(mode === 'confirm' || mode === 'forgot' || mode === 'reset') && (
+          {mode === 'confirm' && (
+            <>
+              <button onClick={async () => {
+                try {
+                  await resendCode(email);
+                  setInfo('New code sent — check your email.');
+                  setError('');
+                } catch (e) {
+                  setError(e.message ?? 'Could not resend code');
+                }
+              }}>
+                Resend code
+              </button>
+              <button onClick={() => switchMode('login')}>Back to sign in</button>
+            </>
+          )}
+          {(mode === 'forgot' || mode === 'reset') && (
             <button onClick={() => switchMode('login')}>
               Back to sign in
             </button>

@@ -4,6 +4,8 @@ A personal accountability tracker built with a production AWS stack. Tracks Leet
 
 **Live:** [edgarsetyan.com](https://edgarsetyan.com) · **Portfolio:** [edgarsetyan.com/portfolio](https://edgarsetyan.com/portfolio)
 
+![Ascend demo](docs/demo.gif)
+
 ---
 
 ## Architecture
@@ -105,8 +107,8 @@ npm run dev
 
 **Deploy infrastructure:**
 ```bash
-source infra/.env
 cd infra && npx cdk deploy --require-approval never
+# infra/.env is auto-loaded — OWNER_USER_ID is always set
 ```
 
 **Deploy frontend:**

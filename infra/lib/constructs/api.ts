@@ -28,6 +28,7 @@ export class Api extends Construct {
           'https://edgarsetyan.com',
           'https://www.edgarsetyan.com',
           'https://useascend.vercel.app',
+          'https://accountability-tracker-three.vercel.app',
           'http://localhost:5173',
         ],
         allowMethods: [

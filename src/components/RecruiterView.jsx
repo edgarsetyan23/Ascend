@@ -91,48 +91,56 @@ const EDUCATION = {
 
 // ── Live data table ──────────────────────────────────────────────────────────
 
-function RecruiterTable({ entries, columns }) {
-  if (!entries.length) {
-    return <p className="rc-empty">No entries yet.</p>
-  }
+const DIFFICULTY_BADGE = {
+  Easy:   { bg: '#d1fae5', color: '#065f46' },
+  Medium: { bg: '#fef3c7', color: '#92400e' },
+  Hard:   { bg: '#fee2e2', color: '#991b1b' },
+}
+const STATUS_BADGE = {
+  Solved:    { bg: '#d1fae5', color: '#065f46' },
+  Attempted: { bg: '#fef3c7', color: '#92400e' },
+  Revisit:   { bg: '#ede9fe', color: '#5b21b6' },
+}
+
+function LeetcodeTable({ entries }) {
+  if (!entries.length) return null
   return (
     <div className="rc-table-wrap">
       <table className="rc-table">
         <thead>
           <tr>
-            {columns.map((col) => (
-              <th key={col.key} className="rc-th">{col.label}</th>
+            {['Problem', 'Difficulty', 'Category', 'Status', 'Date'].map((h) => (
+              <th key={h} className="rc-th">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {entries.map((entry, i) => (
-            <tr key={entry.id ?? i} className="rc-tr">
-              {columns.map((col) => (
-                <td key={col.key} className="rc-td">{entry[col.key] ?? '—'}</td>
-              ))}
-            </tr>
-          ))}
+          {entries.map((e, i) => {
+            const diff = DIFFICULTY_BADGE[e.difficulty]
+            const stat = STATUS_BADGE[e.status]
+            return (
+              <tr key={e.id ?? i} className="rc-tr">
+                <td className="rc-td rc-td--bold">{e.problem ?? '—'}</td>
+                <td className="rc-td">
+                  {diff
+                    ? <span className="badge" style={{ backgroundColor: diff.bg, color: diff.color }}>{e.difficulty}</span>
+                    : (e.difficulty ?? '—')}
+                </td>
+                <td className="rc-td">{e.category ?? '—'}</td>
+                <td className="rc-td">
+                  {stat
+                    ? <span className="badge" style={{ backgroundColor: stat.bg, color: stat.color }}>{e.status}</span>
+                    : (e.status ?? '—')}
+                </td>
+                <td className="rc-td rc-td--muted">{e.date ?? '—'}</td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>
   )
 }
-
-const LEETCODE_COLS = [
-  { key: 'problem',    label: 'Problem'    },
-  { key: 'difficulty', label: 'Difficulty' },
-  { key: 'category',   label: 'Category'   },
-  { key: 'status',     label: 'Status'     },
-  { key: 'date',       label: 'Date'       },
-]
-
-const ACTIVITY_COLS = [
-  { key: 'title',    label: 'Title'    },
-  { key: 'category', label: 'Category' },
-  { key: 'duration', label: 'Duration' },
-  { key: 'date',     label: 'Date'     },
-]
 
 // ── Analyzer results display ─────────────────────────────────────────────────
 
@@ -449,7 +457,7 @@ export function RecruiterView() {
                   <span className="rc-count-badge">{leetcode.length} problems logged</span>
                 </div>
                 <LeetCodeProfile fixedUsername="user2986fQ" fixedDisplayName="Eddy-Setyan" />
-                <RecruiterTable entries={leetcode} columns={LEETCODE_COLS} />
+                <LeetcodeTable entries={leetcode} />
               </div>
 
               <div className="rc-data-section">

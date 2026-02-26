@@ -185,7 +185,7 @@ export function LeetCodeProfile({ fixedUsername = '', fixedDisplayName = '' }) {
 
       {/* ── Centre: donut + difficulty breakdown ── */}
       <div className="lc-solved-wrap">
-        <svg className="lc-donut" viewBox="0 0 70 70" width="70" height="70">
+        <svg className="lc-donut" viewBox="0 0 70 70" width="84" height="84">
           <circle cx="35" cy="35" r={R} fill="none" stroke="var(--border)" strokeWidth={STROKE} />
           <circle
             cx="35" cy="35" r={R}

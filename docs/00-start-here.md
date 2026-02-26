@@ -127,8 +127,8 @@ Read in this order:
 
 | What changed | What to run |
 |---|---|
-| Frontend only (React, CSS) | `npx vercel --prod` (from repo root) |
-| Vercel serverless functions (`api/*.js`) | `npx vercel --prod` |
+| Frontend only (React, CSS) | `git push origin master` (Vercel auto-deploys from GitHub) |
+| Vercel serverless functions (`api/*.js`) | `git push origin master` |
 | AWS infrastructure (Lambda, DynamoDB, CORS) | `cd infra && npx cdk deploy --require-approval never` |
 | Added a new domain / changed domain | Update CORS in `infra/lib/constructs/api.ts` → CDK deploy + update Google Cloud Console |
 | Changed OAuth redirect URI | Google Cloud Console → Credentials → OAuth Client → add the new URI |

@@ -113,7 +113,7 @@ cd infra && npx cdk deploy --require-approval never
 
 **Deploy frontend:**
 ```bash
-npx vercel --prod
+git push origin master  # Vercel auto-deploys from GitHub
 ```
 
 ---

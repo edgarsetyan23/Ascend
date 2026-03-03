@@ -1,13 +1,13 @@
 # Ascend — Gmail Email Scanner
 
 ## What this document covers
-How the Gmail email scanner works end-to-end: the OAuth flow, Gmail API calls, Claude Haiku extraction, deduplication, and the import modal. Useful for explaining the feature in interviews.
+How the Gmail email scanner works end-to-end: the OAuth flow, Gmail API calls, Claude Haiku classification, deduplication, and the two-section import modal. Useful for explaining the feature in interviews.
 
 ---
 
 ## The idea
 
-Manually logging every job application is friction. The scanner lets you point Ascend at your Gmail inbox once, find all application confirmation emails from the last 90 days, review what Claude extracted, and import them in bulk — without ever leaving the app.
+Manually logging every job application is friction. The scanner lets you point Ascend at your Gmail inbox once, find all application and follow-up emails from the last 90 days, and review what Claude extracted — not just importing new applications but also detecting status changes (interview invites, rejections, offers) on applications you're already tracking.
 
 ---
 
@@ -33,16 +33,24 @@ Gmail API  →  metadata fetch per message (Subject, From, Date headers + snippe
               format=metadata — email body never fetched
        │
        ▼
-POST /api/scan-emails  →  Claude Haiku  →  [{ company, role, appliedDate, source }]
+POST /api/scan-emails  (emails + existing tracked entries as context)
        │
        ▼
-Deduplication  →  filter out company+role pairs already in tracker
+Claude Haiku classifies each email:
+  ├── new_application  →  { company, role, appliedDate, source }
+  └── follow_up        →  { matchedEntryId, company, role, suggestedStatus, emailDate }
        │
        ▼
-Review modal  (checkboxes — select/deselect per entry)
+Deduplication  →  filter new apps already in tracker
+Follow-up filter  →  remove follow-ups where status already matches
        │
        ▼
-addEntry() × n  →  DynamoDB (optimistic UI — rows appear instantly)
+Review modal — two sections:
+  ├── New Applications  (checkboxes → addEntry × n)
+  └── Status Updates    (checkboxes → updateEntry × n)
+       │
+       ▼
+DynamoDB (optimistic UI — rows appear instantly)
 ```
 
 ---
@@ -74,62 +82,69 @@ The scanner uses the **OAuth 2.0 implicit grant** with a redirect into a new tab
 GET /gmail/v1/users/me/messages?q=<query>&maxResults=50
 ```
 
-Search query (broad — no `subject:` restriction, matches body text too):
+Search query (broad — covers both application confirmations and follow-up emails):
 ```
 ("thank you for applying" OR "application received" OR "application submitted" OR
 "we received your application" OR "application confirmation" OR "your application for" OR
 "applied to" OR "thanks for applying" OR "application to" OR
-"we have received your application") newer_than:90d
+"we have received your application" OR
+"interview" OR "next steps" OR "offer" OR "unfortunately" OR "move forward") newer_than:90d
 ```
-
-The original query used `subject:(...)` which missed many confirmation emails where the key phrases appear in the body rather than the subject line. Removing the `subject:` restriction significantly increases recall.
 
 Then for each message ID:
 ```
 GET /gmail/v1/users/me/messages/{id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date
 ```
 
-`format=metadata` means Gmail returns only the requested headers and the `snippet` field — **no message body HTML, no attachments, nothing else**. All 50 fetches fire in parallel via `Promise.all`.
+`format=metadata` means Gmail returns only the requested headers and the `snippet` field — **no message body HTML, no attachments, nothing else**. All fetches fire in parallel via `Promise.all`.
 
 ---
 
 ## Serverless function: `api/scan-emails.js`
 
-Same pattern as `api/analyze-resume.js`.
+**Input:**
+```json
+{
+  "emails": [{ "subject": "...", "from": "...", "date": "...", "snippet": "..." }],
+  "existingEntries": [{ "id": "...", "company": "...", "role": "...", "status": "..." }]
+}
+```
 
-**Input:** `{ emails: [{ subject, from, date, snippet }] }`
+**What Claude does:** Each email is classified as either `new_application` (application confirmation) or `follow_up` (interview invite, rejection, offer, next steps). For follow-ups, Claude performs a fuzzy match against the provided existing entries by company and role name, and returns the `id` of the best match along with a suggested new status.
 
-**System prompt key instruction:** Return only a JSON array with exactly `company`, `role`, `appliedDate` (YYYY-MM-DD), `source` keys. Empty string for unknown fields. Return `[]` if nothing found.
+**Output:**
+```json
+{
+  "applications": [{ "company": "...", "role": "...", "appliedDate": "...", "source": "..." }],
+  "followUps": [{ "matchedEntryId": "...", "company": "...", "role": "...", "suggestedStatus": "...", "emailDate": "..." }]
+}
+```
 
-**Model:** `claude-haiku-4-5-20251001` — fast and cheap, sufficient for structured extraction from short metadata.
+**Model:** `claude-haiku-4-5-20251001` — fast and cheap, sufficient for structured classification from short metadata.
 
-**Security:** No Gmail data is stored. The function receives subject/from/date/snippet and returns structured JSON. Nothing is written to DynamoDB by this function — imports happen client-side via `addEntry`.
+**Security:** No Gmail data is stored. The function receives subject/from/date/snippet, returns structured JSON. Nothing is written to DynamoDB by this function.
+
+**Conservative matching:** If Claude cannot confidently match a follow-up to an existing entry, it falls back to treating the email as a `new_application`. False positives (wrongly updating a status) are worse than false negatives.
 
 ---
 
-## Deduplication
+## Deduplication and filtering
 
-Before showing the modal, detected applications are filtered against existing tracker entries:
+**New applications:** filtered against existing tracker entries by case-insensitive `company|role` pair. Prevents re-importing the same application if you scan Gmail multiple times.
 
-```js
-const existingKeys = new Set(
-  entries.map(e => `${e.company?.toLowerCase()}|${e.role?.toLowerCase()}`)
-)
-const newApps = applications.filter(
-  a => !existingKeys.has(`${a.company?.toLowerCase()}|${a.role?.toLowerCase()}`)
-)
-```
-
-Case-insensitive match on `company|role` pair. This prevents re-importing the same application if you scan Gmail multiple times.
+**Follow-ups:** filtered to only show entries where the suggested status differs from the current status. An already-rejected application with another rejection email is a no-op.
 
 ---
 
 ## Review modal
 
-- All detected applications are pre-selected (opt-out model, not opt-in)
-- Header checkbox selects/deselects all
-- "Import N Selected" calls `addEntry` for each checked row with `status: 'Applied'`
-- Empty state: shown if Gmail had no matching emails, or all matches were already tracked
+The modal has two independent sections, each with its own select/deselect all:
+
+**New Applications** — pre-selected; importing calls `addEntry` with `status: 'Applied'`.
+
+**Status Updates** — pre-selected; shows the transition ("Applied → Phone Screen"); applying calls `updateEntry(id, { status })` on the matched existing entry.
+
+Empty state: shown if Gmail had no matching emails, all new apps were already tracked, and all follow-up statuses already match.
 
 ---
 
@@ -137,7 +152,7 @@ Case-insensitive match on `company|role` pair. This prevents re-importing the sa
 
 | Variable | Where | Purpose |
 |---|---|---|
-| `VITE_GOOGLE_CLIENT_ID` | `.env.local` + Vercel | GSI `initTokenClient` — public, protected by allowed origins in Google Cloud |
+| `VITE_GOOGLE_CLIENT_ID` | `.env.local` + Vercel | OAuth client ID — public, protected by allowed origins in Google Cloud |
 | `ANTHROPIC_API_KEY` | Vercel only | Claude API — never in frontend bundle |
 
 The Gmail API calls go directly from the browser to `gmail.googleapis.com` — no proxy, no server.
@@ -149,7 +164,7 @@ The Gmail API calls go directly from the browser to `gmail.googleapis.com` — n
 1. Create a project → Enable **Gmail API**
 2. Configure **OAuth consent screen** (External, Testing status, add your Gmail as test user)
 3. Create **OAuth 2.0 Client ID** (Web application)
-4. Add authorized JavaScript origins: `http://localhost:5173` and your production domain
+4. Add authorized redirect URIs: `http://localhost:5173/oauth-callback` and your production domain equivalent
 5. Copy Client ID → set as `VITE_GOOGLE_CLIENT_ID`
 
 The app does **not** need to pass Google verification as long as you stay in Testing status and only your own Gmail account uses it.
@@ -166,4 +181,4 @@ The app does **not** need to pass Google verification as long as you stay in Tes
 | Server-side storage | None — `api/scan-emails.js` is stateless |
 | Client ID leakage | Intentionally public; protected by allowed origins in Google Cloud Console |
 | Unauthorized domain use | Google rejects OAuth requests from origins not in the allow-list |
-
+| Incorrect status updates | Conservative Claude matching — unconfident follow-ups fall back to new_application |

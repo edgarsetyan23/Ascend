@@ -178,6 +178,7 @@ Frontend tests use Vitest (same config as Vite, zero overhead) with jsdom for a 
 | Separate public Lambda | Zero code path overlap with authenticated handler — can't accidentally skip auth |
 | Gmail redirect-to-new-tab OAuth | Avoids Cross-Origin-Opener-Policy restrictions that silently break popup-based OAuth flows; token passed via localStorage storage event and deleted immediately |
 | Gmail format=metadata | Email body never leaves Gmail's servers; only subject/from/date/snippet sent to Claude |
+| Gmail follow-up classification | Existing entries passed to Claude as context; Claude classifies emails as new_application or follow_up and fuzzy-matches follow-ups to tracked entries by company+role; unconfident matches fall back to new_application to avoid incorrect status updates |
 | LeetCode stats proxy (`/api/leetcode-stats`) | Vercel serverless function proxies LeetCode's GraphQL API; CDN-cached 5 min — avoids CORS issues calling LeetCode directly from the browser |
 | LeetCode username in localStorage | No account link needed; user enters their handle once, stored as a preference, settable display name stored separately |
 | Custom domain (`edgarsetyan.com`) | Namecheap DNS → Vercel. A record `@` → `216.198.79.1`, CNAME `www` → Vercel DNS. CORS allowlist in `api.ts` must include the domain or all API calls fail |

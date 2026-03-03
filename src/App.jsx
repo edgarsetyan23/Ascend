@@ -176,7 +176,7 @@ function AppShell() {
                 <>
                   {activeId === 'leetcode' && <LeetCodeProfile />}
                   {activeId === 'jobs' && (
-                    <EmailScanner addEntry={addEntry} entries={entries} />
+                    <EmailScanner addEntry={addEntry} updateEntry={updateEntry} entries={entries} />
                   )}
                   {activeId === 'activity' ? (
                     <ActivityLog

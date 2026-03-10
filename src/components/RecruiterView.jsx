@@ -226,6 +226,15 @@ export function RecruiterView() {
       .finally(() => setLoading(false))
   }, [])
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('rc-visible'); observer.unobserve(e.target) } }),
+      { threshold: 0.08 }
+    )
+    document.querySelectorAll('.rc-animate-in').forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+
   async function handleFile(file) {
     setExtracting(true)
     setAnalyzeErr(null)
@@ -320,7 +329,7 @@ export function RecruiterView() {
             Experience
           </h2>
           {EXPERIENCE.map((job, i) => (
-            <div key={i} className={`rc-card ${job.company.includes('Amazon') ? 'rc-card--aws' : 'rc-card--bank'}`}>
+            <div key={i} className={`rc-card rc-animate-in ${job.company.includes('Amazon') ? 'rc-card--aws' : 'rc-card--bank'}`} style={{ transitionDelay: `${i * 60}ms` }}>
               <div className="rc-card-header">
                 <div>
                   <span className="rc-company">{job.company}</span>
@@ -347,7 +356,7 @@ export function RecruiterView() {
             Projects
           </h2>
           {PROJECTS.map((proj, i) => (
-            <div key={i} className="rc-card rc-card--project">
+            <div key={i} className="rc-card rc-card--project rc-animate-in" style={{ transitionDelay: `${i * 60}ms` }}>
               <div className="rc-card-header">
                 <span className="rc-company">{proj.name}</span>
                 <span className="rc-stack-label">{proj.stack}</span>
@@ -367,7 +376,7 @@ export function RecruiterView() {
             <span className="rc-section-bar" />
             Technical Skills
           </h2>
-          <div className="rc-card rc-skills-card">
+          <div className="rc-card rc-skills-card rc-animate-in">
             {Object.entries(SKILLS).map(([category, items]) => (
               <div key={category} className="rc-skill-row">
                 <span className="rc-skill-category">{category}</span>
@@ -387,7 +396,7 @@ export function RecruiterView() {
             <span className="rc-section-bar" />
             Education
           </h2>
-          <div className="rc-card rc-card-header">
+          <div className="rc-card rc-card-header rc-animate-in">
             <div>
               <span className="rc-company">{EDUCATION.school}</span>
               <span className="rc-job-role">{EDUCATION.degree}</span>

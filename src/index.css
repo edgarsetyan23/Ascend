@@ -3519,6 +3519,7 @@ a {
   align-items: center;
   gap: 5px;
   flex-shrink: 0;
+  padding-bottom: 14px; /* offset for rotated diamond overhang */
 }
 
 .gaming-emblem {

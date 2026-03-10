@@ -2432,8 +2432,8 @@ a {
 /* Hero staggered entrance — blur dissolve */
 .rc-name        { animation: rc-fade-up 0.65s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .rc-role-badge  { animation: rc-fade-up 0.65s 0.10s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.rc-location    { animation: rc-fade-up 0.65s 0.20s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.rc-hero-links  { animation: rc-fade-up 0.65s 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.rc-location    { animation: rc-fade-up 0.65s 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.rc-hero-links  { animation: rc-fade-up 0.65s 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
 /* Scroll-triggered card animation — spring snap */
 .rc-animate-in {
@@ -2599,6 +2599,14 @@ a {
   margin: 0 0 6px;
 }
 
+.rc-hero-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 10px 0 0;
+  line-height: 1.5;
+  animation: rc-fade-up 0.65s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .rc-location {
   font-size: 0.83rem;
   color: var(--text-subtle);
@@ -2638,10 +2646,13 @@ a {
   border-radius: 6px;
   background: var(--bg-hover);
   border: 1px solid var(--border);
-  font-size: 0.75rem;
-  font-weight: 700;
   color: var(--accent);
   flex-shrink: 0;
+}
+
+.rc-contact-icon svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* ── Section wrapper ────────────────────────────────────────────────────── */
@@ -2942,6 +2953,39 @@ a {
   font-size: 0.875rem;
   color: #f87171;
   padding: 20px 0;
+}
+
+/* ── GitHub CTA ──────────────────────────────────────────────────────────── */
+
+.rc-github-cta {
+  display: flex;
+  justify-content: center;
+  margin: 40px 0 0;
+}
+
+.rc-github-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.rc-github-cta-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+.rc-github-cta-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--bg-hover);
 }
 
 /* ── Footer ─────────────────────────────────────────────────────────────── */

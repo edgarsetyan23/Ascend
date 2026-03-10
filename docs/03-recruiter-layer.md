@@ -145,9 +145,13 @@ The portfolio page uses a distinct visual layer (`rc-` CSS prefix throughout) th
 
 **Nav:** Glassmorphism — `rgba` semi-transparent background + `backdrop-filter: blur(18px)`. Content scrolls visibly behind a frosted bar.
 
-**Hero:** Name at `3.2rem` with a white→purple gradient in dark mode. Role displayed as a pill badge. Elements fade+blur in on load with staggered delays (80–280ms).
+**Hero:** Name at `3.2rem` with a white→purple gradient in dark mode. Role as a pill badge. One-line description below the badge ("A full-stack productivity tracker I built on AWS — this is the live version") anchors the page for first-time visitors. Elements blur-dissolve in on load with staggered delays (0–320ms).
+
+**Contact icons:** Inline SVG paths (GitHub octicon, LinkedIn logo) inside 26×26px icon boxes — no font/glyph dependency.
 
 **Cards:** Left-border accent per category (amber = AWS experience, teal = Tangerine, purple = projects). Hover lifts 3px with a tier-colored glow ring. Scroll-triggered entrance: `translateY(28px) scale(0.97)` → natural with `cubic-bezier(0.16, 1, 0.3, 1)` spring easing.
+
+**GitHub CTA:** Centered outlined pill link ("View the code →") below the Live Tracker Data section, before the footer. Closes the loop for visitors who want to see the source.
 
 **Light mode:** All effects mirrored at ~55% of dark-mode intensity (softer blobs, lighter glow).
 

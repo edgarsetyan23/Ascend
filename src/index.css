@@ -3517,9 +3517,8 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 20px;
   flex-shrink: 0;
-  padding-bottom: 14px; /* offset for rotated diamond overhang */
 }
 
 .gaming-emblem {
@@ -3567,6 +3566,8 @@ a {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--tier-color, var(--text-subtle));
+  position: relative;
+  z-index: 1;
 }
 
 /* Card body */

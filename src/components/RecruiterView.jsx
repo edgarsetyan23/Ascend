@@ -285,7 +285,6 @@ export function RecruiterView() {
           <div className="rc-hero-left">
             <h1 className="rc-name">Edgar Setyan</h1>
             <span className="rc-role-badge">SDE I · AWS RDS</span>
-            <p className="rc-tagline">I build things that survive production.</p>
             <p className="rc-location">📍 Toronto, ON</p>
           </div>
           <div className="rc-hero-links">

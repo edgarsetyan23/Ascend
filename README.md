@@ -1,6 +1,6 @@
 # Ascend
 
-A personal accountability tracker built with a production AWS stack. Tracks LeetCode progress, job applications, daily activity, and gaming sessions — with a public portfolio view for recruiters.
+A personal accountability tracker built with a production AWS stack. Tracks LeetCode progress, job applications, daily activity, and gaming sessions — with a public read-only portfolio view.
 
 **Live:** [edgarsetyan.com](https://edgarsetyan.com) · **Portfolio:** [edgarsetyan.com/portfolio](https://edgarsetyan.com/portfolio)
 
@@ -10,9 +10,9 @@ A personal accountability tracker built with a production AWS stack. Tracks Leet
 
 ---
 
-## Interview Walkthrough
+## Technical Overview
 
-Five things worth understanding before discussing this project:
+Five things worth knowing about this project:
 
 - **Auth flow** — Cognito issues a JWT (IdToken); it lives in React state only, never localStorage. Every API call sends `Authorization: Bearer <token>`. The API Gateway JWT Authorizer validates signature, audience, and expiry before Lambda even executes — an unauthenticated request never reaches application code.
 - **Data model** — Single-table DynamoDB. `PK = USER#{sub}`, `SK = TRACKER#{trackerId}#ENTRY#{uuid}`. Loading a tracker tab fires one `Query` with `begins_with(SK, "TRACKER#leetcode#ENTRY#")` — no scans, no joins.

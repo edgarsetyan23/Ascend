@@ -135,3 +135,19 @@ Browser → POST /api/analyze-resume → Vercel Serverless → Anthropic Claude 
 
 Nothing is saved. The recruiter page has no DynamoDB write path.
 
+---
+
+## Visual design
+
+The portfolio page uses a distinct visual layer (`rc-` CSS prefix throughout) that runs independently of the main app styles.
+
+**Background:** Dot grid (28px, drifts diagonally on a 14s loop) layered with three ambient color blobs — purple top-left, gold top-right, teal bottom-center. Applied to both light and dark mode (dark at ~1.3× opacity). The blobs use `background-image` stacking so the drift animation only moves the dot grid layer.
+
+**Nav:** Glassmorphism — `rgba` semi-transparent background + `backdrop-filter: blur(18px)`. Content scrolls visibly behind a frosted bar.
+
+**Hero:** Name at `3.2rem` with a white→purple gradient in dark mode. Role displayed as a pill badge. Elements fade+blur in on load with staggered delays (80–280ms).
+
+**Cards:** Left-border accent per category (amber = AWS experience, teal = Tangerine, purple = projects). Hover lifts 3px with a tier-colored glow ring. Scroll-triggered entrance: `translateY(28px) scale(0.97)` → natural with `cubic-bezier(0.16, 1, 0.3, 1)` spring easing.
+
+**Light mode:** All effects mirrored at ~55% of dark-mode intensity (softer blobs, lighter glow).
+

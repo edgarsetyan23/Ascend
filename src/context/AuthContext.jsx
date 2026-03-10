@@ -11,8 +11,20 @@ export function AuthProvider({ children }) {
   // loading = true while we check for an existing session on mount
   const [loading, setLoading] = useState(true);
 
-  // On mount: try to restore session (no-op with in-memory storage after refresh)
+  const SESSION_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+
+  // On mount: restore session only if < 7 days old
   useEffect(() => {
+    const loginTs = Number(localStorage.getItem('ascend_login_ts') || 0);
+    const expired = !loginTs || (Date.now() - loginTs) > SESSION_TTL;
+
+    if (expired) {
+      signOut();
+      localStorage.removeItem('ascend_login_ts');
+      setLoading(false);
+      return;
+    }
+
     getSession().then((session) => {
       if (session) {
         setUser(session.getIdToken().payload);
@@ -24,6 +36,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     const { session } = await signIn(email, password);
+    localStorage.setItem('ascend_login_ts', String(Date.now()));
     setUser(session.getIdToken().payload);
     setToken(session.getIdToken().getJwtToken());
   }, []);
@@ -50,6 +63,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     signOut();
+    localStorage.removeItem('ascend_login_ts');
     setUser(null);
     setToken(null);
   }, []);

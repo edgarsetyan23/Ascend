@@ -2,16 +2,16 @@ import { useState, useMemo } from 'react'
 
 // Smite 2 ranked tiers — Amber → Deity
 const TIER_CONFIG = {
-  Amber:    { color: '#f59e0b', grad: 'linear-gradient(135deg, #d97706 0%, #92400e 100%)', glow: 'rgba(245,158,11,0.30)',  rank: 1,  symbol: '◈', label: '200 SR'    },
-  Bronze:   { color: '#cd7f32', grad: 'linear-gradient(135deg, #a16207 0%, #7c2d12 100%)', glow: 'rgba(205,127,50,0.28)',  rank: 2,  symbol: '◈', label: '800 SR'    },
-  Silver:   { color: '#94a3b8', grad: 'linear-gradient(135deg, #64748b 0%, #334155 100%)', glow: 'rgba(148,163,184,0.22)', rank: 3,  symbol: '◈', label: '1400 SR'   },
-  Gold:     { color: '#eab308', grad: 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)', glow: 'rgba(234,179,8,0.38)',   rank: 4,  symbol: '◈', label: '2000 SR'   },
-  Platinum: { color: '#2dd4bf', grad: 'linear-gradient(135deg, #0d9488 0%, #0369a1 100%)', glow: 'rgba(45,212,191,0.32)',  rank: 5,  symbol: '◈', label: '2600 SR'   },
-  Diamond:  { color: '#38bdf8', grad: 'linear-gradient(135deg, #0284c7 0%, #4f46e5 100%)', glow: 'rgba(56,189,248,0.38)',  rank: 6,  symbol: '◆', label: '3200 SR'   },
-  Obsidian: { color: '#a78bfa', grad: 'linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%)', glow: 'rgba(167,139,250,0.42)', rank: 7,  symbol: '⬡', label: '3800 SR'   },
-  Master:   { color: '#c084fc', grad: 'linear-gradient(135deg, #9333ea 0%, #6d28d9 100%)', glow: 'rgba(192,132,252,0.44)', rank: 8,  symbol: '✦', label: '4400 SR'   },
-  Demigod:  { color: '#fb923c', grad: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)', glow: 'rgba(251,146,60,0.48)',  rank: 9,  symbol: '✦', animated: true, label: '5000 SR' },
-  Deity:    { color: '#fbbf24', grad: 'linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6, #3b82f6, #f59e0b)', glow: 'rgba(251,191,36,0.55)', rank: 10, symbol: '⚡', challenger: true, label: 'Top 100' },
+  Amber:    { color: '#f59e0b', grad: 'linear-gradient(135deg, #d97706 0%, #92400e 100%)', glow: 'rgba(245,158,11,0.30)',  rank: 1,  symbol: '✦',  label: '200 SR'    },
+  Bronze:   { color: '#cd7f32', grad: 'linear-gradient(135deg, #a16207 0%, #7c2d12 100%)', glow: 'rgba(205,127,50,0.28)',  rank: 2,  symbol: '✧',  label: '800 SR'    },
+  Silver:   { color: '#94a3b8', grad: 'linear-gradient(135deg, #64748b 0%, #334155 100%)', glow: 'rgba(148,163,184,0.22)', rank: 3,  symbol: '✵',  label: '1400 SR'   },
+  Gold:     { color: '#eab308', grad: 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)', glow: 'rgba(234,179,8,0.38)',   rank: 4,  symbol: '✸',  label: '2000 SR'   },
+  Platinum: { color: '#2dd4bf', grad: 'linear-gradient(135deg, #0d9488 0%, #0369a1 100%)', glow: 'rgba(45,212,191,0.32)',  rank: 5,  symbol: '❄',  label: '2600 SR'   },
+  Diamond:  { color: '#38bdf8', grad: 'linear-gradient(135deg, #0284c7 0%, #4f46e5 100%)', glow: 'rgba(56,189,248,0.38)',  rank: 6,  symbol: '❋',  label: '3200 SR'   },
+  Obsidian: { color: '#a78bfa', grad: 'linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%)', glow: 'rgba(167,139,250,0.42)', rank: 7,  symbol: '⬡',  label: '3800 SR'   },
+  Master:   { color: '#c084fc', grad: 'linear-gradient(135deg, #9333ea 0%, #6d28d9 100%)', glow: 'rgba(192,132,252,0.44)', rank: 8,  symbol: '⚜',  label: '4400 SR'   },
+  Demigod:  { color: '#fb923c', grad: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)', glow: 'rgba(251,146,60,0.48)',  rank: 9,  symbol: '✺',  animated: true, label: '5000 SR' },
+  Deity:    { color: '#fbbf24', grad: 'linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6, #3b82f6, #f59e0b)', glow: 'rgba(251,191,36,0.55)', rank: 10, symbol: '☀', challenger: true, label: 'Top 100' },
 }
 
 function cfg(tier) {

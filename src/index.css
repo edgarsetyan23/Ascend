@@ -3522,25 +3522,42 @@ a {
 }
 
 .gaming-emblem {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   border-radius: 8px;
   transform: rotate(45deg);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px var(--tier-glow, transparent);
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.08),
+    0 0 0 3px var(--tier-color, transparent),
+    0 6px 20px var(--tier-glow, transparent);
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glare shine overlay */
+.gaming-emblem::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 55%);
+  pointer-events: none;
 }
 
 .gaming-emblem-symbol {
   display: block;
   transform: rotate(-45deg);
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 900;
-  color: rgba(255,255,255,0.95);
+  color: rgba(255,255,255,0.97);
   line-height: 1;
   letter-spacing: -0.03em;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  position: relative;
+  z-index: 1;
 }
 
 .gaming-tier-label {

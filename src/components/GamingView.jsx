@@ -18,10 +18,11 @@ function cfg(tier) {
   return TIER_CONFIG[tier] ?? TIER_CONFIG.Amber
 }
 
-// Extract Roman numeral division from rank text, e.g. "Obsidian II / 3800 SR" → "II"
+// Extract division from rank text — handles both "Obsidian II" and "Obsidian 3"
+const TO_ROMAN = { '1': 'I', '2': 'II', '3': 'III', 'I': 'I', 'II': 'II', 'III': 'III' }
 function parseDivision(rank) {
-  const m = String(rank ?? '').match(/\b(III|II|I)\b/)
-  return m ? m[1] : null
+  const m = String(rank ?? '').match(/\b(III|II|I|[123])\b/)
+  return m ? (TO_ROMAN[m[1]] ?? null) : null
 }
 
 function emblemSymbol(tier, rank) {

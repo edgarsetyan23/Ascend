@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
   // loading = true while we check for an existing session on mount
   const [loading, setLoading] = useState(true);
 
-  const SESSION_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+  const SESSION_TTL = 14 * 24 * 60 * 60 * 1000; // 14 days in ms
 
   // On mount: restore session only if < 7 days old
   useEffect(() => {

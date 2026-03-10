@@ -284,7 +284,8 @@ export function RecruiterView() {
         <div className="rc-hero">
           <div className="rc-hero-left">
             <h1 className="rc-name">Edgar Setyan</h1>
-            <p className="rc-role">Software Development Engineer I · AWS RDS</p>
+            <span className="rc-role-badge">SDE I · AWS RDS</span>
+            <p className="rc-tagline">I build things that survive production.</p>
             <p className="rc-location">📍 Toronto, ON</p>
           </div>
           <div className="rc-hero-links">
@@ -320,7 +321,7 @@ export function RecruiterView() {
             Experience
           </h2>
           {EXPERIENCE.map((job, i) => (
-            <div key={i} className="rc-card">
+            <div key={i} className={`rc-card ${job.company.includes('Amazon') ? 'rc-card--aws' : 'rc-card--bank'}`}>
               <div className="rc-card-header">
                 <div>
                   <span className="rc-company">{job.company}</span>
@@ -347,7 +348,7 @@ export function RecruiterView() {
             Projects
           </h2>
           {PROJECTS.map((proj, i) => (
-            <div key={i} className="rc-card">
+            <div key={i} className="rc-card rc-card--project">
               <div className="rc-card-header">
                 <span className="rc-company">{proj.name}</span>
                 <span className="rc-stack-label">{proj.stack}</span>

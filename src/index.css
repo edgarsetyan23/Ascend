@@ -3352,6 +3352,284 @@ a {
 .lc-prompt-btn:disabled { opacity: 0.45; cursor: default; }
 .lc-prompt-btn:not(:disabled):hover { opacity: 0.85; }
 
+/* ── Gaming View ─────────────────────────────────────────────── */
+
+.gaming-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Stats header */
+.gaming-stats-bar {
+  display: flex;
+  gap: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.gaming-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 12px;
+  border-right: 1px solid var(--border);
+  gap: 4px;
+}
+
+.gaming-stat:last-child { border-right: none; }
+
+.gaming-stat-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.gaming-stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-subtle);
+}
+
+/* Toolbar */
+.gaming-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.gaming-toolbar .search-input { flex: 1; }
+
+/* Cards */
+.gaming-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gaming-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--tier-color, var(--accent));
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 0 transparent;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.gaming-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 0% 50%, var(--tier-glow, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+.gaming-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px var(--tier-color, var(--accent)),
+              0 8px 28px var(--tier-glow, transparent);
+}
+
+[data-theme="dark"] .gaming-card { background: #111928; }
+
+/* Grandmaster pulsing glow */
+.gaming-card--gm {
+  animation: gm-pulse 3s ease-in-out infinite;
+}
+
+@keyframes gm-pulse {
+  0%, 100% { box-shadow: 0 0 12px var(--tier-glow); }
+  50%       { box-shadow: 0 0 28px var(--tier-glow); }
+}
+
+/* Challenger animated border */
+.gaming-card--challenger {
+  border-image: none;
+  border-left: 3px solid #f59e0b;
+  animation: challenger-shift 4s linear infinite;
+}
+
+@keyframes challenger-shift {
+  0%   { border-left-color: #f59e0b; box-shadow: 0 0 16px rgba(245,158,11,0.4); }
+  25%  { border-left-color: #ef4444; box-shadow: 0 0 16px rgba(239,68,68,0.4);  }
+  50%  { border-left-color: #8b5cf6; box-shadow: 0 0 16px rgba(139,92,246,0.4); }
+  75%  { border-left-color: #3b82f6; box-shadow: 0 0 16px rgba(59,130,246,0.4); }
+  100% { border-left-color: #f59e0b; box-shadow: 0 0 16px rgba(245,158,11,0.4); }
+}
+
+/* Tier emblem */
+.gaming-emblem-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.gaming-emblem {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  transform: rotate(45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px var(--tier-glow, transparent);
+  flex-shrink: 0;
+}
+
+.gaming-emblem-symbol {
+  display: block;
+  transform: rotate(-45deg);
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.gaming-tier-label {
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--tier-color, var(--text-subtle));
+}
+
+/* Card body */
+.gaming-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gaming-card-top {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.gaming-game-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.gaming-rank-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--tier-color, var(--text-muted));
+}
+
+/* W/L bar */
+.gaming-wl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gaming-wl-bar {
+  height: 5px;
+  border-radius: 99px;
+  background: var(--bg-hover);
+  display: flex;
+  overflow: hidden;
+  gap: 2px;
+}
+
+.gaming-wl-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+
+.gaming-wl-fill--w { background: #4ade80; }
+.gaming-wl-fill--l { background: #f87171; }
+
+.gaming-wl-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.gaming-wl-w   { color: #4ade80; }
+.gaming-wl-l   { color: #f87171; }
+.gaming-wl-sep { color: var(--text-subtle); }
+.gaming-wl-wr  { font-weight: 700; }
+
+.gaming-notes {
+  font-size: 0.78rem;
+  color: var(--text-subtle);
+  margin: 0;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Card side */
+.gaming-card-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.gaming-date {
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+  white-space: nowrap;
+}
+
+.gaming-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.gaming-action-btn {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.gaming-action-btn:hover { background: var(--bg-surface); color: var(--text); }
+.gaming-action-btn--del:hover { color: #f87171; border-color: #f87171; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .gaming-card { gap: 12px; padding: 14px; }
+  .gaming-stats-bar { flex-wrap: wrap; }
+  .gaming-stat { min-width: 50%; border-bottom: 1px solid var(--border); }
+}
+
 /* ── Activity Log ─────────────────────────────────────────────── */
 
 .activity-log {

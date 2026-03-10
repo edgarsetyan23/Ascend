@@ -14,6 +14,7 @@ import { NotificationSettings } from './components/NotificationSettings.jsx'
 import { EmailScanner } from './components/EmailScanner.jsx'
 import { LeetCodeProfile } from './components/LeetCodeProfile.jsx'
 import { ActivityLog } from './components/ActivityLog.jsx'
+import { GamingView } from './components/GamingView.jsx'
 import { AuthGate } from './components/AuthGate.jsx'
 import { useAuth } from './context/AuthContext.jsx'
 import { useToast } from './context/ToastContext.jsx'
@@ -180,6 +181,14 @@ function AppShell() {
                   )}
                   {activeId === 'activity' ? (
                     <ActivityLog
+                      tracker={tracker}
+                      entries={entries}
+                      onAdd={handleAdd}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                    />
+                  ) : activeId === 'gaming' ? (
+                    <GamingView
                       tracker={tracker}
                       entries={entries}
                       onAdd={handleAdd}

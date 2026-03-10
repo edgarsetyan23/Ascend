@@ -2359,9 +2359,15 @@ a {
 }
 
 [data-theme="dark"] .rc-page {
-  background-image: radial-gradient(rgba(124, 106, 255, 0.12) 1px, transparent 1px);
-  background-size: 28px 28px;
-  animation: rc-grid-drift 12s linear infinite;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(rgba(124, 106, 255, 0.14) 1px, transparent 1px),
+    radial-gradient(ellipse 800px 600px at 8% 12%, rgba(124, 106, 255, 0.13) 0%, transparent 65%),
+    radial-gradient(ellipse 600px 500px at 92% 28%, rgba(212, 168, 67, 0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 700px 500px at 44% 88%, rgba(45, 212, 191, 0.09) 0%, transparent 65%);
+  background-size: 28px 28px, 100% 100%, 100% 100%, 100% 100%;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  animation: rc-grid-drift 14s linear infinite;
 }
 
 /* ── Entrance animations ─────────────────────────────────────────────────── */
@@ -2372,8 +2378,8 @@ a {
 }
 
 @keyframes rc-grid-drift {
-  from { background-position: 0 0; }
-  to   { background-position: 28px 28px; }
+  from { background-position: 0 0, 0 0, 0 0, 0 0; }
+  to   { background-position: 28px 28px, 0 0, 0 0, 0 0; }
 }
 
 /* Hero staggered entrance — blur dissolve */
@@ -2408,7 +2414,10 @@ a {
 }
 
 [data-theme="dark"] .rc-nav {
-  background: linear-gradient(90deg, #111928 0%, #0c1425 100%);
+  background: rgba(10, 16, 30, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(124, 106, 255, 0.15);
 }
 
 .rc-nav-inner {
@@ -2495,7 +2504,7 @@ a {
 
 [data-theme="dark"] .rc-hero {
   background: linear-gradient(135deg, #111928 0%, #0c1425 100%);
-  box-shadow: 0 0 0 1px rgba(124, 106, 255, 0.18), var(--shadow-lg);
+  box-shadow: 0 0 0 1px rgba(124, 106, 255, 0.22), 0 0 80px rgba(124, 106, 255, 0.1), var(--shadow-lg);
 }
 
 .rc-name {
@@ -2636,10 +2645,16 @@ a {
   box-shadow: var(--shadow);
   padding: 20px 24px;
   margin-bottom: 12px;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 [data-theme="dark"] .rc-card {
   background: #111928;
+}
+
+[data-theme="dark"] .rc-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 0 1px rgba(124, 106, 255, 0.28), 0 12px 36px rgba(124, 106, 255, 0.13);
 }
 
 .rc-card--aws {

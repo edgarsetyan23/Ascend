@@ -355,8 +355,9 @@ function InputPanel({ onAnalyze, onCancel, hasHistory }) {
         <h3 className="blueprint-title">What we check for</h3>
         <div className="blueprint-grid">
           {BLUEPRINT.map(item => (
-            <div key={item.id} className="blueprint-item blueprint-item--preview" title={item.tip}>
-              <span className="blueprint-dot">◦</span>{item.text}
+            <div key={item.id} className="blueprint-card">
+              <span className="blueprint-card-label">{item.text}</span>
+              <span className="blueprint-card-reason">{item.tip}</span>
             </div>
           ))}
         </div>
@@ -368,6 +369,8 @@ function InputPanel({ onAnalyze, onCancel, hasHistory }) {
 // ─── Results panel ────────────────────────────────────────────────────────
 function ResultsPanel({ result, onBack }) {
   const { overall, wordCount, categories, recommendations, highlights, source } = result
+  const [checked, setChecked] = useState({})
+  const toggle = (id) => setChecked(p => ({ ...p, [id]: !p[id] }))
   return (
     <div className="resume-results-wrap">
       <div className="resume-results-header">
@@ -421,12 +424,15 @@ function ResultsPanel({ result, onBack }) {
           )}
           <section className="resume-section">
             <h3 className="resume-section-title">Blueprint Checklist</h3>
-            <div className="blueprint-list">
+            <div className="blueprint-grid">
               {BLUEPRINT.map(item => (
-                <div key={item.id} className="blueprint-item" title={item.tip}>
-                  <span className="blueprint-dot">◦</span>
-                  <span>{item.text}</span>
-                  <span className="blueprint-tip">{item.tip}</span>
+                <div
+                  key={item.id}
+                  className={`blueprint-card blueprint-card--interactive ${checked[item.id] ? 'blueprint-card--done' : ''}`}
+                  onClick={() => toggle(item.id)}
+                >
+                  <span className="blueprint-card-label">{item.text}</span>
+                  <span className="blueprint-card-reason">{item.tip}</span>
                 </div>
               ))}
             </div>

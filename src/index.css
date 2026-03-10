@@ -1239,7 +1239,69 @@ a {
 .blueprint-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 20px;
+  gap: 8px;
+}
+
+.blueprint-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  cursor: default;
+  transition: border-color 0.15s;
+}
+
+.blueprint-card:hover {
+  border-color: var(--accent);
+}
+
+.blueprint-card-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.blueprint-card-label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+}
+
+.blueprint-card-reason {
+  font-size: 0.74rem;
+  color: var(--text-subtle);
+  line-height: 1.45;
+  padding-left: 13px;
+}
+
+/* Interactive (results panel) */
+.blueprint-card--interactive {
+  cursor: pointer;
+  transition: opacity 0.2s, background 0.2s, border-color 0.15s;
+}
+
+.blueprint-card--done {
+  opacity: 0.42;
+  background: var(--bg-hover);
+}
+
+.blueprint-card--done .blueprint-card-label {
+  text-decoration: line-through;
+  color: var(--text-subtle);
+}
+
+.blueprint-card--done .blueprint-card-label::before {
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
 }
 
 /* ── Results layout ── */
@@ -1472,41 +1534,7 @@ a {
   color: #a78bfa;
 }
 
-/* ── Blueprint list (results state) ── */
-.blueprint-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.blueprint-item {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 0.82rem;
-  color: var(--text);
-  padding: 4px 0;
-}
-
-.blueprint-item--preview {
-  cursor: default;
-}
-
-.blueprint-dot {
-  color: #10b981;
-  font-size: 1rem;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-.blueprint-tip {
-  color: var(--text-subtle);
-  font-size: 0.75rem;
-  margin-left: auto;
-  padding-left: 12px;
-  text-align: right;
-  max-width: 240px;
-}
+/* ── Blueprint list (results state) — now uses .blueprint-grid + .blueprint-card ── */
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
@@ -1526,10 +1554,6 @@ a {
 
   .blueprint-grid {
     grid-template-columns: 1fr;
-  }
-
-  .blueprint-tip {
-    display: none;
   }
 }
 
@@ -2354,20 +2378,24 @@ a {
 
 .rc-page {
   min-height: 100vh;
-  background: var(--bg);
   color: var(--text);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(rgba(108, 99, 255, 0.07) 1px, transparent 1px),
+    radial-gradient(ellipse 800px 600px at 8% 12%, rgba(108, 99, 255, 0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 600px 500px at 92% 28%, rgba(212, 168, 67, 0.05) 0%, transparent 65%),
+    radial-gradient(ellipse 700px 500px at 44% 88%, rgba(45, 212, 191, 0.05) 0%, transparent 65%);
+  background-size: 28px 28px, 100% 100%, 100% 100%, 100% 100%;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  animation: rc-grid-drift 14s linear infinite;
 }
 
 [data-theme="dark"] .rc-page {
-  background-color: var(--bg);
   background-image:
     radial-gradient(rgba(124, 106, 255, 0.14) 1px, transparent 1px),
     radial-gradient(ellipse 800px 600px at 8% 12%, rgba(124, 106, 255, 0.13) 0%, transparent 65%),
     radial-gradient(ellipse 600px 500px at 92% 28%, rgba(212, 168, 67, 0.09) 0%, transparent 65%),
     radial-gradient(ellipse 700px 500px at 44% 88%, rgba(45, 212, 191, 0.09) 0%, transparent 65%);
-  background-size: 28px 28px, 100% 100%, 100% 100%, 100% 100%;
-  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
-  animation: rc-grid-drift 14s linear infinite;
 }
 
 /* ── Entrance animations ─────────────────────────────────────────────────── */
@@ -2405,8 +2433,10 @@ a {
 
 .rc-nav {
   height: var(--topbar-height);
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(108, 99, 255, 0.12);
   box-shadow: var(--shadow);
   position: sticky;
   top: 0;
@@ -2652,8 +2682,12 @@ a {
   background: #111928;
 }
 
-[data-theme="dark"] .rc-card:hover {
+.rc-card:hover {
   transform: translateY(-3px);
+  box-shadow: 0 0 0 1px rgba(108, 99, 255, 0.2), 0 12px 36px rgba(108, 99, 255, 0.1);
+}
+
+[data-theme="dark"] .rc-card:hover {
   box-shadow: 0 0 0 1px rgba(124, 106, 255, 0.28), 0 12px 36px rgba(124, 106, 255, 0.13);
 }
 

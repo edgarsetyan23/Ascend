@@ -150,17 +150,35 @@ export function DropZone({ onFile, isExtracting }) {
   )
 }
 
+// ─── Blueprint auto-detection ─────────────────────────────────────────────
+function detectBlueprint(text) {
+  const words = text.trim().split(/\s+/).length
+  return {
+    'one-page':   words <= 650,
+    'quantified': /\d+\s*%|\d[\d,]*\s*\+|\b\d{2,}\s*(TPS|ms|hrs?|accounts?|incidents?|errors?|requests?)\b/i.test(text),
+    'aws-named':  /\b(Lambda|DynamoDB|S3|EC2|ECS|RDS|CloudWatch|CloudFormation|SNS|SQS|API Gateway|Cognito|CDK|IAM|VPC|EKS|Kinesis)\b/.test(text),
+    'verbs':      /^\s*[•\-–*]?\s*(Built|Developed|Architected|Implemented|Deployed|Reduced|Improved|Automated|Designed|Led|Engineered|Refactored|Optimized|Launched|Delivered|Migrated|Owned|Shipped|Remediated|Triaged)/m.test(text),
+    'github':     /github\.com/i.test(text),
+    'skills':     /\b(skills|technical skills|technologies)\b/i.test(text),
+    'projects':   (() => { const m = text.match(/projects?[\s\S]{0,2000}/i)?.[0] ?? ''; return (m.match(/\n[A-Z][^\n]{5,60}\n/g) ?? []).length >= 2 || m.split(/\n{2,}/).length >= 3 })(),
+    'education':  /\b(20\d\d|class of \d{4}|graduated)\b/i.test(text),
+    'contact':    /[\w.]+@[\w.]+\.\w+/.test(text) && /linkedin\.com/i.test(text) && /github\.com/i.test(text),
+    'no-filler':  !/\b(passionate|hardworking|hard-working|team player|responsible for|motivated|enthusiastic|dedicated|go-getter|self-starter)\b/i.test(text),
+  }
+}
+
 // ─── API call with local fallback ─────────────────────────────────────────
 export async function scoreResume(text) {
+  const blueprintChecks = detectBlueprint(text)
   try {
     const res = await fetch('/api/analyze-resume', { method: 'POST',
       headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
     if (data.error) throw new Error(data.error)
-    return { ...data, source: 'claude' }
+    return { ...data, blueprintChecks, source: 'claude' }
   } catch {
-    return { ...analyzeResume(text), source: 'local' }
+    return { ...analyzeResume(text), blueprintChecks, source: 'local' }
   }
 }
 
@@ -370,7 +388,16 @@ function InputPanel({ onAnalyze, onCancel, hasHistory }) {
 function ResultsPanel({ result, onBack }) {
   const { overall, wordCount, categories, recommendations, highlights, source } = result
   const [checked, setChecked] = useState({})
+  const [revealed, setRevealed] = useState(new Set())
   const toggle = (id) => setChecked(p => ({ ...p, [id]: !p[id] }))
+
+  // Stagger-animate auto-detected passing items on mount
+  useEffect(() => {
+    const passing = BLUEPRINT.filter(item => result.blueprintChecks?.[item.id])
+    passing.forEach((item, i) => {
+      setTimeout(() => setRevealed(prev => new Set([...prev, item.id])), 400 + i * 110)
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="resume-results-wrap">
       <div className="resume-results-header">
@@ -425,16 +452,22 @@ function ResultsPanel({ result, onBack }) {
           <section className="resume-section">
             <h3 className="resume-section-title">Blueprint Checklist</h3>
             <div className="blueprint-grid">
-              {BLUEPRINT.map(item => (
-                <div
-                  key={item.id}
-                  className={`blueprint-card blueprint-card--interactive ${checked[item.id] ? 'blueprint-card--done' : ''}`}
-                  onClick={() => toggle(item.id)}
-                >
-                  <span className="blueprint-card-label">{item.text}</span>
-                  <span className="blueprint-card-reason">{item.tip}</span>
-                </div>
-              ))}
+              {BLUEPRINT.map((item, i) => {
+                const autoPassed = revealed.has(item.id)
+                const manualDone = checked[item.id]
+                const isDone = autoPassed || manualDone
+                return (
+                  <div
+                    key={item.id}
+                    className={`blueprint-card blueprint-card--interactive ${autoPassed ? 'blueprint-card--auto-pass' : ''} ${isDone ? 'blueprint-card--done' : ''}`}
+                    style={autoPassed ? { animationDelay: `${i * 40}ms` } : undefined}
+                    onClick={() => toggle(item.id)}
+                  >
+                    <span className="blueprint-card-label">{item.text}</span>
+                    <span className="blueprint-card-reason">{item.tip}</span>
+                  </div>
+                )
+              })}
             </div>
           </section>
         </div>

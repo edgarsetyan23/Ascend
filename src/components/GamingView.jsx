@@ -18,6 +18,19 @@ function cfg(tier) {
   return TIER_CONFIG[tier] ?? TIER_CONFIG.Amber
 }
 
+// Extract Roman numeral division from rank text, e.g. "Obsidian II / 3800 SR" → "II"
+function parseDivision(rank) {
+  const m = String(rank ?? '').match(/\b(III|II|I)\b/)
+  return m ? m[1] : null
+}
+
+function emblemSymbol(tier, rank) {
+  const c = cfg(tier)
+  // Demigod and Deity have no divisions — always use their special symbol
+  if (c.challenger || c.animated) return c.symbol
+  return parseDivision(rank) ?? c.symbol
+}
+
 function WLBar({ wins, losses }) {
   const w = Number(wins) || 0
   const l = Number(losses) || 0
@@ -50,7 +63,7 @@ function GamingCard({ entry, onEdit, onDelete }) {
     >
       <div className="gaming-emblem-wrap">
         <div className="gaming-emblem" style={{ background: c.grad }}>
-          <span className="gaming-emblem-symbol">{c.symbol}</span>
+          <span className="gaming-emblem-symbol">{emblemSymbol(entry.tier, entry.rank)}</span>
         </div>
         {entry.tier && <span className="gaming-tier-label" style={{ color: c.color }}>{entry.tier}</span>}
       </div>

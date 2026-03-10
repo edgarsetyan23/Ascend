@@ -3492,10 +3492,11 @@ a {
 .gaming-emblem-symbol {
   display: block;
   transform: rotate(-45deg);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 900;
-  color: rgba(255,255,255,0.92);
+  color: rgba(255,255,255,0.95);
   line-height: 1;
+  letter-spacing: -0.03em;
 }
 
 .gaming-tier-label {

@@ -1,21 +1,21 @@
 import { useState, useMemo } from 'react'
 
+// Smite 2 ranked tiers — Amber → Deity
 const TIER_CONFIG = {
-  Iron:        { color: '#9ca3af', grad: 'linear-gradient(135deg, #4b5563 0%, #1f2937 100%)', glow: 'rgba(156,163,175,0.15)', rank: 1, symbol: 'I'   },
-  Bronze:      { color: '#cd7f32', grad: 'linear-gradient(135deg, #92400e 0%, #451a03 100%)', glow: 'rgba(205,127,50,0.28)',   rank: 2, symbol: 'II'  },
-  Silver:      { color: '#94a3b8', grad: 'linear-gradient(135deg, #64748b 0%, #334155 100%)', glow: 'rgba(148,163,184,0.22)', rank: 3, symbol: 'III' },
-  Gold:        { color: '#f59e0b', grad: 'linear-gradient(135deg, #f59e0b 0%, #b45309 100%)', glow: 'rgba(245,158,11,0.38)',   rank: 4, symbol: 'IV'  },
-  Platinum:    { color: '#2dd4bf', grad: 'linear-gradient(135deg, #0d9488 0%, #0369a1 100%)', glow: 'rgba(45,212,191,0.32)',   rank: 5, symbol: 'V'   },
-  Diamond:     { color: '#60a5fa', grad: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)', glow: 'rgba(96,165,250,0.38)',   rank: 6, symbol: '◆'   },
-  Master:      { color: '#c084fc', grad: 'linear-gradient(135deg, #9333ea 0%, #db2777 100%)', glow: 'rgba(192,132,252,0.42)',  rank: 7, symbol: '✦'   },
-  Grandmaster: { color: '#f87171', grad: 'linear-gradient(135deg, #dc2626 0%, #9333ea 100%)', glow: 'rgba(248,113,113,0.48)',  rank: 8, symbol: '✦', animated: true },
-  Challenger:  { color: '#fbbf24', grad: 'linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6, #3b82f6, #f59e0b)', glow: 'rgba(251,191,36,0.55)', rank: 9, symbol: '★', challenger: true },
+  Amber:    { color: '#f59e0b', grad: 'linear-gradient(135deg, #d97706 0%, #92400e 100%)', glow: 'rgba(245,158,11,0.30)',  rank: 1,  symbol: '◈', label: '200 SR'    },
+  Bronze:   { color: '#cd7f32', grad: 'linear-gradient(135deg, #a16207 0%, #7c2d12 100%)', glow: 'rgba(205,127,50,0.28)',  rank: 2,  symbol: '◈', label: '800 SR'    },
+  Silver:   { color: '#94a3b8', grad: 'linear-gradient(135deg, #64748b 0%, #334155 100%)', glow: 'rgba(148,163,184,0.22)', rank: 3,  symbol: '◈', label: '1400 SR'   },
+  Gold:     { color: '#eab308', grad: 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)', glow: 'rgba(234,179,8,0.38)',   rank: 4,  symbol: '◈', label: '2000 SR'   },
+  Platinum: { color: '#2dd4bf', grad: 'linear-gradient(135deg, #0d9488 0%, #0369a1 100%)', glow: 'rgba(45,212,191,0.32)',  rank: 5,  symbol: '◈', label: '2600 SR'   },
+  Diamond:  { color: '#38bdf8', grad: 'linear-gradient(135deg, #0284c7 0%, #4f46e5 100%)', glow: 'rgba(56,189,248,0.38)',  rank: 6,  symbol: '◆', label: '3200 SR'   },
+  Obsidian: { color: '#a78bfa', grad: 'linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%)', glow: 'rgba(167,139,250,0.42)', rank: 7,  symbol: '⬡', label: '3800 SR'   },
+  Master:   { color: '#c084fc', grad: 'linear-gradient(135deg, #9333ea 0%, #6d28d9 100%)', glow: 'rgba(192,132,252,0.44)', rank: 8,  symbol: '✦', label: '4400 SR'   },
+  Demigod:  { color: '#fb923c', grad: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)', glow: 'rgba(251,146,60,0.48)',  rank: 9,  symbol: '✦', animated: true, label: '5000 SR' },
+  Deity:    { color: '#fbbf24', grad: 'linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6, #3b82f6, #f59e0b)', glow: 'rgba(251,191,36,0.55)', rank: 10, symbol: '⚡', challenger: true, label: 'Top 100' },
 }
 
-const TIER_ORDER = ['Iron','Bronze','Silver','Gold','Platinum','Diamond','Master','Grandmaster','Challenger']
-
 function cfg(tier) {
-  return TIER_CONFIG[tier] ?? TIER_CONFIG.Iron
+  return TIER_CONFIG[tier] ?? TIER_CONFIG.Amber
 }
 
 function WLBar({ wins, losses }) {
@@ -45,18 +45,16 @@ function GamingCard({ entry, onEdit, onDelete }) {
   const c = cfg(entry.tier)
   return (
     <div
-      className={`gaming-card ${c.challenger ? 'gaming-card--challenger' : ''} ${c.animated ? 'gaming-card--gm' : ''}`}
+      className={`gaming-card ${c.challenger ? 'gaming-card--deity' : ''} ${c.animated ? 'gaming-card--demigod' : ''}`}
       style={{ '--tier-color': c.color, '--tier-glow': c.glow }}
     >
-      {/* Tier emblem */}
       <div className="gaming-emblem-wrap">
         <div className="gaming-emblem" style={{ background: c.grad }}>
           <span className="gaming-emblem-symbol">{c.symbol}</span>
         </div>
-        {entry.tier && <span className="gaming-tier-label">{entry.tier}</span>}
+        {entry.tier && <span className="gaming-tier-label" style={{ color: c.color }}>{entry.tier}</span>}
       </div>
 
-      {/* Main info */}
       <div className="gaming-card-body">
         <div className="gaming-card-top">
           <span className="gaming-game-name">{entry.game || '—'}</span>
@@ -66,7 +64,6 @@ function GamingCard({ entry, onEdit, onDelete }) {
         {entry.notes && <p className="gaming-notes">{entry.notes}</p>}
       </div>
 
-      {/* Meta + actions */}
       <div className="gaming-card-side">
         {entry.date && <span className="gaming-date">{entry.date}</span>}
         <div className="gaming-actions">
@@ -84,12 +81,12 @@ function StatsHeader({ entries }) {
   const total  = totalW + totalL
   const wr     = total ? Math.round((totalW / total) * 100) : null
 
-  const bestTierRank = entries.reduce((best, e) => {
+  const best = entries.reduce((b, e) => {
     const r = cfg(e.tier).rank ?? 0
-    return r > best.rank ? { rank: r, tier: e.tier } : best
+    return r > b.rank ? { rank: r, tier: e.tier } : b
   }, { rank: 0, tier: null })
 
-  const bestCfg = bestTierRank.tier ? cfg(bestTierRank.tier) : null
+  const bestCfg = best.tier ? cfg(best.tier) : null
 
   return (
     <div className="gaming-stats-bar">
@@ -99,7 +96,7 @@ function StatsHeader({ entries }) {
       </div>
       {bestCfg && (
         <div className="gaming-stat">
-          <span className="gaming-stat-value" style={{ color: bestCfg.color }}>{bestTierRank.tier}</span>
+          <span className="gaming-stat-value" style={{ color: bestCfg.color }}>{best.tier}</span>
           <span className="gaming-stat-label">Peak Tier</span>
         </div>
       )}
@@ -139,8 +136,8 @@ export function GamingView({ tracker, entries, onAdd, onEdit, onDelete }) {
       <div className="gaming-wrap">
         <div className="table-empty-state">
           <span className="table-empty-icon">{tracker.icon}</span>
-          <p className="table-empty-title">No game sessions yet</p>
-          <p className="table-empty-sub">Log your first rank to get started</p>
+          <p className="table-empty-title">No sessions logged yet</p>
+          <p className="table-empty-sub">Log your first Smite 2 rank to get started</p>
           <button className="btn btn--primary" onClick={onAdd}>+ Add First Session</button>
         </div>
       </div>
@@ -155,7 +152,7 @@ export function GamingView({ tracker, entries, onAdd, onEdit, onDelete }) {
         <input
           type="search"
           className="search-input"
-          placeholder="Search games..."
+          placeholder="Search sessions..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />

@@ -3444,29 +3444,28 @@ a {
 
 [data-theme="dark"] .gaming-card { background: #111928; }
 
-/* Grandmaster pulsing glow */
-.gaming-card--gm {
-  animation: gm-pulse 3s ease-in-out infinite;
+/* Demigod — pulsing divine glow */
+.gaming-card--demigod {
+  animation: demigod-pulse 2.5s ease-in-out infinite;
 }
 
-@keyframes gm-pulse {
-  0%, 100% { box-shadow: 0 0 12px var(--tier-glow); }
-  50%       { box-shadow: 0 0 28px var(--tier-glow); }
+@keyframes demigod-pulse {
+  0%, 100% { box-shadow: 0 0 10px var(--tier-glow); }
+  50%       { box-shadow: 0 0 26px var(--tier-glow), 0 0 48px var(--tier-glow); }
 }
 
-/* Challenger animated border */
-.gaming-card--challenger {
-  border-image: none;
+/* Deity — shifting divine border */
+.gaming-card--deity {
   border-left: 3px solid #f59e0b;
-  animation: challenger-shift 4s linear infinite;
+  animation: deity-shift 4s linear infinite;
 }
 
-@keyframes challenger-shift {
-  0%   { border-left-color: #f59e0b; box-shadow: 0 0 16px rgba(245,158,11,0.4); }
-  25%  { border-left-color: #ef4444; box-shadow: 0 0 16px rgba(239,68,68,0.4);  }
-  50%  { border-left-color: #8b5cf6; box-shadow: 0 0 16px rgba(139,92,246,0.4); }
-  75%  { border-left-color: #3b82f6; box-shadow: 0 0 16px rgba(59,130,246,0.4); }
-  100% { border-left-color: #f59e0b; box-shadow: 0 0 16px rgba(245,158,11,0.4); }
+@keyframes deity-shift {
+  0%   { border-left-color: #f59e0b; box-shadow: 0 0 18px rgba(245,158,11,0.45); }
+  25%  { border-left-color: #ef4444; box-shadow: 0 0 18px rgba(239,68,68,0.45);  }
+  50%  { border-left-color: #8b5cf6; box-shadow: 0 0 18px rgba(139,92,246,0.45); }
+  75%  { border-left-color: #3b82f6; box-shadow: 0 0 18px rgba(59,130,246,0.45); }
+  100% { border-left-color: #f59e0b; box-shadow: 0 0 18px rgba(245,158,11,0.45); }
 }
 
 /* Tier emblem */
@@ -3493,10 +3492,9 @@ a {
 .gaming-emblem-symbol {
   display: block;
   transform: rotate(-45deg);
-  font-size: 0.95rem;
+  font-size: 0.7rem;
   font-weight: 900;
   color: rgba(255,255,255,0.92);
-  letter-spacing: -0.03em;
   line-height: 1;
 }
 

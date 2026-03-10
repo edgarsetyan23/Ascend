@@ -2361,31 +2361,38 @@ a {
 [data-theme="dark"] .rc-page {
   background-image: radial-gradient(rgba(124, 106, 255, 0.12) 1px, transparent 1px);
   background-size: 28px 28px;
+  animation: rc-grid-drift 12s linear infinite;
 }
 
 /* ── Entrance animations ─────────────────────────────────────────────────── */
 
 @keyframes rc-fade-up {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  from { opacity: 0; transform: translateY(22px); filter: blur(5px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
 }
 
-/* Hero staggered entrance */
-.rc-name        { animation: rc-fade-up 0.6s ease both; }
-.rc-role-badge  { animation: rc-fade-up 0.6s 0.12s ease both; }
-.rc-location    { animation: rc-fade-up 0.6s 0.22s ease both; }
-.rc-hero-links  { animation: rc-fade-up 0.6s 0.30s ease both; }
+@keyframes rc-grid-drift {
+  from { background-position: 0 0; }
+  to   { background-position: 28px 28px; }
+}
 
-/* Scroll-triggered card / section animation */
+/* Hero staggered entrance — blur dissolve */
+.rc-name        { animation: rc-fade-up 0.65s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.rc-role-badge  { animation: rc-fade-up 0.65s 0.10s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.rc-location    { animation: rc-fade-up 0.65s 0.20s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.rc-hero-links  { animation: rc-fade-up 0.65s 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Scroll-triggered card animation — spring snap */
 .rc-animate-in {
   opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.55s ease, transform 0.55s ease;
+  transform: translateY(28px) scale(0.97);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .rc-animate-in.rc-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 /* ── Nav bar ──────────────────────────────────────────────────────────────── */

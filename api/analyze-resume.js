@@ -59,6 +59,7 @@ export default async function handler(req, res) {
     const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1024,
+      temperature: 0,
       system: SYSTEM_PROMPT,
       messages: [
         { role: 'user', content: `Score this resume:\n\n${text.slice(0, 8000)}` }

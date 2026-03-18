@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 
 const LS_KEY      = 'lc-username'
 const LS_NAME_KEY = 'lc-display-name'
-const TOTAL_PROBLEMS = 3851
+const TOTAL_PROBLEMS_FALLBACK = 3851
 
 function makeFallback(username) {
   return {
@@ -118,8 +118,8 @@ export function LeetCodeProfile({ fixedUsername = '', fixedDisplayName = '' }) {
 
   if (loading) return <div className="lc-profile lc-profile--loading" />
 
-  const { username, avatar, rank, solved, languages } = data
-  const pct   = Math.round((solved.total / TOTAL_PROBLEMS) * 100)
+  const { username, avatar, rank, solved, languages, totalProblems } = data
+  const pct   = Math.round((solved.total / (totalProblems ?? TOTAL_PROBLEMS_FALLBACK)) * 100)
   const label = displayName || username
 
   const R = 30, STROKE = 5

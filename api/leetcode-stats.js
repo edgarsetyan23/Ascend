@@ -1,5 +1,9 @@
 const QUERY = `
 query getUserProfile($username: String!) {
+  allQuestionsCount {
+    difficulty
+    count
+  }
   matchedUser(username: $username) {
     username
     profile {
@@ -45,11 +49,15 @@ export default async function handler(req, res) {
     const acNums = user.submitStats?.acSubmissionNum ?? []
     const get = (d) => acNums.find((x) => x.difficulty === d)?.count ?? 0
 
+    const allCounts = json?.data?.allQuestionsCount ?? []
+    const totalProblems = allCounts.find((x) => x.difficulty === 'All')?.count ?? null
+
     const result = {
       username: user.username,
       avatar: user.profile?.userAvatar ?? null,
       rank: user.profile?.ranking ?? null,
       solved: { total: get('All'), easy: get('Easy'), medium: get('Medium'), hard: get('Hard') },
+      totalProblems,
       languages: (user.languageProblemCount ?? [])
         .sort((a, b) => b.problemsSolved - a.problemsSolved)
         .slice(0, 4)

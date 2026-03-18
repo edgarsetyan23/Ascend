@@ -209,9 +209,10 @@ function SummaryBanner({ entries }) {
     .sort((a, b) => b.avg - a.avg)
 
   const topStrengths = avgCats.slice(0, 2).filter(c => c.avg >= 6)
+  const strengthLabels = new Set(topStrengths.map(c => c.label))
   const topWeaknesses = avgCats.slice(-2).filter(c => c.avg < 7).reverse()
 
-  // Most common recommendation categories across all scans
+  // Most common recommendation categories across all scans (exclude strengths)
   const recFreq = {}
   entries.forEach(e => {
     const seen = new Set()
@@ -219,7 +220,9 @@ function SummaryBanner({ entries }) {
       if (!seen.has(r.category)) { recFreq[r.category] = (recFreq[r.category] ?? 0) + 1; seen.add(r.category) }
     })
   })
-  const topFix = Object.entries(recFreq).sort((a, b) => b[1] - a[1])[0]?.[0]
+  const topFix = Object.entries(recFreq)
+    .filter(([cat]) => !strengthLabels.has(cat))
+    .sort((a, b) => b[1] - a[1])[0]?.[0]
 
   return (
     <div className="resume-summary-banner">

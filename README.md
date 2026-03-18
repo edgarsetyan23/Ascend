@@ -16,7 +16,6 @@ Five things worth knowing about this project:
 
 - **Auth flow** — Cognito issues a JWT (IdToken); it lives in React state only, never localStorage. Every API call sends `Authorization: Bearer <token>`. The API Gateway JWT Authorizer validates signature, audience, and expiry before Lambda even executes — an unauthenticated request never reaches application code.
 - **Data model** — Single-table DynamoDB. `PK = USER#{sub}`, `SK = TRACKER#{trackerId}#ENTRY#{uuid}`. Loading a tracker tab fires one `Query` with `begins_with(SK, "TRACKER#leetcode#ENTRY#")` — no scans, no joins.
-- **Recruiter route** — A dedicated Lambda with no JWT authorizer. `OWNER_USER_ID` is baked into its environment at deploy time so no user input ever touches the DynamoDB partition key. Non-whitelisted trackers return 404, not 403 — 403 would confirm the route exists.
 - **Validation and logging** — `validateTrackerId` and `validateBody` (10 KB limit) return structured 400s before any DynamoDB work. Lambda emits JSON log lines (`requestId`, `trackerId`, `latencyMs`) compatible with CloudWatch Logs Insights.
 - **Deployment** — CDK synthesizes a CloudFormation template and uploads Lambda bundles to S3; one command provisions the entire backend. `infra/.env` is auto-loaded via dotenv so `OWNER_USER_ID` is never accidentally wiped. Frontend auto-deploys from GitHub via Vercel.
 

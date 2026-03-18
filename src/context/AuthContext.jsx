@@ -25,13 +25,15 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    getSession().then((session) => {
-      if (session) {
-        setUser(session.getIdToken().payload);
-        setToken(session.getIdToken().getJwtToken());
-      }
-      setLoading(false);
-    });
+    getSession()
+      .then((session) => {
+        if (session) {
+          setUser(session.getIdToken().payload);
+          setToken(session.getIdToken().getJwtToken());
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   const login = useCallback(async (email, password) => {

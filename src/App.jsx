@@ -1,8 +1,10 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { RecruiterView } from './components/RecruiterView.jsx'
-import { OAuthCallback } from './components/OAuthCallback.jsx'
-import { NotFound } from './components/NotFound.jsx'
+import { ErrorBoundary } from './components/ErrorBoundary.jsx'
+
+const RecruiterView = lazy(() => import('./components/RecruiterView.jsx').then(m => ({ default: m.RecruiterView })))
+const OAuthCallback = lazy(() => import('./components/OAuthCallback.jsx').then(m => ({ default: m.OAuthCallback })))
+const NotFound = lazy(() => import('./components/NotFound.jsx').then(m => ({ default: m.NotFound })))
 import { Sidebar } from './components/Sidebar.jsx'
 import { StatsBar } from './components/StatsBar.jsx'
 import { TrackerTable } from './components/TrackerTable.jsx'
@@ -239,11 +241,15 @@ function AppShell() {
  */
 export default function App() {
   return (
-    <Routes>
-      <Route path="/portfolio" element={<RecruiterView />} />
-      <Route path="/oauth-callback" element={<OAuthCallback />} />
-      <Route path="/" element={<AuthGate><AppShell /></AuthGate>} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <ErrorBoundary>
+      <Suspense fallback={null}>
+        <Routes>
+          <Route path="/portfolio" element={<RecruiterView />} />
+          <Route path="/oauth-callback" element={<OAuthCallback />} />
+          <Route path="/" element={<AuthGate><AppShell /></AuthGate>} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   )
 }

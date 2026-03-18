@@ -42,11 +42,14 @@ export function LeetCodeProfile({ fixedUsername = '', fixedDisplayName = '' }) {
   useEffect(() => {
     if (!savedUsername) return
     setLoading(true)
-    fetch(`/api/leetcode-stats?username=${encodeURIComponent(savedUsername)}`)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10_000)
+    fetch(`/api/leetcode-stats?username=${encodeURIComponent(savedUsername)}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => setData(d.error ? makeFallback(savedUsername) : d))
       .catch(() => setData(makeFallback(savedUsername)))
-      .finally(() => setLoading(false))
+      .finally(() => { clearTimeout(timeoutId); setLoading(false) })
+    return () => { clearTimeout(timeoutId); controller.abort() }
   }, [savedUsername])
 
   useEffect(() => {

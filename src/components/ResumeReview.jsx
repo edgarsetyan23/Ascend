@@ -170,14 +170,19 @@ function detectBlueprint(text) {
 // ─── API call with local fallback ─────────────────────────────────────────
 export async function scoreResume(text) {
   const blueprintChecks = detectBlueprint(text)
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30_000)
   try {
     const res = await fetch('/api/analyze-resume', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) })
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }),
+      signal: controller.signal })
+    clearTimeout(timeoutId)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
     if (data.error) throw new Error(data.error)
     return { ...data, blueprintChecks, source: 'claude' }
   } catch {
+    clearTimeout(timeoutId)
     return { ...analyzeResume(text), blueprintChecks, source: 'local' }
   }
 }

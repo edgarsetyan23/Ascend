@@ -220,9 +220,12 @@ export function RecruiterView() {
   const [analyzeErr,  setAnalyzeErr]  = useState(null)
 
   useEffect(() => {
-    Promise.all([listPublicEntries('leetcode'), listPublicEntries('activity')])
-      .then(([lc, act]) => { setLeetcode(lc); setActivity(act) })
-      .catch((e) => setError(e.message))
+    Promise.allSettled([listPublicEntries('leetcode'), listPublicEntries('activity')])
+      .then(([lc, act]) => {
+        if (lc.status === 'fulfilled') setLeetcode(lc.value)
+        if (act.status === 'fulfilled') setActivity(act.value)
+        if (lc.status === 'rejected' && act.status === 'rejected') setError(lc.reason?.message ?? 'Failed to load data')
+      })
       .finally(() => setLoading(false))
   }, [])
 

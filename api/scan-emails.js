@@ -4,7 +4,21 @@ const SYSTEM_PROMPT = `You analyze job application emails. Given a list of alrea
 
 Classification rules:
 - "new_application": a confirmation that the user submitted a new job application (e.g. "thank you for applying", "application received", "we got your application")
-- "follow_up": a status update on an application already in the tracked list (e.g. interview invitation, rejection, offer letter, background check request, next steps email)
+- "follow_up": a REAL, explicit status change on a tracked application — only when the email contains a clear, specific action directed at the user
+
+CRITICAL: Most automated emails after applying are NOT follow_ups. These should be treated as "new_application" or skipped entirely:
+- Generic "here's what to expect" or "here's our hiring process" emails sent immediately after applying
+- "We'll be in touch" or "we'll review your application and reach out with next steps" — this is NOT a phone screen
+- "Thank you, stay tuned" or any vague future-promise language
+- Automated application acknowledgements that mention the word "next steps" generically
+
+A follow_up with an upgraded status ONLY qualifies when the email contains EXPLICIT action language directed at the user:
+- Phone Screen: "we'd like to schedule a call", "please book a time", "we want to speak with you" — NOT just mentioning a phone screen exists
+- Technical: "we'd like you to complete a technical assessment", "here is your coding challenge link"
+- Onsite: "we'd like to invite you to an onsite interview", "you've been selected for an interview"
+- Offer: "we're pleased to offer you", "offer letter attached"
+- Rejected: "we've decided to move forward with other candidates", "we will not be moving forward"
+- Withdrawn: user withdrew their application
 
 For each email, decide which category it belongs to:
 - new_application → extract: company (string), role (string), appliedDate (string YYYY-MM-DD), source (string, e.g. LinkedIn/Indeed/Company Website/Other)
@@ -13,7 +27,7 @@ For each email, decide which category it belongs to:
 Rules:
 - Only include a follow_up if you can confidently match it to an existing tracked entry (fuzzy match on company and role is fine)
 - If you cannot match a follow-up to any tracked entry, include it in applications as a new_application instead
-- Prefer conservative matching — if unsure whether an email is about a tracked application, treat it as a new_application
+- When in doubt about whether a status upgrade is warranted, DO NOT include it as a follow_up — skip it or treat as new_application
 - If an email is clearly not job-related, skip it entirely
 
 Return ONLY valid JSON with this exact schema:

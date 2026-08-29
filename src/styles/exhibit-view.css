@@ -258,8 +258,13 @@
 
 /* ── Exhibit frame ── */
 
+/* Centered within the available reading pane (not flush against the
+   sidebar) — on a wide window the old flush-left column left most of
+   the page looking empty. Widened slightly too, so centering doesn't
+   just relocate the dead space but actually shrinks it. */
 .exh-frame {
-  max-width: 680px;
+  max-width: 760px;
+  margin: 0 auto;
   position: relative;
 }
 
@@ -525,23 +530,48 @@
 }
 
 .exh-root-link {
-  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.88rem;
+  font-weight: 500;
   color: var(--exh-ink);
   text-decoration: none;
   border: 1px solid var(--exh-border);
-  border-radius: 6px;
-  padding: 8px 14px;
+  border-radius: 10px;
+  padding: 8px 16px 8px 8px;
   background: var(--exh-bg-raised);
-  transition: border-color 0.12s ease, transform 0.12s ease;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
-.exh-root-link:hover { border-color: var(--exh-accent); transform: translateY(-1px); }
+.exh-root-link-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--exh-accent-soft);
+  color: var(--exh-accent);
+}
+.exh-root-link:hover {
+  border-color: var(--exh-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(25, 26, 20, 0.12);
+}
 .exh-root-link--primary {
   background: var(--exh-accent);
   color: var(--exh-bg-raised);
   border-color: var(--exh-accent);
-  font-weight: 500;
 }
-.exh-root-link--primary:hover { opacity: 0.9; }
+.exh-root-link--primary .exh-root-link-icon {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--exh-bg-raised);
+}
+.exh-root-link--primary:hover {
+  opacity: 0.94;
+  box-shadow: 0 8px 20px rgba(25, 26, 20, 0.22);
+}
 
 .exh-start-tour {
   display: inline-block;

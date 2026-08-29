@@ -193,40 +193,6 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey }) {
     guide.rotation.y = -0.3
     scene.add(guide)
 
-    // A couple of fellow visitors, flanking and slightly behind the
-    // guide — much lower detail than him (no face, hair, or beard),
-    // just enough silhouette to read as "other people," so the scene
-    // isn't one lone figure. Sharing this same canvas/renderer rather
-    // than spinning up a separate WebGL context per figure.
-    function buildVisitor(x, z, color) {
-      const vGroup = new THREE.Group()
-      const vMat = track(new THREE.MeshStandardMaterial({ color, roughness: 0.85, flatShading: true }))
-
-      const vLegGeo = track(new THREE.CylinderGeometry(0.1, 0.1, 0.55, 6))
-      const vLegL = new THREE.Mesh(vLegGeo, vMat); vLegL.position.set(-0.14, -0.85, 0); vGroup.add(vLegL)
-      const vLegR = new THREE.Mesh(vLegGeo, vMat); vLegR.position.set(0.14, -0.85, 0); vGroup.add(vLegR)
-
-      const vTorsoGeo = track(new THREE.CylinderGeometry(0.2, 0.27, 0.48, 6))
-      const vTorso = new THREE.Mesh(vTorsoGeo, vMat)
-      vTorso.position.y = -0.32
-      vGroup.add(vTorso)
-
-      const vHeadGeo = track(new THREE.IcosahedronGeometry(0.27, 1))
-      const vHead = new THREE.Mesh(vHeadGeo, vMat)
-      vHead.scale.set(0.9, 1.05, 0.95)
-      vHead.position.y = 0.16
-      vGroup.add(vHead)
-
-      vGroup.position.set(x, 0, z)
-      vGroup.scale.setScalar(0.6)
-      return vGroup
-    }
-
-    const visitorL = buildVisitor(-0.95, -0.7, 0x7d8570)
-    const visitorR = buildVisitor(0.95, -0.85, 0x8a7d6a)
-    scene.add(visitorL)
-    scene.add(visitorR)
-
     renderer.render(scene, camera)
 
     const cleanup = () => {
@@ -267,12 +233,6 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey }) {
 
       // A small flag-wave motion on the raised arm, always on.
       flag.rotation.y = Math.sin(t * 2.2) * 0.25
-
-      // The two background visitors idle independently of the guide
-      // and of each other (different phase offsets) so they don't
-      // move in lockstep — just enough life to not look like props.
-      visitorL.rotation.y = 0.25 + Math.sin(t * 0.35 + 1.3) * 0.18
-      visitorR.rotation.y = -0.2 + Math.sin(t * 0.42 + 2.7) * 0.18
 
       renderer.render(scene, camera)
       frameId = requestAnimationFrame(animate)

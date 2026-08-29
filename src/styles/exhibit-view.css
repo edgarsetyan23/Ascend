@@ -243,7 +243,25 @@
 
 /* ── Exhibit frame ── */
 
-.exh-frame { max-width: 680px; }
+.exh-frame {
+  max-width: 680px;
+  position: relative;
+  padding: 26px 22px;
+  margin: -26px -22px 0;
+}
+
+/* ── Display-case corner brackets, on every exhibit page ── */
+
+.exh-case-bracket {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+.exh-case-bracket--tl { top: 0;    left: 0;   border-top: 2px solid var(--exh-accent);    border-left: 2px solid var(--exh-accent); }
+.exh-case-bracket--tr { top: 0;    right: 0;  border-top: 2px solid var(--exh-accent);    border-right: 2px solid var(--exh-accent); }
+.exh-case-bracket--br { bottom: 0; right: 0;  border-bottom: 2px solid var(--exh-accent); border-right: 2px solid var(--exh-accent); }
+.exh-case-bracket--bl { bottom: 0; left: 0;   border-bottom: 2px solid var(--exh-accent); border-left: 2px solid var(--exh-accent); }
 
 /* ── Introduction background path ── */
 
@@ -280,6 +298,21 @@
   .exh-intro-path { display: none; }
 }
 
+.exh-museum-visitors {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 65%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.9;
+}
+.exh-museum-visitors canvas { display: block; width: 100%; }
+
+@media (max-width: 860px) {
+  .exh-museum-visitors { display: none; }
+}
+
 .exh-museum-banner {
   position: relative;
   z-index: 1;
@@ -307,10 +340,14 @@
 }
 
 .exh-eyebrow {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 18px;
+  padding: 6px 12px;
+  border: 1px solid var(--exh-border);
+  border-radius: 4px;
+  background: var(--exh-sidebar-bg);
 }
 .exh-eyebrow-text {
   font-family: var(--exh-font-display);

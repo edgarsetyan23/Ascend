@@ -19,6 +19,7 @@ import '../styles/exhibit-view.css'
 // downloads once someone actually lands on /portfolio, not as part of
 // the base app bundle.
 const TourGuide = lazy(() => import('./TourGuide.jsx').then((m) => ({ default: m.TourGuide })))
+const MuseumVisitors = lazy(() => import('./MuseumVisitors.jsx').then((m) => ({ default: m.MuseumVisitors })))
 const ACCENT = { light: '#4f7a63', dark: '#8fc2a6' }
 
 // ── Resume data ─────────────────────────────────────────────────────────────
@@ -439,9 +440,25 @@ function IntroPath({ wrapEl, cardRefs }) {
   )
 }
 
+// Corner brackets — the classic display-case/vitrine framing device.
+// Four small fixed-size L-shapes rather than a scaled SVG, so they
+// stay crisp corners regardless of how tall/wide the frame's content
+// makes it (a stretched viewBox would distort them into unequal arms).
+function CaseBrackets() {
+  return (
+    <>
+      <span className="exh-case-bracket exh-case-bracket--tl" aria-hidden="true" />
+      <span className="exh-case-bracket exh-case-bracket--tr" aria-hidden="true" />
+      <span className="exh-case-bracket exh-case-bracket--br" aria-hidden="true" />
+      <span className="exh-case-bracket exh-case-bracket--bl" aria-hidden="true" />
+    </>
+  )
+}
+
 function ExhibitFrame({ section, plate, title, byline, children }) {
   return (
     <div className="exh-frame">
+      <CaseBrackets />
       <div className="exh-eyebrow">
         {plate && <PlateMark n={plate} />}
         <span className="exh-eyebrow-text">{section}</span>
@@ -554,6 +571,9 @@ export function RecruiterView() {
       return (
         <div className="exh-intro-wrap" ref={setIntroWrapEl}>
           <IntroPath wrapEl={introWrapEl} cardRefs={cardRefs} />
+          <Suspense fallback={null}>
+            <MuseumVisitors size={150} />
+          </Suspense>
           <div className="exh-museum-banner">
             <span className="exh-museum-banner-eyebrow">Welcome to</span>
             <span className="exh-museum-banner-name">The Ascend Museum of Work</span>

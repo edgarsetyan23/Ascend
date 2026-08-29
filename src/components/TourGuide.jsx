@@ -1,39 +1,6 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 
-// Deterministic PRNG (mulberry32) so the sculpted noise on the head/hair
-// and the beard-strand layout are stable across remounts instead of
-// reshuffling every time the page reloads.
-function seededRandom(seed) {
-  let s = seed >>> 0
-  return () => {
-    s = (s + 0x6d2b79f5) >>> 0
-    let t = s
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
-
-// Displaces every vertex of a geometry outward/inward along its own
-// direction from the origin by a small random amount — turns a clean
-// icosahedron into an irregular, hand-chiseled-looking faceted lump,
-// closer to a sculpted low-poly bust than a perfect gemstone.
-function roughen(geometry, amount, seed) {
-  const pos = geometry.attributes.position
-  const rand = seededRandom(seed)
-  const v = new THREE.Vector3()
-  for (let i = 0; i < pos.count; i++) {
-    v.fromBufferAttribute(pos, i)
-    const dir = v.clone().normalize()
-    v.addScaledVector(dir, (rand() - 0.5) * amount)
-    pos.setXYZ(i, v.x, v.y, v.z)
-  }
-  pos.needsUpdate = true
-  geometry.computeVertexNormals()
-  return geometry
-}
-
 // A small, persistent low-poly guide — stylized after a real photo (dark
 // curly hair, beard, warm skin tone, dark top), holding a little tour flag.
 // Built entirely from primitive geometry: no external 3D asset, no
@@ -93,68 +60,70 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128 }) {
     const legL = new THREE.Mesh(legGeo, shirtMat); legL.position.set(-0.16, -0.9, 0); guide.add(legL)
     const legR = new THREE.Mesh(legGeo, shirtMat); legR.position.set(0.16, -0.9, 0); guide.add(legR)
 
-    // Torso — kept short enough that its top sits at the collar, not
-    // the chin, so the neck/jaw/beard actually stay visible above it.
-    const torsoGeo = track(new THREE.CapsuleGeometry(0.32, 0.1, 2, 8))
+    // Torso — a simple tapered cylinder (narrower at the shoulders),
+    // the shape most low-poly mascots actually use, instead of a
+    // capsule whose rounded caps read as an odd, bulging waist. Kept
+    // short enough that its top sits at the collar, not the chin.
+    const torsoGeo = track(new THREE.CylinderGeometry(0.24, 0.32, 0.5, 6))
     const torso = new THREE.Mesh(torsoGeo, shirtMat)
-    torso.position.y = -0.35
+    torso.position.y = -0.28
     guide.add(torso)
 
     // Neck — a short bridge between the collar and the head.
-    const neckGeo = track(new THREE.CylinderGeometry(0.13, 0.16, 0.16, 6))
+    const neckGeo = track(new THREE.CylinderGeometry(0.13, 0.16, 0.14, 6))
     const neck = new THREE.Mesh(neckGeo, skinMat)
     neck.position.y = 0.02
     guide.add(neck)
 
-    // Head — a chiselled, irregular faceted form rather than a clean
-    // gemstone: more subdivision than the rest of the body, then every
-    // vertex nudged along its own normal so the facets read as sculpted,
-    // not procedural-perfect.
-    const headGeo = track(roughen(new THREE.IcosahedronGeometry(0.36, 2), 0.05, 11))
+    // Head — plain, low-subdivision and clean. Low-poly characters read
+    // best when the polygon budget goes into a clear silhouette, not
+    // into noisy per-vertex detail — so no displacement here.
+    const headGeo = track(new THREE.IcosahedronGeometry(0.36, 1))
     const head = new THREE.Mesh(headGeo, skinMat)
-    head.scale.set(0.9, 1.08, 0.95)
+    head.scale.set(0.9, 1.05, 0.95)
     head.position.y = 0.42
     guide.add(head)
 
-    // Curly hair — a slightly larger, similarly roughened shell capping
-    // the top/back of the head (not the face), so it reads as one
-    // continuous sculpted mass instead of pom-poms stuck on top.
-    const hairGeo = track(roughen(new THREE.IcosahedronGeometry(0.39, 2), 0.06, 23))
+    // Face — exactly three deliberate shapes (two eyes, one nose),
+    // the minimum that reads as "a face" without cluttering the head
+    // with dozens of tiny pieces.
+    const eyeGeo = track(new THREE.SphereGeometry(0.045, 6, 4))
+    eyeGeo.scale(1, 1, 0.6)
+    const eyeMat = track(new THREE.MeshStandardMaterial({ color: 0x211a14, roughness: 0.4, flatShading: true }))
+    const eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.13, 0.46, 0.32); guide.add(eyeL)
+    const eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.13, 0.46, 0.32); guide.add(eyeR)
+
+    const noseGeo = track(new THREE.ConeGeometry(0.045, 0.11, 4))
+    const nose = new THREE.Mesh(noseGeo, skinMat)
+    nose.position.set(0, 0.38, 0.35)
+    nose.rotation.x = Math.PI / 2.3
+    guide.add(nose)
+
+    // Hair — one simple low-poly cap over the top/back of the head,
+    // not a second noisy sculpted shell.
+    const hairGeo = track(new THREE.IcosahedronGeometry(0.39, 0))
     const hair = new THREE.Mesh(hairGeo, hairMat)
-    hair.scale.set(0.94, 0.62, 0.98)
-    hair.position.set(0, 0.55, -0.03)
+    hair.scale.set(0.95, 0.6, 0.98)
+    hair.position.set(0, 0.56, -0.02)
     guide.add(hair)
 
-    // Beard — dozens of thin angular blades anchored along the jaw/chin
-    // arc, longer and lower at the chin, shorter toward the ears, each
-    // with a little rotational jitter for an organic, cascading look.
-    const beardGroup = new THREE.Group()
-    const strandGeo = track(new THREE.ConeGeometry(0.045, 1, 3))
-    strandGeo.translate(0, 0.5, 0) // pivot at the base, tip points toward +Y
-    strandGeo.scale(1, 1, 0.3)     // flatten into a blade
-    const strandRand = seededRandom(31)
-    const strandCount = 26
-    for (let i = 0; i < strandCount; i++) {
-      const t = i / (strandCount - 1)              // 0 (left ear) → 1 (right ear)
-      const angle = -1.3 + t * 2.6                  // sweep across the front of the jaw
-      const dip = Math.sin(t * Math.PI)              // 0 at the ears, 1 at the chin
-      const jawRadius = 0.3
-      const baseX = Math.sin(angle) * jawRadius
-      const baseZ = Math.cos(angle) * jawRadius * 0.85 + 0.08
-      const baseY = 0.14 - dip * 0.1
-      const length = 0.14 + dip * 0.24 + strandRand() * 0.06
-
-      const strand = new THREE.Mesh(strandGeo, beardMat)
-      strand.position.set(baseX, baseY, baseZ)
-      strand.scale.set(0.8 + strandRand() * 0.5, length, 0.8 + strandRand() * 0.5)
-      // Point the blade outward-and-down from its jaw anchor, with a
-      // little per-strand jitter so it doesn't look like a fan.
-      strand.rotation.x = Math.PI - 0.35 + strandRand() * 0.3
-      strand.rotation.y = angle + (strandRand() - 0.5) * 0.4
-      strand.rotation.z = (strandRand() - 0.5) * 0.3
-      beardGroup.add(strand)
-    }
-    guide.add(beardGroup)
+    // Light beard — a handful of chunky, deliberately placed facets
+    // along the jaw/chin, not dozens of thin strands. Reads as "a
+    // beard" from the silhouette without becoming visual noise.
+    const beardGeo = track(new THREE.IcosahedronGeometry(0.09, 0))
+    const beardSpots = [
+      [0, 0.16, 0.33, 1.1],   // chin
+      [-0.14, 0.22, 0.29, 0.85],
+      [0.14, 0.22, 0.29, 0.85],
+      [-0.22, 0.3, 0.2, 0.7],
+      [0.22, 0.3, 0.2, 0.7],
+    ]
+    beardSpots.forEach(([x, y, z, s]) => {
+      const spot = new THREE.Mesh(beardGeo, beardMat)
+      spot.position.set(x, y, z)
+      spot.scale.setScalar(s)
+      guide.add(spot)
+    })
 
     // Raised arm holding a small tour flag.
     const armGeo = track(new THREE.CylinderGeometry(0.06, 0.075, 0.42, 6))

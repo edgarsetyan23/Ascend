@@ -244,7 +244,7 @@ export default function App() {
     <ErrorBoundary>
       <Suspense fallback={null}>
         <Routes>
-          <Route path="/portfolio" element={<RecruiterView />} />
+          <Route path="/portfolio/*" element={<RecruiterView />} />
           <Route path="/oauth-callback" element={<OAuthCallback />} />
           <Route path="/" element={<AuthGate><AppShell /></AuthGate>} />
           <Route path="*" element={<NotFound />} />

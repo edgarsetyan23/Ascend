@@ -7,9 +7,19 @@ import * as THREE from 'three'
 // attempt at a literal photorealistic likeness, just a friendly low-poly
 // nod to the reference. Mounted once and kept alive across navigation —
 // only the caption text changes per section — so it never tears down and
-// rebuilds its WebGL scene on every click.
-export function TourGuide({ accentColor = '#4f7a63', size = 128 }) {
+// rebuilds its WebGL scene on every click. Passing `activeId` triggers a
+// brief walk-cycle burst each time it changes, so the guide visibly
+// walks between exhibits instead of just idling in place.
+export function TourGuide({ accentColor = '#4f7a63', size = 128, activeId }) {
   const containerRef = useRef(null)
+  const walkUntilRef = useRef(0)
+  const isFirstActiveIdRef = useRef(true)
+
+  // Nothing to "walk to" on first mount — only trigger on real navigation.
+  useEffect(() => {
+    if (isFirstActiveIdRef.current) { isFirstActiveIdRef.current = false; return }
+    walkUntilRef.current = performance.now() + 1100
+  }, [activeId])
 
   useEffect(() => {
     const container = containerRef.current
@@ -55,10 +65,23 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128 }) {
 
     const guide = new THREE.Group()
 
-    // Legs
+    // Legs — each wrapped in a hip pivot group so a walk-cycle swing
+    // rotates from the hip, not the leg's own center (which would look
+    // like sliding in place, not walking).
     const legGeo = track(new THREE.CylinderGeometry(0.12, 0.12, 0.6, 6))
-    const legL = new THREE.Mesh(legGeo, shirtMat); legL.position.set(-0.16, -0.9, 0); guide.add(legL)
-    const legR = new THREE.Mesh(legGeo, shirtMat); legR.position.set(0.16, -0.9, 0); guide.add(legR)
+    const legPivotL = new THREE.Group()
+    legPivotL.position.set(-0.16, -0.6, 0)
+    const legMeshL = new THREE.Mesh(legGeo, shirtMat)
+    legMeshL.position.y = -0.3
+    legPivotL.add(legMeshL)
+    guide.add(legPivotL)
+
+    const legPivotR = new THREE.Group()
+    legPivotR.position.set(0.16, -0.6, 0)
+    const legMeshR = new THREE.Mesh(legGeo, shirtMat)
+    legMeshR.position.y = -0.3
+    legPivotR.add(legMeshR)
+    guide.add(legPivotR)
 
     // Torso — a simple tapered cylinder (narrower at the shoulders),
     // the shape most low-poly mascots actually use, instead of a
@@ -182,13 +205,33 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128 }) {
 
     let frameId
     const clock = new THREE.Clock()
+    const WALK_FADE_MS = 300
     const animate = () => {
       const t = clock.getElapsedTime()
-      // Gentle idle sway — scanning the room, not spinning like an
-      // exhibit. A small flag-wave motion on the raised arm.
-      guide.rotation.y = -0.3 + Math.sin(t * 0.5) * 0.35
-      guide.position.y = Math.sin(t * 1.1) * 0.03
+
+      // Blend smoothly between "walking to the next exhibit" and the
+      // idle scanning sway — intensity fades out over the last 300ms
+      // of the walk window instead of snapping back to idle.
+      const remaining = walkUntilRef.current - performance.now()
+      const intensity = remaining > 0 ? Math.min(1, remaining / WALK_FADE_MS) : 0
+
+      const walkPhase = t * 9
+      const swing = Math.sin(walkPhase) * 0.5 * intensity
+      legPivotL.rotation.x = swing
+      legPivotR.rotation.x = -swing
+      armL.rotation.x = -swing * 0.7
+
+      const walkBob = Math.abs(Math.sin(walkPhase)) * 0.045 * intensity
+      const idleBob = Math.sin(t * 1.1) * 0.03 * (1 - intensity)
+      guide.position.y = walkBob + idleBob
+
+      const idleFacing = -0.3 + Math.sin(t * 0.5) * 0.35
+      const walkFacing = -0.15
+      guide.rotation.y = idleFacing * (1 - intensity) + walkFacing * intensity
+
+      // A small flag-wave motion on the raised arm, always on.
       flag.rotation.y = Math.sin(t * 2.2) * 0.25
+
       renderer.render(scene, camera)
       frameId = requestAnimationFrame(animate)
     }

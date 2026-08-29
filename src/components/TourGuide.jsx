@@ -99,28 +99,27 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128 }) {
     nose.rotation.x = Math.PI / 2.3
     guide.add(nose)
 
-    // Hair — a full head of generic brown, curly-ish hair: a cluster
-    // of small bumpy tufts (not one smooth cap) covering the top,
-    // crown, back, and sides with no gaps. The bumps are what read as
-    // "curly" at this scale.
-    const hairGeo = track(new THREE.IcosahedronGeometry(0.16, 0))
-    const hairSpots = [
-      [-0.26, 0.58, -0.14, 1.0],  // back-left
-      [0.26, 0.58, -0.14, 1.0],   // back-right
-      [0, 0.5, -0.32, 1.05],      // back-center
-      [-0.32, 0.42, 0.02, 0.85], // left temple
-      [0.32, 0.42, 0.02, 0.85],  // right temple
-      [-0.14, 0.63, 0.14, 0.75], // front-left
-      [0.14, 0.63, 0.14, 0.75],  // front-right
-      [0, 0.7, 0.05, 0.8],       // crown
-      [-0.1, 0.68, -0.14, 0.75], // crown, back-left fill
-      [0.1, 0.68, -0.14, 0.75],  // crown, back-right fill
+    // Hair — a small number of large, elongated angular chunks, not
+    // small round tufts. Low-poly hair is conventionally built from a
+    // few flat triangular planes with a directional sweep (real
+    // technique, not a guess) — a handful of little spheres just
+    // reads as a cluster of circles, which is what this replaces.
+    const hairChunkGeo = track(new THREE.IcosahedronGeometry(0.22, 0))
+    const hairChunks = [
+      // [x, y, z, scaleX, scaleY, scaleZ, rotZ]
+      [0, 0.62, -0.08, 1.35, 0.85, 1.15, 0],         // main crown/back mass
+      [-0.29, 0.5, 0.06, 0.8, 1.15, 0.85, -0.35],    // left side, swept down
+      [0.29, 0.5, 0.06, 0.8, 1.15, 0.85, 0.35],      // right side, swept down
+      [0, 0.68, 0.13, 1.0, 0.7, 0.9, 0],             // front/top, slight forward sweep
+      [-0.14, 0.72, -0.06, 0.75, 0.75, 0.8, -0.2],   // crown-left fill
+      [0.14, 0.72, -0.06, 0.75, 0.75, 0.8, 0.2],     // crown-right fill
     ]
-    hairSpots.forEach(([x, y, z, s]) => {
-      const tuft = new THREE.Mesh(hairGeo, hairMat)
-      tuft.position.set(x, y, z)
-      tuft.scale.setScalar(s)
-      guide.add(tuft)
+    hairChunks.forEach(([x, y, z, sx, sy, sz, rz]) => {
+      const chunk = new THREE.Mesh(hairChunkGeo, hairMat)
+      chunk.position.set(x, y, z)
+      chunk.scale.set(sx, sy, sz)
+      chunk.rotation.z = rz
+      guide.add(chunk)
     })
 
     // Light beard — a small, tight cluster on the chin/jaw, kept well

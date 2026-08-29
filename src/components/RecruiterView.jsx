@@ -1,4 +1,4 @@
-import { useEffect, useState, lazy, Suspense } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, lazy, Suspense } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { listPublicEntries } from '../lib/publicApi.js'
 import { useTheme } from '../hooks/useTheme.js'
@@ -359,29 +359,81 @@ function AnalyzerResult({ result, onReset }) {
 
 // ── Exhibit frame — every plate shares this shell ───────────────────────────
 
-// A decorative winding trail behind the Introduction plate — purely
-// background art, not something the guide's actual position is
-// computed against (he can walk to any clicked card, which isn't on
-// this curve). It just gives the "tour" framing a path to belong to.
-function IntroPath() {
-  const steps = [
-    [820, 440], [650, 410], [480, 400], [460, 320],
-    [380, 240], [280, 150], [150, 90], [80, 55],
-  ]
+// Connects consecutive points with a gentle wiggle (a quadratic curve
+// per segment, control point offset perpendicular to that segment,
+// alternating sides) instead of straight lines — reads as a wandering
+// trail rather than a ruler-straight connector.
+function buildTrailPath(points) {
+  if (points.length < 2) return ''
+  let d = `M ${points[0].x} ${points[0].y}`
+  for (let i = 1; i < points.length; i++) {
+    const p0 = points[i - 1]
+    const p1 = points[i]
+    const mx = (p0.x + p1.x) / 2
+    const my = (p0.y + p1.y) / 2
+    const dx = p1.x - p0.x
+    const dy = p1.y - p0.y
+    const len = Math.sqrt(dx * dx + dy * dy) || 1
+    const nx = -dy / len
+    const ny = dx / len
+    const bend = (i % 2 === 0 ? 1 : -1) * Math.min(36, len * 0.18)
+    d += ` Q ${mx + nx * bend} ${my + ny * bend}, ${p1.x} ${p1.y}`
+  }
+  return d
+}
+
+// A winding trail behind the Introduction plate that actually connects
+// the guide's home corner to each of the 5 exhibit cards — measured
+// from their real on-screen positions (not guessed coordinates), so it
+// stays accurate across viewport widths and however the grid reflows.
+function IntroPath({ wrapEl, cardRefs }) {
+  const [box, setBox] = useState({ w: 0, h: 0 })
+  const [points, setPoints] = useState([])
+
+  useLayoutEffect(() => {
+    // wrapEl is DOM-node state (set by a callback ref), not a stable
+    // ref object — so this effect actually re-runs once the node goes
+    // from null to real, instead of only ever firing once on a ref
+    // object whose identity never changes.
+    if (!wrapEl) return
+
+    function measure() {
+      const wrapRect = wrapEl.getBoundingClientRect()
+      setBox({ w: wrapRect.width, h: wrapRect.height })
+
+      // Home: roughly where the guide's corner spot is, so the trail
+      // reads as starting from him.
+      const home = { x: wrapRect.width - 40, y: wrapRect.height + 40 }
+      const cardPoints = Object.entries(cardRefs.current)
+        .filter(([, el]) => el)
+        .map(([, el]) => {
+          const r = el.getBoundingClientRect()
+          return {
+            x: r.left + r.width / 2 - wrapRect.left,
+            y: r.top + r.height / 2 - wrapRect.top,
+          }
+        })
+      setPoints([home, ...cardPoints])
+    }
+
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(wrapEl)
+    return () => ro.disconnect()
+  }, [wrapEl, cardRefs])
+
+  if (points.length < 2 || box.w === 0) return null
+
   return (
-    <svg className="exh-intro-path" viewBox="0 0 900 480" preserveAspectRatio="none" aria-hidden="true">
-      <path
-        d="M 820 440
-           C 680 420, 620 380, 560 400
-           C 480 425, 420 380, 460 320
-           C 500 260, 400 260, 340 220
-           C 260 170, 280 120, 200 100
-           C 140 85, 160 60, 80 55"
-        fill="none"
-        className="exh-intro-path-line"
-      />
-      {steps.map(([x, y], i) => (
-        <circle key={i} cx={x} cy={y} r="4" className="exh-intro-path-dot" />
+    <svg
+      className="exh-intro-path"
+      viewBox={`0 0 ${box.w} ${box.h}`}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <path d={buildTrailPath(points)} fill="none" className="exh-intro-path-line" />
+      {points.slice(1).map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r="4" className="exh-intro-path-dot" />
       ))}
     </svg>
   )
@@ -427,6 +479,11 @@ export function RecruiterView() {
   useEffect(() => {
     if (activeId !== 'root') setTourStarted(false)
   }, [activeId])
+
+  // Refs for measuring the 5 exhibit cards' real on-screen positions,
+  // so the background trail (IntroPath) can actually connect to them.
+  const [introWrapEl, setIntroWrapEl] = useState(null)
+  const cardRefs = useRef({})
 
   // Clicking an exhibit card sends the guide walking to that exact
   // card first, then opens the page a beat later — instead of
@@ -495,8 +552,12 @@ export function RecruiterView() {
   function renderBody() {
     if (activeId === 'root') {
       return (
-        <div className="exh-intro-wrap">
-          <IntroPath />
+        <div className="exh-intro-wrap" ref={setIntroWrapEl}>
+          <IntroPath wrapEl={introWrapEl} cardRefs={cardRefs} />
+          <div className="exh-museum-banner">
+            <span className="exh-museum-banner-eyebrow">Welcome to</span>
+            <span className="exh-museum-banner-name">The Ascend Museum of Work</span>
+          </div>
           <ExhibitFrame
             section="Introduction"
             title="Edgar Setyan"
@@ -524,6 +585,7 @@ export function RecruiterView() {
               {NAV_GROUPS.filter((g) => g.label !== 'Introduction').map((group, i) => (
                 <button
                   key={group.label}
+                  ref={(el) => { cardRefs.current[group.label] = el }}
                   className="exh-card exh-fade-in"
                   style={{ animationDelay: `${200 + i * 90}ms` }}
                   onClick={(e) => handleCardClick(e, group.items[0].path)}

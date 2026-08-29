@@ -16,9 +16,9 @@ import {
 import '../styles/exhibit-view.css'
 
 // Three.js is real weight — split it into its own chunk so it only
-// downloads for visitors who reach the Introduction plate, not as part
-// of the base /portfolio bundle.
-const ExhibitPiece = lazy(() => import('./ExhibitPiece.jsx').then((m) => ({ default: m.ExhibitPiece })))
+// downloads once someone actually lands on /portfolio, not as part of
+// the base app bundle.
+const TourGuide = lazy(() => import('./TourGuide.jsx').then((m) => ({ default: m.TourGuide })))
 const ACCENT = { light: '#4f7a63', dark: '#8fc2a6' }
 
 // ── Resume data ─────────────────────────────────────────────────────────────
@@ -192,6 +192,20 @@ function sectionIdFromPathname(pathname) {
   if (sub !== '/' && sub.endsWith('/')) sub = sub.slice(0, -1)
   return PATH_TO_ID[sub] ?? 'root'
 }
+
+// What the guide "says" as you move between sections — kept to one
+// short line, no literal HTTP/dev vocabulary.
+const GUIDE_LINES = {
+  'Introduction': "Welcome — I'll be your guide.",
+  'Field Work': 'This way — where I’ve worked.',
+  'Studio Projects': 'Right here — things I’ve built.',
+  'Education': 'And this — where it started.',
+  'Toolkit': 'My toolkit, for the curious.',
+  'Live Demonstrations': 'Try these — they’re live.',
+}
+const ID_TO_GROUP = Object.fromEntries(
+  NAV_GROUPS.flatMap((g) => g.items.map((item) => [item.id, g.label]))
+)
 
 // ── Small building blocks ────────────────────────────────────────────────────
 
@@ -405,30 +419,22 @@ export function RecruiterView() {
   function renderBody() {
     if (activeId === 'root') {
       return (
-        <div className="exh-intro-layout">
-          <ExhibitFrame
-            section="Introduction"
-            title="Edgar Setyan"
-            byline="SDE I, AWS RDS · Toronto, ON"
-          >
-            <p className="exh-intro-text">
-              A small collection of the work behind my résumé — laid out the way I'd want to browse
-              someone else's. Pick a piece from the list on the left.
-            </p>
-            <div className="exh-root-links">
-              <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link">GitHub →</a>
-              <a href="https://www.linkedin.com/in/edgarsetyan/" target="_blank" rel="noopener noreferrer" className="exh-root-link">LinkedIn →</a>
-              <a href="mailto:edgar.setyan23@gmail.com" className="exh-root-link">edgar.setyan23@gmail.com</a>
-              <a href="/Edgar_Resume.pdf" download="Edgar_Setyan_Resume.pdf" className="exh-root-link exh-root-link--primary">Download résumé →</a>
-            </div>
-          </ExhibitFrame>
-          <div className="exh-piece-wrap" aria-hidden="true">
-            <Suspense fallback={<div className="exh-piece" style={{ width: 240, height: 240 }} />}>
-              <ExhibitPiece accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light} size={240} />
-            </Suspense>
-            <span className="exh-piece-caption">Plate 00 — self-portrait, laureled</span>
+        <ExhibitFrame
+          section="Introduction"
+          title="Edgar Setyan"
+          byline="SDE I, AWS RDS · Toronto, ON"
+        >
+          <p className="exh-intro-text">
+            A small collection of the work behind my résumé — laid out the way I'd want to browse
+            someone else's. Pick a piece from the list on the left — or let the guide walk you through it.
+          </p>
+          <div className="exh-root-links">
+            <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link">GitHub →</a>
+            <a href="https://www.linkedin.com/in/edgarsetyan/" target="_blank" rel="noopener noreferrer" className="exh-root-link">LinkedIn →</a>
+            <a href="mailto:edgar.setyan23@gmail.com" className="exh-root-link">edgar.setyan23@gmail.com</a>
+            <a href="/Edgar_Resume.pdf" download="Edgar_Setyan_Resume.pdf" className="exh-root-link exh-root-link--primary">Download résumé →</a>
           </div>
-        </div>
+        </ExhibitFrame>
       )
     }
 
@@ -590,6 +596,15 @@ export function RecruiterView() {
         <main className="exh-main">
           <div key={activeId} className="exh-plate-enter">{renderBody()}</div>
         </main>
+      </div>
+
+      <div className="exh-guide-wrap">
+        <div key={activeId} className="exh-guide-caption exh-fade-in">
+          {GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
+        </div>
+        <Suspense fallback={<div className="exh-guide-canvas" style={{ width: 128, height: 128 }} />}>
+          <TourGuide accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light} size={128} />
+        </Suspense>
       </div>
     </div>
   )

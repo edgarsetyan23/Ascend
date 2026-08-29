@@ -340,6 +340,51 @@
 }
 .exh-root-link--primary:hover { opacity: 0.9; }
 
+/* ── Tour grid (Introduction plate) ── */
+
+.exh-tour-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+  margin-top: 36px;
+}
+
+.exh-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+  padding: 16px 18px;
+  border: 1px solid var(--exh-border);
+  border-radius: 10px;
+  background: var(--exh-bg-raised);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.exh-card:hover {
+  border-color: var(--exh-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(25, 26, 20, 0.1);
+}
+.exh-card-label {
+  font-family: var(--exh-font-display);
+  font-weight: 600;
+  font-size: 1.02rem;
+  color: var(--exh-ink);
+}
+.exh-card-teaser {
+  font-size: 0.85rem;
+  color: var(--exh-ink-muted);
+  line-height: 1.5;
+}
+.exh-card-count {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--exh-accent);
+}
+
 /* ── Highlight list (replaces resume bullets with readable prose) ── */
 
 .exh-highlights {

@@ -426,13 +426,30 @@ export function RecruiterView() {
         >
           <p className="exh-intro-text">
             A small collection of the work behind my résumé — laid out the way I'd want to browse
-            someone else's. Pick a piece from the list on the left — or let the guide walk you through it.
+            someone else's. Pick a piece from the list on the left, or start the tour below.
           </p>
           <div className="exh-root-links">
             <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link">GitHub →</a>
             <a href="https://www.linkedin.com/in/edgarsetyan/" target="_blank" rel="noopener noreferrer" className="exh-root-link">LinkedIn →</a>
             <a href="mailto:edgar.setyan23@gmail.com" className="exh-root-link">edgar.setyan23@gmail.com</a>
             <a href="/Edgar_Resume.pdf" download="Edgar_Setyan_Resume.pdf" className="exh-root-link exh-root-link--primary">Download résumé →</a>
+          </div>
+
+          <div className="exh-tour-grid">
+            {NAV_GROUPS.filter((g) => g.label !== 'Introduction').map((group, i) => (
+              <button
+                key={group.label}
+                className="exh-card exh-fade-in"
+                style={{ animationDelay: `${200 + i * 90}ms` }}
+                onClick={() => navigate(`/portfolio${group.items[0].path}`)}
+              >
+                <span className="exh-card-label">{group.label}</span>
+                <span className="exh-card-teaser">{GUIDE_LINES[group.label]}</span>
+                <span className="exh-card-count">
+                  {group.items.length} {group.items.length === 1 ? 'entry' : 'entries'} →
+                </span>
+              </button>
+            ))}
           </div>
         </ExhibitFrame>
       )

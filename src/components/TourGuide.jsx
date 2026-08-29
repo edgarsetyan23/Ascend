@@ -99,24 +99,41 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128 }) {
     nose.rotation.x = Math.PI / 2.3
     guide.add(nose)
 
-    // Hair — one simple low-poly cap over the top/back of the head,
-    // not a second noisy sculpted shell.
-    const hairGeo = track(new THREE.IcosahedronGeometry(0.39, 0))
-    const hair = new THREE.Mesh(hairGeo, hairMat)
-    hair.scale.set(0.95, 0.6, 0.98)
-    hair.position.set(0, 0.56, -0.02)
-    guide.add(hair)
+    // Hair — a full head of generic brown, curly-ish hair: a cluster
+    // of small bumpy tufts (not one smooth cap) covering the top,
+    // crown, back, and sides with no gaps. The bumps are what read as
+    // "curly" at this scale.
+    const hairGeo = track(new THREE.IcosahedronGeometry(0.16, 0))
+    const hairSpots = [
+      [-0.26, 0.58, -0.14, 1.0],  // back-left
+      [0.26, 0.58, -0.14, 1.0],   // back-right
+      [0, 0.5, -0.32, 1.05],      // back-center
+      [-0.32, 0.42, 0.02, 0.85], // left temple
+      [0.32, 0.42, 0.02, 0.85],  // right temple
+      [-0.14, 0.63, 0.14, 0.75], // front-left
+      [0.14, 0.63, 0.14, 0.75],  // front-right
+      [0, 0.7, 0.05, 0.8],       // crown
+      [-0.1, 0.68, -0.14, 0.75], // crown, back-left fill
+      [0.1, 0.68, -0.14, 0.75],  // crown, back-right fill
+    ]
+    hairSpots.forEach(([x, y, z, s]) => {
+      const tuft = new THREE.Mesh(hairGeo, hairMat)
+      tuft.position.set(x, y, z)
+      tuft.scale.setScalar(s)
+      guide.add(tuft)
+    })
 
-    // Light beard — a handful of chunky, deliberately placed facets
-    // along the jaw/chin, not dozens of thin strands. Reads as "a
-    // beard" from the silhouette without becoming visual noise.
-    const beardGeo = track(new THREE.IcosahedronGeometry(0.09, 0))
+    // Light beard — a small, tight cluster on the chin/jaw, kept well
+    // below the mouth line. Earlier version climbed upward toward the
+    // cheeks, which traced a grin-like curve — this stays low and
+    // centered so it reads as a beard, not an expression.
+    const beardGeo = track(new THREE.IcosahedronGeometry(0.075, 0))
     const beardSpots = [
-      [0, 0.16, 0.33, 1.1],   // chin
-      [-0.14, 0.22, 0.29, 0.85],
-      [0.14, 0.22, 0.29, 0.85],
-      [-0.22, 0.3, 0.2, 0.7],
-      [0.22, 0.3, 0.2, 0.7],
+      [0, 0.1, 0.34, 1.05],    // chin, lowest and most forward
+      [-0.09, 0.13, 0.31, 0.8],
+      [0.09, 0.13, 0.31, 0.8],
+      [-0.16, 0.15, 0.24, 0.65], // jaw, tucked back toward the ear — not higher than the chin
+      [0.16, 0.15, 0.24, 0.65],
     ]
     beardSpots.forEach(([x, y, z, s]) => {
       const spot = new THREE.Mesh(beardGeo, beardMat)

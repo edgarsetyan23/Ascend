@@ -47,7 +47,8 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128 }) {
     const track = (obj) => { disposables.push(obj); return obj }
 
     const skinMat  = track(new THREE.MeshStandardMaterial({ color: 0xc99a72, roughness: 0.65, flatShading: true }))
-    const hairMat  = track(new THREE.MeshStandardMaterial({ color: 0x2b2118, roughness: 0.8, flatShading: true }))
+    const hairMat  = track(new THREE.MeshStandardMaterial({ color: 0x6b4a30, roughness: 0.8, flatShading: true }))
+    const beardMat = track(new THREE.MeshStandardMaterial({ color: 0x8a6a4a, roughness: 0.85, flatShading: true }))
     const shirtMat = track(new THREE.MeshStandardMaterial({ color: 0x2e332f, roughness: 0.75, flatShading: true }))
     const flagMat  = track(new THREE.MeshStandardMaterial({ color: new THREE.Color(accentColor), roughness: 0.5, flatShading: true }))
     const poleMat  = track(new THREE.MeshStandardMaterial({ color: 0x8a8d78, roughness: 0.6, flatShading: true }))
@@ -84,10 +85,11 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128 }) {
       guide.add(bump)
     })
 
-    // Beard — a darker patch on the lower face.
-    const beardGeo = track(new THREE.ConeGeometry(0.24, 0.28, 6))
-    const beard = new THREE.Mesh(beardGeo, hairMat)
-    beard.position.set(0, 0.24, 0.16)
+    // Light beard — a small, subtle patch on the lower face, lighter
+    // than the hair rather than a full dark wedge.
+    const beardGeo = track(new THREE.ConeGeometry(0.19, 0.19, 6))
+    const beard = new THREE.Mesh(beardGeo, beardMat)
+    beard.position.set(0, 0.22, 0.17)
     beard.rotation.x = Math.PI
     guide.add(beard)
 

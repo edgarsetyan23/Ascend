@@ -602,8 +602,8 @@ export function RecruiterView() {
         <div key={activeId} className="exh-guide-caption exh-fade-in">
           {GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
         </div>
-        <Suspense fallback={<div className="exh-guide-canvas" style={{ width: 128, height: 128 }} />}>
-          <TourGuide accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light} size={128} />
+        <Suspense fallback={<div className="exh-guide-canvas" style={{ width: 200, height: 200 }} />}>
+          <TourGuide accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light} size={200} />
         </Suspense>
       </div>
     </div>

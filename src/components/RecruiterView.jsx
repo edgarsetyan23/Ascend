@@ -359,6 +359,34 @@ function AnalyzerResult({ result, onReset }) {
 
 // ── Exhibit frame — every plate shares this shell ───────────────────────────
 
+// A decorative winding trail behind the Introduction plate — purely
+// background art, not something the guide's actual position is
+// computed against (he can walk to any clicked card, which isn't on
+// this curve). It just gives the "tour" framing a path to belong to.
+function IntroPath() {
+  const steps = [
+    [820, 440], [650, 410], [480, 400], [460, 320],
+    [380, 240], [280, 150], [150, 90], [80, 55],
+  ]
+  return (
+    <svg className="exh-intro-path" viewBox="0 0 900 480" preserveAspectRatio="none" aria-hidden="true">
+      <path
+        d="M 820 440
+           C 680 420, 620 380, 560 400
+           C 480 425, 420 380, 460 320
+           C 500 260, 400 260, 340 220
+           C 260 170, 280 120, 200 100
+           C 140 85, 160 60, 80 55"
+        fill="none"
+        className="exh-intro-path-line"
+      />
+      {steps.map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r="4" className="exh-intro-path-dot" />
+      ))}
+    </svg>
+  )
+}
+
 function ExhibitFrame({ section, plate, title, byline, children }) {
   return (
     <div className="exh-frame">
@@ -467,55 +495,58 @@ export function RecruiterView() {
   function renderBody() {
     if (activeId === 'root') {
       return (
-        <ExhibitFrame
-          section="Introduction"
-          title="Edgar Setyan"
-          byline="SDE I, AWS RDS · Toronto, ON"
-        >
-          <p className="exh-intro-text">
-            A small collection of the work behind my résumé — laid out the way I'd want to browse
-            someone else's. Pick a piece from the list on the left, or start the tour below.
-          </p>
-          <div className="exh-root-links">
-            <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link">GitHub →</a>
-            <a href="https://www.linkedin.com/in/edgarsetyan/" target="_blank" rel="noopener noreferrer" className="exh-root-link">LinkedIn →</a>
-            <a href="mailto:edgar.setyan23@gmail.com" className="exh-root-link">edgar.setyan23@gmail.com</a>
-            <a href="/Edgar_Resume.pdf" download="Edgar_Setyan_Resume.pdf" className="exh-root-link exh-root-link--primary">Download résumé →</a>
-          </div>
-
-          <button
-            className="exh-start-tour"
-            onClick={() => setTourStarted(true)}
+        <div className="exh-intro-wrap">
+          <IntroPath />
+          <ExhibitFrame
+            section="Introduction"
+            title="Edgar Setyan"
+            byline="SDE I, AWS RDS · Toronto, ON"
           >
-            {tourStarted ? 'Pick a stop below ↓' : 'Start the tour →'}
-          </button>
+            <p className="exh-intro-text">
+              A small collection of the work behind my résumé — laid out the way I'd want to browse
+              someone else's. Pick a piece from the list on the left, or start the tour below.
+            </p>
+            <div className="exh-root-links">
+              <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link">GitHub →</a>
+              <a href="https://www.linkedin.com/in/edgarsetyan/" target="_blank" rel="noopener noreferrer" className="exh-root-link">LinkedIn →</a>
+              <a href="mailto:edgar.setyan23@gmail.com" className="exh-root-link">edgar.setyan23@gmail.com</a>
+              <a href="/Edgar_Resume.pdf" download="Edgar_Setyan_Resume.pdf" className="exh-root-link exh-root-link--primary">Download résumé →</a>
+            </div>
 
-          <div className="exh-tour-grid">
-            {NAV_GROUPS.filter((g) => g.label !== 'Introduction').map((group, i) => (
-              <button
-                key={group.label}
-                className="exh-card exh-fade-in"
-                style={{ animationDelay: `${200 + i * 90}ms` }}
-                onClick={(e) => handleCardClick(e, group.items[0].path)}
-              >
-                {CARD_LOGOS[group.label] && (
-                  <div className="exh-card-logos">
-                    {CARD_LOGOS[group.label].map((logo) => (
-                      <span key={logo.alt} className="exh-card-logo-chip">
-                        <img src={logo.src} alt={logo.alt} />
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <span className="exh-card-label">{group.label}</span>
-                <span className="exh-card-teaser">{GUIDE_LINES[group.label]}</span>
-                <span className="exh-card-count">
-                  {group.items.length} {group.items.length === 1 ? 'entry' : 'entries'} →
-                </span>
-              </button>
-            ))}
-          </div>
-        </ExhibitFrame>
+            <button
+              className="exh-start-tour"
+              onClick={() => setTourStarted(true)}
+            >
+              {tourStarted ? 'Pick a stop below ↓' : 'Start the tour →'}
+            </button>
+
+            <div className="exh-tour-grid">
+              {NAV_GROUPS.filter((g) => g.label !== 'Introduction').map((group, i) => (
+                <button
+                  key={group.label}
+                  className="exh-card exh-fade-in"
+                  style={{ animationDelay: `${200 + i * 90}ms` }}
+                  onClick={(e) => handleCardClick(e, group.items[0].path)}
+                >
+                  {CARD_LOGOS[group.label] && (
+                    <div className="exh-card-logos">
+                      {CARD_LOGOS[group.label].map((logo) => (
+                        <span key={logo.alt} className="exh-card-logo-chip">
+                          <img src={logo.src} alt={logo.alt} />
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <span className="exh-card-label">{group.label}</span>
+                  <span className="exh-card-teaser">{GUIDE_LINES[group.label]}</span>
+                  <span className="exh-card-count">
+                    {group.items.length} {group.items.length === 1 ? 'entry' : 'entries'} →
+                  </span>
+                </button>
+              ))}
+            </div>
+          </ExhibitFrame>
+        </div>
       )
     }
 

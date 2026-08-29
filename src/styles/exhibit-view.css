@@ -68,8 +68,16 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* The page reveal itself — a bit more pronounced than exh-rise-in
+   (which stays subtle for smaller in-page elements), since this is
+   the "the guide brought up this page" moment. */
+@keyframes exh-reveal-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
 .exh-plate-enter {
-  animation: exh-rise-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: exh-reveal-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: top left;
 }
 
 .exh-fade-in {

@@ -400,6 +400,28 @@ export function RecruiterView() {
     if (activeId !== 'root') setTourStarted(false)
   }, [activeId])
 
+  // Clicking an exhibit card sends the guide walking to that exact
+  // card first, then opens the page a beat later — instead of
+  // teleporting straight there. { right, bottom } are computed from
+  // the clicked card's own on-screen position, in the same units the
+  // corner/hero CSS already uses, so the position transition can
+  // animate to literally anywhere, not just the two fixed spots.
+  const [guideTargetRect, setGuideTargetRect] = useState(null)
+  const [walkTick, setWalkTick] = useState(0)
+
+  function handleCardClick(e, path) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setGuideTargetRect({
+      right: window.innerWidth - (rect.left + rect.width / 2),
+      bottom: window.innerHeight - (rect.top + rect.height / 2),
+    })
+    setWalkTick((n) => n + 1)
+    window.setTimeout(() => {
+      navigate(`/portfolio${path}`)
+      setGuideTargetRect(null)
+    }, 750)
+  }
+
   useEffect(() => {
     Promise.allSettled([listPublicEntries('leetcode'), listPublicEntries('activity')])
       .then(([lc, act]) => {
@@ -440,7 +462,7 @@ export function RecruiterView() {
 
   const activeNavItem = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.id === activeId)
   const guideIsHero = activeId === 'root' && tourStarted
-  const guideSize = guideIsHero ? 320 : 200
+  const guideSize = guideIsHero ? 400 : 260
 
   function renderBody() {
     if (activeId === 'root') {
@@ -474,7 +496,7 @@ export function RecruiterView() {
                 key={group.label}
                 className="exh-card exh-fade-in"
                 style={{ animationDelay: `${200 + i * 90}ms` }}
-                onClick={() => navigate(`/portfolio${group.items[0].path}`)}
+                onClick={(e) => handleCardClick(e, group.items[0].path)}
               >
                 {CARD_LOGOS[group.label] && (
                   <div className="exh-card-logos">
@@ -657,9 +679,14 @@ export function RecruiterView() {
         </main>
       </div>
 
-      <div className={`exh-guide-wrap ${guideIsHero ? 'exh-guide-wrap--hero' : ''}`}>
-        <div key={`${activeId}-${tourStarted}`} className="exh-guide-caption exh-fade-in">
-          {guideIsHero
+      <div
+        className={`exh-guide-wrap ${guideIsHero ? 'exh-guide-wrap--hero' : ''}`}
+        style={guideTargetRect ? { right: `${guideTargetRect.right}px`, bottom: `${guideTargetRect.bottom}px`, transform: 'translate(0, 0)' } : undefined}
+      >
+        <div key={`${activeId}-${tourStarted}-${walkTick}`} className="exh-guide-caption exh-fade-in">
+          {guideTargetRect
+            ? 'On my way →'
+            : guideIsHero
             ? "Let's start with Field Work — or pick any stop below."
             : GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
         </div>
@@ -667,7 +694,7 @@ export function RecruiterView() {
           <TourGuide
             accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light}
             size={guideSize}
-            walkKey={`${activeId}-${tourStarted}`}
+            walkKey={`${activeId}-${tourStarted}-${walkTick}`}
           />
         </Suspense>
       </div>

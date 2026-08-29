@@ -10,9 +10,9 @@
 
 .exh-page {
   /* ── Tokens (light / paper) ── */
-  --exh-bg: #faf9f5;
+  --exh-bg: #fffdf7;
   --exh-bg-raised: #ffffff;
-  --exh-sidebar-bg: #f1efe6;
+  --exh-sidebar-bg: #f7f5ea;
   --exh-ink: #191a14;
   --exh-ink-muted: #5c5f4f;
   --exh-ink-subtle: #8a8d78;
@@ -332,18 +332,19 @@
   .exh-museum-visitors { display: none; }
 }
 
+/* Full-bleed entrance sign — spans the entire page width (a sibling
+   of .exh-shell, not nested inside the sidebar-narrowed content
+   column) so centering it actually lands dead center of the page,
+   not centered within a column that itself sits left-of-center. */
 .exh-museum-banner {
-  position: relative;
-  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 4px;
-  margin-bottom: 32px;
-  padding-bottom: 18px;
+  gap: 6px;
+  padding: 22px 20px 18px;
+  background: var(--exh-accent-soft);
   border-bottom: 2px solid var(--exh-accent);
-  max-width: 680px;
 }
 .exh-museum-banner-eyebrow {
   font-family: var(--exh-font-display);
@@ -352,6 +353,11 @@
   color: var(--exh-ink-subtle);
   letter-spacing: 0.04em;
 }
+.exh-museum-banner-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
 .exh-museum-banner-name {
   font-family: var(--exh-font-display);
   font-weight: 700;
@@ -359,6 +365,14 @@
   line-height: 1.25;
   color: var(--exh-ink);
   letter-spacing: 0.01em;
+}
+.exh-banner-flourish {
+  color: var(--exh-accent);
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+@media (max-width: 640px) {
+  .exh-banner-flourish { display: none; }
 }
 
 .exh-eyebrow {
@@ -444,6 +458,7 @@
 }
 
 .exh-guide-caption {
+  position: relative;
   font-family: var(--exh-font-display);
   font-style: italic;
   font-size: 0.92rem;
@@ -454,6 +469,32 @@
   padding: 8px 14px;
   box-shadow: 0 4px 16px rgba(25, 26, 20, 0.12);
   white-space: nowrap;
+}
+
+/* Tiny display-case corner marks on the guide's speech bubble too —
+   the same framing device as the exhibit plates, so mini-Edgar reads
+   as part of the same museum rather than a bolted-on widget. Only
+   two corners (not all four) keeps it a light touch on a small bubble. */
+.exh-guide-caption::before,
+.exh-guide-caption::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  opacity: 0.65;
+  pointer-events: none;
+}
+.exh-guide-caption::before {
+  top: -4px;
+  left: -4px;
+  border-top: 2px solid var(--exh-accent);
+  border-left: 2px solid var(--exh-accent);
+}
+.exh-guide-caption::after {
+  bottom: -4px;
+  right: -4px;
+  border-bottom: 2px solid var(--exh-accent);
+  border-right: 2px solid var(--exh-accent);
 }
 
 .exh-guide-wrap--hero .exh-guide-caption {

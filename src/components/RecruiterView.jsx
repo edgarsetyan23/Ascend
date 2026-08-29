@@ -217,7 +217,7 @@ function sectionIdFromPathname(pathname) {
 // What the guide "says" as you move between sections — written to
 // sound like one person talking, not six copies of the same template.
 const GUIDE_LINES = {
-  'Introduction': "Hey — I'm Edgar. This is my résumé, minus the fluff.",
+  'Introduction': "You're just in time — the doors are still open. I'm Edgar, come on in.",
   'Field Work': 'Two internships and the job that came after graduating.',
   'Studio Projects': "Stuff I built because I wanted to, not because someone assigned it.",
   'Education': 'Where it started, for what it’s worth.',
@@ -475,6 +475,25 @@ function CaseBrackets() {
   )
 }
 
+// Small laurel-branch flourish flanking the entrance banner's name —
+// the one bit of ornamental "museum plaque" artwork on the page,
+// hand-drawn as inline SVG rather than a sourced image so it stays
+// crisp at any size and needs no licensing story. Mirrored via CSS
+// transform for the right-hand side.
+function BannerFlourish({ flip }) {
+  return (
+    <svg
+      className="exh-banner-flourish"
+      style={flip ? { transform: 'scaleX(-1)' } : undefined}
+      width="34" height="18" viewBox="0 0 34 18" fill="none" aria-hidden="true"
+    >
+      <path d="M2 9 C 12 2, 24 2, 32 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <path d="M7 8.6c1.6-3 4.3-4 6.2-3M13 7c1.6-3 4.3-4 6.2-3M19 5.6c1.6-3 4.3-4 6.2-3"
+            stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function ExhibitFrame({ section, plate, title, note, byline, children }) {
   return (
     <div className="exh-frame">
@@ -494,7 +513,11 @@ function ExhibitFrame({ section, plate, title, note, byline, children }) {
 // ── Main component ───────────────────────────────────────────────────────────
 
 export function RecruiterView() {
-  const { theme, toggleTheme } = useTheme()
+  // Defaults to light (not the tracker app's own dark default) and
+  // uses its own storage key — a recruiter landing here fresh
+  // shouldn't get dropped into a near-black page, and toggling theme
+  // here shouldn't flip Edgar's own tracker app to match.
+  const { theme, toggleTheme } = useTheme('light', 'portfolio-theme')
   const location = useLocation()
   const navigate = useNavigate()
   const activeId = sectionIdFromPathname(location.pathname)
@@ -624,10 +647,6 @@ export function RecruiterView() {
       return (
         <div className="exh-intro-wrap" ref={setIntroWrapEl}>
           <IntroPath wrapEl={introWrapEl} cardRefs={cardRefs} />
-          <div className="exh-museum-banner">
-            <span className="exh-museum-banner-eyebrow">Welcome to the</span>
-            <span className="exh-museum-banner-name">Edgar Setyan Personal History Museum</span>
-          </div>
           <ExhibitFrame
             section="Introduction"
             title="Edgar Setyan"
@@ -648,7 +667,7 @@ export function RecruiterView() {
               className="exh-start-tour"
               onClick={autoTourActive ? () => setAutoTourActive(false) : startAutoTour}
             >
-              {autoTourActive ? 'Stop the tour ✕' : tourStarted ? 'Pick a stop below ↓' : 'Start the tour →'}
+              {autoTourActive ? 'Stop the tour ✕' : tourStarted ? 'Pick a stop below ↓' : "Come on, I'll show you around →"}
             </button>
 
             <div className="exh-tour-grid">
@@ -811,6 +830,21 @@ export function RecruiterView() {
           <Link to="/" className="exh-back-link">← Back to app</Link>
         </div>
       </nav>
+
+      {/* Full-bleed entrance sign — spans the whole page, not just the
+          content column next to the sidebar, so it actually sits dead
+          center of the page instead of centered within a narrow
+          column that itself sits left-of-center. Introduction only. */}
+      {activeId === 'root' && (
+        <div className="exh-museum-banner">
+          <span className="exh-museum-banner-eyebrow">Welcome to the</span>
+          <div className="exh-museum-banner-row">
+            <BannerFlourish />
+            <span className="exh-museum-banner-name">Edgar Setyan Personal History Museum</span>
+            <BannerFlourish flip />
+          </div>
+        </div>
+      )}
 
       <div className="exh-shell">
         <aside className="exh-sidebar">

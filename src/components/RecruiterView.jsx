@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { listPublicEntries } from '../lib/publicApi.js'
 import { useTheme } from '../hooks/useTheme.js'
@@ -14,6 +14,12 @@ import {
   extractTextFromPdf,
 } from './ResumeReview.jsx'
 import '../styles/exhibit-view.css'
+
+// Three.js is real weight — split it into its own chunk so it only
+// downloads for visitors who reach the Introduction plate, not as part
+// of the base /portfolio bundle.
+const ExhibitPiece = lazy(() => import('./ExhibitPiece.jsx').then((m) => ({ default: m.ExhibitPiece })))
+const ACCENT = { light: '#4f7a63', dark: '#8fc2a6' }
 
 // ── Resume data ─────────────────────────────────────────────────────────────
 // "The Exhibit" — every entry is a numbered plate in a small collection,
@@ -197,7 +203,7 @@ function HighlightList({ items }) {
   return (
     <ul className="exh-highlights">
       {items.map((item, i) => (
-        <li key={i} className="exh-highlight">{item}</li>
+        <li key={i} className="exh-highlight exh-fade-in" style={{ animationDelay: `${80 + i * 60}ms` }}>{item}</li>
       ))}
     </ul>
   )
@@ -399,22 +405,30 @@ export function RecruiterView() {
   function renderBody() {
     if (activeId === 'root') {
       return (
-        <ExhibitFrame
-          section="Introduction"
-          title="Edgar Setyan"
-          byline="SDE I, AWS RDS · Toronto, ON"
-        >
-          <p className="exh-intro-text">
-            A small collection of the work behind my résumé — laid out the way I'd want to browse
-            someone else's. Pick a piece from the list on the left.
-          </p>
-          <div className="exh-root-links">
-            <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link">GitHub →</a>
-            <a href="https://www.linkedin.com/in/edgarsetyan/" target="_blank" rel="noopener noreferrer" className="exh-root-link">LinkedIn →</a>
-            <a href="mailto:edgar.setyan23@gmail.com" className="exh-root-link">edgar.setyan23@gmail.com</a>
-            <a href="/Edgar_Resume.pdf" download="Edgar_Setyan_Resume.pdf" className="exh-root-link exh-root-link--primary">Download résumé →</a>
+        <div className="exh-intro-layout">
+          <ExhibitFrame
+            section="Introduction"
+            title="Edgar Setyan"
+            byline="SDE I, AWS RDS · Toronto, ON"
+          >
+            <p className="exh-intro-text">
+              A small collection of the work behind my résumé — laid out the way I'd want to browse
+              someone else's. Pick a piece from the list on the left.
+            </p>
+            <div className="exh-root-links">
+              <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link">GitHub →</a>
+              <a href="https://www.linkedin.com/in/edgarsetyan/" target="_blank" rel="noopener noreferrer" className="exh-root-link">LinkedIn →</a>
+              <a href="mailto:edgar.setyan23@gmail.com" className="exh-root-link">edgar.setyan23@gmail.com</a>
+              <a href="/Edgar_Resume.pdf" download="Edgar_Setyan_Resume.pdf" className="exh-root-link exh-root-link--primary">Download résumé →</a>
+            </div>
+          </ExhibitFrame>
+          <div className="exh-piece-wrap" aria-hidden="true">
+            <Suspense fallback={<div className="exh-piece" style={{ width: 240, height: 240 }} />}>
+              <ExhibitPiece accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light} size={240} />
+            </Suspense>
+            <span className="exh-piece-caption">Plate 00 — self-portrait, laureled</span>
           </div>
-        </ExhibitFrame>
+        </div>
       )
     }
 
@@ -573,7 +587,9 @@ export function RecruiterView() {
           </a>
         </aside>
 
-        <main className="exh-main">{renderBody()}</main>
+        <main className="exh-main">
+          <div key={activeId} className="exh-plate-enter">{renderBody()}</div>
+        </main>
       </div>
     </div>
   )

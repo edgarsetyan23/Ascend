@@ -61,6 +61,22 @@
   .exh-page * { transition: none !important; animation: none !important; }
 }
 
+/* ── Entrance motion — subtle, editorial, not a "product launch" ── */
+
+@keyframes exh-rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.exh-plate-enter {
+  animation: exh-rise-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.exh-fade-in {
+  opacity: 0;
+  animation: exh-rise-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 /* ── Top bar ── */
 
 .exh-topbar {
@@ -157,9 +173,9 @@
   border-radius: 6px;
   text-align: left;
   cursor: pointer;
-  transition: background 0.12s ease;
+  transition: background 0.12s ease, transform 0.12s ease;
 }
-.exh-nav-item:hover { background: var(--exh-accent-soft); }
+.exh-nav-item:hover { background: var(--exh-accent-soft); transform: translateX(2px); }
 .exh-nav-item--active { background: var(--exh-accent-soft); }
 .exh-nav-item--active .exh-nav-item-title { color: var(--exh-ink); font-weight: 600; }
 
@@ -259,6 +275,39 @@
   max-width: 52ch;
 }
 
+/* ── Introduction layout + the 3D piece ── */
+
+.exh-intro-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+.exh-intro-layout .exh-frame { flex: 1 1 360px; }
+
+.exh-piece-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+}
+.exh-piece {
+  border-radius: 50%;
+}
+.exh-piece canvas { display: block; }
+.exh-piece-caption {
+  font-family: var(--exh-font-display);
+  font-style: italic;
+  font-size: 0.72rem;
+  color: var(--exh-ink-subtle);
+}
+
+@media (max-width: 860px) {
+  .exh-intro-layout { flex-direction: column-reverse; align-items: center; gap: 24px; }
+}
+
 /* ── Root / overview links ── */
 
 .exh-root-links {
@@ -275,9 +324,9 @@
   border-radius: 6px;
   padding: 8px 14px;
   background: var(--exh-bg-raised);
-  transition: border-color 0.12s ease;
+  transition: border-color 0.12s ease, transform 0.12s ease;
 }
-.exh-root-link:hover { border-color: var(--exh-accent); }
+.exh-root-link:hover { border-color: var(--exh-accent); transform: translateY(-1px); }
 .exh-root-link--primary {
   background: var(--exh-accent);
   color: var(--exh-bg-raised);

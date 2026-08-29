@@ -435,6 +435,7 @@
 
 .exh-guide-canvas {
   filter: drop-shadow(0 8px 20px rgba(25, 26, 20, 0.18));
+  pointer-events: auto;
 }
 .exh-guide-canvas canvas { display: block; }
 

@@ -1,13 +1,16 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 
-// A handful of other museum-goers standing along the bottom of the
-// Introduction page, seen from behind — as if we're looking over
-// their shoulders at the exhibits above. Deliberately much simpler
-// than the main guide (no face needed at all, since we only ever see
-// their backs): legs, torso, arms, a plain head. Shares one canvas
-// for all figures rather than a WebGL context each.
-export function MuseumVisitors({ size = 160 }) {
+// A handful of other museum-goers standing along the bottom of every
+// exhibit page, seen from behind — as if we're looking over their
+// shoulders at the exhibit above. Deliberately much simpler than the
+// main guide (no face needed at all, since we only ever see their
+// backs): legs, torso, arms, a plain head. Shares one canvas for all
+// figures rather than a WebGL context each. Sized and framed to match
+// the guide's own corner presence — same FOV and camera distance as
+// TourGuide.jsx — so they read as the same scale as him, not tiny
+// background props.
+export function MuseumVisitors({ size = 260 }) {
   const containerRef = useRef(null)
 
   useEffect(() => {
@@ -33,8 +36,8 @@ export function MuseumVisitors({ size = 160 }) {
     container.appendChild(renderer.domElement)
 
     const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 100)
-    camera.position.set(0, 0.3, 9)
+    const camera = new THREE.PerspectiveCamera(32, width / height, 0.1, 100)
+    camera.position.set(0, 0.3, 5.6)
     camera.lookAt(0, -0.1, 0)
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.6))
@@ -91,18 +94,19 @@ export function MuseumVisitors({ size = 160 }) {
       return group
     }
 
-    // x values are wide because the canvas itself is a very short,
-    // wide strip (a ~6:1 aspect ratio) — the resulting horizontal
-    // frustum at this camera distance is far wider than the vertical
+    // x values are wide because the canvas is a short, wide strip —
+    // the resulting horizontal frustum is far wider than the vertical
     // FOV alone suggests, so a modest world-space spread reads as
     // tightly clustered dead-center unless the spread accounts for it.
+    // Scale is close to 1 (same order as the un-scaled main guide) so
+    // they read as comparably sized, not miniature.
     const visitors = [
-      { g: buildVisitor(0x7d8570, false), x: -3.4, z: -1.1, scale: 0.62, sway: 1.3 },
-      { g: buildVisitor(0x8a7d6a, true),  x: 0.2,  z: -1.6, scale: 0.7,  sway: 2.7 },
-      { g: buildVisitor(0x6f7a82, false), x: 3.6,  z: -1.3, scale: 0.58, sway: 4.1 },
+      { g: buildVisitor(0x7d8570, false), x: -2.6, z: -0.6, scale: 1.15, sway: 1.3 },
+      { g: buildVisitor(0x8a7d6a, true),  x: 0.15, z: -0.9, scale: 1.3,  sway: 2.7 },
+      { g: buildVisitor(0x6f7a82, false), x: 2.75, z: -0.7, scale: 1.1,  sway: 4.1 },
     ]
     visitors.forEach(({ g, x, z, scale }) => {
-      g.position.set(x, -0.15, z)
+      g.position.set(x, -0.35, z)
       g.scale.setScalar(scale)
       scene.add(g)
     })

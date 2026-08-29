@@ -16,6 +16,7 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey }) {
   const containerRef = useRef(null)
   const walkUntilRef = useRef(0)
   const isFirstWalkKeyRef = useRef(true)
+  const clickStartRef = useRef(-Infinity)
 
   // Nothing to "walk to" on first mount — only trigger on real changes.
   useEffect(() => {
@@ -208,6 +209,7 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey }) {
     let frameId
     const clock = new THREE.Clock()
     const WALK_FADE_MS = 300
+    const CLICK_DURATION_MS = 750
     const animate = () => {
       const t = clock.getElapsedTime()
 
@@ -225,14 +227,27 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey }) {
 
       const walkBob = Math.abs(Math.sin(walkPhase)) * 0.045 * intensity
       const idleBob = Math.sin(t * 1.1) * 0.03 * (1 - intensity)
-      guide.position.y = walkBob + idleBob
 
       const idleFacing = -0.3 + Math.sin(t * 0.5) * 0.35
       const walkFacing = -0.15
-      guide.rotation.y = idleFacing * (1 - intensity) + walkFacing * intensity
+      let facing = idleFacing * (1 - intensity) + walkFacing * intensity
+      let bob = walkBob + idleBob
+      let flagSpeed = 2.2
 
-      // A small flag-wave motion on the raised arm, always on.
-      flag.rotation.y = Math.sin(t * 2.2) * 0.25
+      // A cute little hop-and-spin when he's clicked — layered on top
+      // of whatever else is happening (idle or walking), not a
+      // separate mode, so clicking him mid-walk doesn't look broken.
+      const clickP = (performance.now() - clickStartRef.current) / CLICK_DURATION_MS
+      if (clickP >= 0 && clickP < 1) {
+        const hop = Math.sin(clickP * Math.PI) * 0.28
+        bob += hop
+        facing += clickP * Math.PI * 2
+        flagSpeed = 8
+      }
+
+      guide.position.y = bob
+      guide.rotation.y = facing
+      flag.rotation.y = Math.sin(t * flagSpeed) * 0.25
 
       renderer.render(scene, camera)
       frameId = requestAnimationFrame(animate)
@@ -245,5 +260,14 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey }) {
     }
   }, [accentColor, size])
 
-  return <div ref={containerRef} className="exh-guide-canvas" style={{ width: size, height: size }} aria-hidden="true" />
+  return (
+    <div
+      ref={containerRef}
+      className="exh-guide-canvas"
+      style={{ width: size, height: size, cursor: 'pointer' }}
+      onClick={() => { clickStartRef.current = performance.now() }}
+      role="button"
+      aria-label="Say hi to the guide"
+    />
+  )
 }

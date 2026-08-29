@@ -571,9 +571,6 @@ export function RecruiterView() {
       return (
         <div className="exh-intro-wrap" ref={setIntroWrapEl}>
           <IntroPath wrapEl={introWrapEl} cardRefs={cardRefs} />
-          <Suspense fallback={null}>
-            <MuseumVisitors size={150} />
-          </Suspense>
           <div className="exh-museum-banner">
             <span className="exh-museum-banner-eyebrow">Welcome to</span>
             <span className="exh-museum-banner-name">The Ascend Museum of Work</span>
@@ -791,6 +788,10 @@ export function RecruiterView() {
           <div key={activeId} className="exh-plate-enter">{renderBody()}</div>
         </main>
       </div>
+
+      <Suspense fallback={null}>
+        <MuseumVisitors size={260} />
+      </Suspense>
 
       <div
         className={`exh-guide-wrap ${guideIsHero ? 'exh-guide-wrap--hero' : ''}`}

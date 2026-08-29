@@ -193,15 +193,15 @@ function sectionIdFromPathname(pathname) {
   return PATH_TO_ID[sub] ?? 'root'
 }
 
-// What the guide "says" as you move between sections — kept to one
-// short line, no literal HTTP/dev vocabulary.
+// What the guide "says" as you move between sections — written to
+// sound like one person talking, not six copies of the same template.
 const GUIDE_LINES = {
-  'Introduction': "Welcome — I'll be your guide.",
-  'Field Work': 'This way — where I’ve worked.',
-  'Studio Projects': 'Right here — things I’ve built.',
-  'Education': 'And this — where it started.',
-  'Toolkit': 'My toolkit, for the curious.',
-  'Live Demonstrations': 'Try these — they’re live.',
+  'Introduction': "Hey — I'm Edgar. This is my résumé, minus the fluff.",
+  'Field Work': "Here's where I've actually worked.",
+  'Studio Projects': "Stuff I built because I wanted to, not because someone assigned it.",
+  'Education': 'Where it started, for what it’s worth.',
+  'Toolkit': 'What I actually reach for day to day.',
+  'Live Demonstrations': "These are real and running — go ahead, try them.",
 }
 const ID_TO_GROUP = Object.fromEntries(
   NAV_GROUPS.flatMap((g) => g.items.map((item) => [item.id, g.label]))
@@ -376,6 +376,15 @@ export function RecruiterView() {
   const [extracting,  setExtracting]  = useState(false)
   const [analyzeErr,  setAnalyzeErr]  = useState(null)
 
+  // The guide stands in the corner everywhere except the Introduction
+  // plate, where "Start the tour" summons him to center stage. Resets
+  // when you leave the Introduction plate, so returning later starts
+  // fresh rather than staying centered forever.
+  const [tourStarted, setTourStarted] = useState(false)
+  useEffect(() => {
+    if (activeId !== 'root') setTourStarted(false)
+  }, [activeId])
+
   useEffect(() => {
     Promise.allSettled([listPublicEntries('leetcode'), listPublicEntries('activity')])
       .then(([lc, act]) => {
@@ -415,6 +424,8 @@ export function RecruiterView() {
   }
 
   const activeNavItem = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.id === activeId)
+  const guideIsHero = activeId === 'root' && tourStarted
+  const guideSize = guideIsHero ? 320 : 200
 
   function renderBody() {
     if (activeId === 'root') {
@@ -434,6 +445,13 @@ export function RecruiterView() {
             <a href="mailto:edgar.setyan23@gmail.com" className="exh-root-link">edgar.setyan23@gmail.com</a>
             <a href="/Edgar_Resume.pdf" download="Edgar_Setyan_Resume.pdf" className="exh-root-link exh-root-link--primary">Download résumé →</a>
           </div>
+
+          <button
+            className="exh-start-tour"
+            onClick={() => setTourStarted(true)}
+          >
+            {tourStarted ? 'Pick a stop below ↓' : 'Start the tour →'}
+          </button>
 
           <div className="exh-tour-grid">
             {NAV_GROUPS.filter((g) => g.label !== 'Introduction').map((group, i) => (
@@ -615,12 +633,18 @@ export function RecruiterView() {
         </main>
       </div>
 
-      <div className="exh-guide-wrap">
-        <div key={activeId} className="exh-guide-caption exh-fade-in">
-          {GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
+      <div className={`exh-guide-wrap ${guideIsHero ? 'exh-guide-wrap--hero' : ''}`}>
+        <div key={`${activeId}-${tourStarted}`} className="exh-guide-caption exh-fade-in">
+          {guideIsHero
+            ? "Let's start with Field Work — or pick any stop below."
+            : GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
         </div>
-        <Suspense fallback={<div className="exh-guide-canvas" style={{ width: 200, height: 200 }} />}>
-          <TourGuide accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light} size={200} activeId={activeId} />
+        <Suspense fallback={<div className="exh-guide-canvas" style={{ width: guideSize, height: guideSize }} />}>
+          <TourGuide
+            accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light}
+            size={guideSize}
+            walkKey={`${activeId}-${tourStarted}`}
+          />
         </Suspense>
       </div>
     </div>

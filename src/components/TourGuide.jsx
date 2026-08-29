@@ -6,20 +6,22 @@ import * as THREE from 'three'
 // Built entirely from primitive geometry: no external 3D asset, no
 // attempt at a literal photorealistic likeness, just a friendly low-poly
 // nod to the reference. Mounted once and kept alive across navigation —
-// only the caption text changes per section — so it never tears down and
-// rebuilds its WebGL scene on every click. Passing `activeId` triggers a
-// brief walk-cycle burst each time it changes, so the guide visibly
-// walks between exhibits instead of just idling in place.
-export function TourGuide({ accentColor = '#4f7a63', size = 128, activeId }) {
+// only the caption text (and, on the Introduction plate, its size and
+// screen position) changes — so it never tears down and rebuilds its
+// WebGL scene on every click. Passing a new `walkKey` (the caller
+// changes it on navigation, and again when "Start the tour" is clicked)
+// triggers a brief walk-cycle burst so the guide visibly moves instead
+// of just idling in place.
+export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey }) {
   const containerRef = useRef(null)
   const walkUntilRef = useRef(0)
-  const isFirstActiveIdRef = useRef(true)
+  const isFirstWalkKeyRef = useRef(true)
 
-  // Nothing to "walk to" on first mount — only trigger on real navigation.
+  // Nothing to "walk to" on first mount — only trigger on real changes.
   useEffect(() => {
-    if (isFirstActiveIdRef.current) { isFirstActiveIdRef.current = false; return }
+    if (isFirstWalkKeyRef.current) { isFirstWalkKeyRef.current = false; return }
     walkUntilRef.current = performance.now() + 1100
-  }, [activeId])
+  }, [walkKey])
 
   useEffect(() => {
     const container = containerRef.current

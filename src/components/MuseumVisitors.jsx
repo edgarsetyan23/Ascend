@@ -83,15 +83,15 @@ export function MuseumVisitors({ size = 260 }) {
       const head = new THREE.Mesh(headGeo, mat)
       head.scale.set(0.9, 1.05, 0.95)
       head.position.y = 0.16
-      // A slight forward tilt, as though looking at something ahead
-      // and a little up — the "examining the exhibit" pose.
+      // Base tilt is animated (see animate() below) — this is just
+      // the resting pose between "look" beats.
       head.rotation.x = -0.15
       group.add(head)
 
       // Facing away from the camera — we see their backs, as if
       // they're looking up at the content above them on the page.
       group.rotation.y = Math.PI
-      return group
+      return { group, head }
     }
 
     // x values are wide because the canvas is a short, wide strip —
@@ -100,18 +100,21 @@ export function MuseumVisitors({ size = 260 }) {
     // tightly clustered dead-center unless the spread accounts for it.
     // Scale is close to 1 (same order as the un-scaled main guide) so
     // they read as comparably sized, not miniature.
+    // `phase` staggers each visitor's bob/step/look cycle so the row
+    // doesn't move in unison like one synced animation.
+    const baseY = -0.35
     const visitors = [
-      { g: buildVisitor(0x7d8570, false), x: -3.7, z: -1.0, scale: 1.0,  sway: 0.4 },
-      { g: buildVisitor(0x8a7d6a, false), x: -2.2, z: -0.5, scale: 1.2,  sway: 1.3 },
-      { g: buildVisitor(0x6f7a82, true),  x: -0.5, z: -0.9, scale: 1.1,  sway: 2.1 },
-      { g: buildVisitor(0x7a6f82, false), x: 1.1,  z: -0.6, scale: 1.25, sway: 2.7 },
-      { g: buildVisitor(0x82755f, true),  x: 2.7,  z: -1.0, scale: 1.05, sway: 3.5 },
-      { g: buildVisitor(0x6f8275, false), x: 4.1,  z: -0.7, scale: 1.15, sway: 4.1 },
+      { ...buildVisitor(0x7d8570, false), baseX: -3.7, baseZ: -1.0, scale: 1.0,  phase: 0.4 },
+      { ...buildVisitor(0x8a7d6a, false), baseX: -2.2, baseZ: -0.5, scale: 1.2,  phase: 1.3 },
+      { ...buildVisitor(0x6f7a82, true),  baseX: -0.5, baseZ: -0.9, scale: 1.1,  phase: 2.1 },
+      { ...buildVisitor(0x7a6f82, false), baseX: 1.1,  baseZ: -0.6, scale: 1.25, phase: 2.7 },
+      { ...buildVisitor(0x82755f, true),  baseX: 2.7,  baseZ: -1.0, scale: 1.05, phase: 3.5 },
+      { ...buildVisitor(0x6f8275, false), baseX: 4.1,  baseZ: -0.7, scale: 1.15, phase: 4.1 },
     ]
-    visitors.forEach(({ g, x, z, scale }) => {
-      g.position.set(x, -0.35, z)
-      g.scale.setScalar(scale)
-      scene.add(g)
+    visitors.forEach(({ group, baseX, baseZ, scale }) => {
+      group.position.set(baseX, baseY, baseZ)
+      group.scale.setScalar(scale)
+      scene.add(group)
     })
 
     renderer.render(scene, camera)
@@ -130,8 +133,20 @@ export function MuseumVisitors({ size = 260 }) {
     const clock = new THREE.Clock()
     const animate = () => {
       const t = clock.getElapsedTime()
-      visitors.forEach(({ g, sway }) => {
-        g.rotation.y = Math.PI + Math.sin(t * 0.3 + sway) * 0.15
+      visitors.forEach(({ group, head, baseX, baseZ, phase }) => {
+        // A slow shuffling drift + weight-shift bounce — reads as
+        // restless standing rather than a locked-in-place prop.
+        group.position.x = baseX + Math.sin(t * 0.18 + phase) * 0.14
+        group.position.z = baseZ
+        group.position.y = baseY + Math.abs(Math.sin(t * 1.1 + phase)) * 0.025
+        group.rotation.y = Math.PI + Math.sin(t * 0.3 + phase) * 0.08
+
+        // The actual "looking at the exhibit" motion lives on the
+        // head: a slow upward-tilting nod (studying the text above
+        // them) crossed with a gentle left-right scan, like reading
+        // a line of text rather than staring at one fixed point.
+        head.rotation.x = -0.22 + Math.sin(t * 0.45 + phase) * 0.16
+        head.rotation.y = Math.sin(t * 0.32 + phase * 1.4) * 0.22
       })
       renderer.render(scene, camera)
       frameId = requestAnimationFrame(animate)

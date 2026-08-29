@@ -509,6 +509,51 @@
   font-size: 1.02rem;
 }
 
+/* The actual speech-bubble tail — a small square, borrowing the
+   bubble's own background + border colors, rotated 45° so only its
+   bottom-right edges show. Positioned to point down toward mini-
+   Edgar's head. Corner mode keeps him right-aligned under the
+   bubble, so the tail sits near the right edge; hero mode centers
+   both the bubble and the guide, so the tail centers too. */
+.exh-speech-tail {
+  position: absolute;
+  bottom: -7px;
+  right: 22px;
+  width: 15px;
+  height: 15px;
+  background: var(--exh-bg-raised);
+  border-right: 1px solid var(--exh-border);
+  border-bottom: 1px solid var(--exh-border);
+  transform: rotate(45deg);
+  /* The parent's own box-shadow doesn't reach a child that pokes out
+     past its edge, so the tail gets its own — otherwise it all but
+     disappears against a light page background. */
+  filter: drop-shadow(2px 3px 3px rgba(25, 26, 20, 0.14));
+}
+.exh-guide-wrap--hero .exh-speech-tail {
+  right: 50%;
+  transform: translateX(50%) rotate(45deg);
+}
+
+/* A speech bubble should pop in like it was just said, not fade in
+   like the rest of the page — a quick overshoot-and-settle rather
+   than a plain opacity/translate rise. More specific than the plain
+   .exh-fade-in rule it's layered on top of, so it wins without
+   touching that rule's use elsewhere (cards, plate reveals). */
+@keyframes exh-bubble-pop {
+  0%   { opacity: 0; transform: scale(0.65) translateY(6px); }
+  55%  { opacity: 1; transform: scale(1.07) translateY(-3px); }
+  80%  { transform: scale(0.97) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.exh-guide-caption.exh-fade-in {
+  animation: exh-bubble-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-origin: bottom right;
+}
+.exh-guide-wrap--hero .exh-guide-caption.exh-fade-in {
+  transform-origin: bottom center;
+}
+
 .exh-guide-canvas {
   filter: drop-shadow(0 8px 20px rgba(25, 26, 20, 0.18));
   pointer-events: auto;

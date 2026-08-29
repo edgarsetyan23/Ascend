@@ -940,6 +940,7 @@ export function RecruiterView() {
             : guideIsHero
             ? "Let's start with Field Work — or pick any stop below."
             : GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
+          <span className="exh-speech-tail" aria-hidden="true" />
         </div>
         <Suspense fallback={<div className="exh-guide-canvas" style={{ width: guideSize, height: guideSize }} />}>
           <TourGuide

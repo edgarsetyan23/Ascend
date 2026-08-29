@@ -402,6 +402,30 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(25, 26, 20, 0.1);
 }
+.exh-card-logos {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.exh-card-logo-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 6px;
+  /* Logos assume a light background — always white, regardless of
+     theme, so the AWS/York wordmarks (unstyled black/charcoal paths)
+     stay legible in dark mode too. */
+  background: #ffffff;
+  border: 1px solid var(--exh-border);
+}
+.exh-card-logo-chip img {
+  height: 14px;
+  width: auto;
+  display: block;
+}
+
 .exh-card-label {
   font-family: var(--exh-font-display);
   font-weight: 600;

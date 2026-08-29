@@ -35,6 +35,7 @@ const EXPERIENCE = [
     plate: '01',
     navTitle: 'Amazon Web Services',
     navSub: '2025 – 2026',
+    note: 'My first job after graduating.',
     data: {
       company: 'Amazon Web Services (AWS)',
       role: 'Software Development Engineer I, RDS Team',
@@ -55,6 +56,7 @@ const EXPERIENCE = [
     plate: '02',
     navTitle: 'Tangerine Bank',
     navSub: 'Summer 2021',
+    note: 'My second internship — same company, a year later.',
     data: {
       company: 'Tangerine Bank',
       role: 'Software Developer Intern',
@@ -73,6 +75,7 @@ const EXPERIENCE = [
     plate: '03',
     navTitle: 'Tangerine Bank',
     navSub: 'Summer 2020',
+    note: 'My first internship — where it started.',
     data: {
       company: 'Tangerine Bank',
       role: 'Software Developer Intern',
@@ -93,6 +96,7 @@ const PROJECTS = [
     plate: '01',
     navTitle: 'Ascend',
     navSub: 'Accountability Tracker',
+    note: "The project this whole page you're looking at is built on.",
     data: {
       name: 'Ascend — Accountability Tracker',
       stack: 'React 18, Vite, AWS Lambda, DynamoDB, API Gateway, Cognito, CDK, Node 22, Vercel',
@@ -124,6 +128,7 @@ export function useEntries(trackerId) {
     plate: '02',
     navTitle: 'On-Call Assistant',
     navSub: 'Hackathon, 1st place',
+    note: 'A hackathon win I built with a team in three days.',
     data: {
       name: 'On-Call Debugging Assistant',
       stack: 'AWS Lambda, Internal Web App — 1st place, AWS RDS Toronto Hackathon',
@@ -141,6 +146,7 @@ const EDUCATION = {
   plate: '01',
   navTitle: 'York University',
   navSub: 'Class of 2024',
+  note: 'Where it started, before any of the above.',
   data: {
     school: 'York University',
     degree: 'Bachelor of Science Honours in Computer Science',
@@ -212,7 +218,7 @@ function sectionIdFromPathname(pathname) {
 // sound like one person talking, not six copies of the same template.
 const GUIDE_LINES = {
   'Introduction': "Hey — I'm Edgar. This is my résumé, minus the fluff.",
-  'Field Work': "Here's where I've actually worked.",
+  'Field Work': 'Two internships and the job that came after graduating.',
   'Studio Projects': "Stuff I built because I wanted to, not because someone assigned it.",
   'Education': 'Where it started, for what it’s worth.',
   'Toolkit': 'What I actually reach for day to day.',
@@ -469,7 +475,7 @@ function CaseBrackets() {
   )
 }
 
-function ExhibitFrame({ section, plate, title, byline, children }) {
+function ExhibitFrame({ section, plate, title, note, byline, children }) {
   return (
     <div className="exh-frame">
       <CaseBrackets />
@@ -478,6 +484,7 @@ function ExhibitFrame({ section, plate, title, byline, children }) {
         <span className="exh-eyebrow-text">{section}</span>
       </div>
       {title && <h1 className="exh-title">{title}</h1>}
+      {note && <p className="exh-note">{note}</p>}
       {byline && <p className="exh-byline">{byline}</p>}
       {children}
     </div>
@@ -618,8 +625,8 @@ export function RecruiterView() {
         <div className="exh-intro-wrap" ref={setIntroWrapEl}>
           <IntroPath wrapEl={introWrapEl} cardRefs={cardRefs} />
           <div className="exh-museum-banner">
-            <span className="exh-museum-banner-eyebrow">Welcome to</span>
-            <span className="exh-museum-banner-name">The Ascend Museum of Work</span>
+            <span className="exh-museum-banner-eyebrow">Welcome to the</span>
+            <span className="exh-museum-banner-name">Edgar Setyan Personal History Museum</span>
           </div>
           <ExhibitFrame
             section="Introduction"
@@ -678,7 +685,7 @@ export function RecruiterView() {
     const exp = EXPERIENCE.find((e) => e.id === activeId)
     if (exp) {
       return (
-        <ExhibitFrame section="Field Work" plate={exp.plate}
+        <ExhibitFrame section="Field Work" plate={exp.plate} note={exp.note}
           title={exp.data.role} byline={`${exp.data.company} · ${exp.data.location} · ${exp.data.period}`}>
           <HighlightList items={exp.data.highlights} />
         </ExhibitFrame>
@@ -688,7 +695,7 @@ export function RecruiterView() {
     const proj = PROJECTS.find((p) => p.id === activeId)
     if (proj) {
       return (
-        <ExhibitFrame section="Studio Projects" plate={proj.plate}
+        <ExhibitFrame section="Studio Projects" plate={proj.plate} note={proj.note}
           title={proj.data.name} byline={proj.data.stack}>
           <HighlightList items={proj.data.highlights} />
           {proj.snippet && <DetailPanel file={proj.snippet.file} code={proj.snippet.code} />}
@@ -698,7 +705,7 @@ export function RecruiterView() {
 
     if (activeId === 'york') {
       return (
-        <ExhibitFrame section="Education" plate={EDUCATION.plate}
+        <ExhibitFrame section="Education" plate={EDUCATION.plate} note={EDUCATION.note}
           title={EDUCATION.data.school} byline={`${EDUCATION.data.degree} · ${EDUCATION.data.grad}`} />
       )
     }

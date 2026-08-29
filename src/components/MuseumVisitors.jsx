@@ -101,9 +101,12 @@ export function MuseumVisitors({ size = 260 }) {
     // Scale is close to 1 (same order as the un-scaled main guide) so
     // they read as comparably sized, not miniature.
     const visitors = [
-      { g: buildVisitor(0x7d8570, false), x: -2.6, z: -0.6, scale: 1.15, sway: 1.3 },
-      { g: buildVisitor(0x8a7d6a, true),  x: 0.15, z: -0.9, scale: 1.3,  sway: 2.7 },
-      { g: buildVisitor(0x6f7a82, false), x: 2.75, z: -0.7, scale: 1.1,  sway: 4.1 },
+      { g: buildVisitor(0x7d8570, false), x: -3.7, z: -1.0, scale: 1.0,  sway: 0.4 },
+      { g: buildVisitor(0x8a7d6a, false), x: -2.2, z: -0.5, scale: 1.2,  sway: 1.3 },
+      { g: buildVisitor(0x6f7a82, true),  x: -0.5, z: -0.9, scale: 1.1,  sway: 2.1 },
+      { g: buildVisitor(0x7a6f82, false), x: 1.1,  z: -0.6, scale: 1.25, sway: 2.7 },
+      { g: buildVisitor(0x82755f, true),  x: 2.7,  z: -1.0, scale: 1.05, sway: 3.5 },
+      { g: buildVisitor(0x6f8275, false), x: 4.1,  z: -0.7, scale: 1.15, sway: 4.1 },
     ]
     visitors.forEach(({ g, x, z, scale }) => {
       g.position.set(x, -0.35, z)

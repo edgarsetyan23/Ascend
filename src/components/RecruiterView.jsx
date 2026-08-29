@@ -181,6 +181,20 @@ const NAV_GROUPS = [
 ]
 
 // Every path above is real: the URL is /portfolio + item.path (root '/' means
+// The full ordered walkthrough for "Start the tour" — every exhibit,
+// in the same order the sidebar lists them, ending with a trip back
+// to the Introduction plate.
+const TOUR_SEQUENCE = [
+  ...EXPERIENCE.map((e) => e.path),
+  ...PROJECTS.map((p) => p.path),
+  EDUCATION.path,
+  '/skills',
+  '/live/leetcode',
+  '/live/activity',
+  '/analyzer/score',
+  '/',
+]
+
 // just /portfolio). Reverse-map path → nav id so the current URL is the only
 // source of truth for which entry is showing — no separate "selected" state
 // to fall out of sync with the address bar, refresh, or back/forward.
@@ -497,6 +511,37 @@ export function RecruiterView() {
     if (activeId !== 'root') setTourStarted(false)
   }, [activeId])
 
+  // The auto-advancing guided tour: once started, steps through
+  // TOUR_SEQUENCE on a timer until it's back home. Any manual
+  // navigation (sidebar, a card, browser back/forward) cancels it —
+  // see handleCardClick and the sidebar button below — so it never
+  // fights a visitor who takes over.
+  const [autoTourActive, setAutoTourActive] = useState(false)
+  const [autoTourStep, setAutoTourStep] = useState(0)
+
+  function startAutoTour() {
+    setTourStarted(true)
+    setAutoTourActive(true)
+    setAutoTourStep(0)
+  }
+
+  useEffect(() => {
+    if (!autoTourActive) return
+    if (autoTourStep >= TOUR_SEQUENCE.length) {
+      setAutoTourActive(false)
+      return
+    }
+    // A longer beat on the very first step (he's just arrived at
+    // center stage), a normal pace after that.
+    const delay = autoTourStep === 0 ? 1900 : 3600
+    const timer = window.setTimeout(() => {
+      const path = TOUR_SEQUENCE[autoTourStep]
+      navigate(path === '/' ? '/portfolio' : `/portfolio${path}`)
+      setAutoTourStep((s) => s + 1)
+    }, delay)
+    return () => window.clearTimeout(timer)
+  }, [autoTourActive, autoTourStep])
+
   // Refs for measuring the 5 exhibit cards' real on-screen positions,
   // so the background trail (IntroPath) can actually connect to them.
   const [introWrapEl, setIntroWrapEl] = useState(null)
@@ -512,6 +557,7 @@ export function RecruiterView() {
   const [walkTick, setWalkTick] = useState(0)
 
   function handleCardClick(e, path) {
+    setAutoTourActive(false)
     const rect = e.currentTarget.getBoundingClientRect()
     setGuideTargetRect({
       right: window.innerWidth - (rect.left + rect.width / 2),
@@ -593,9 +639,9 @@ export function RecruiterView() {
 
             <button
               className="exh-start-tour"
-              onClick={() => setTourStarted(true)}
+              onClick={autoTourActive ? () => setAutoTourActive(false) : startAutoTour}
             >
-              {tourStarted ? 'Pick a stop below ↓' : 'Start the tour →'}
+              {autoTourActive ? 'Stop the tour ✕' : tourStarted ? 'Pick a stop below ↓' : 'Start the tour →'}
             </button>
 
             <div className="exh-tour-grid">
@@ -749,6 +795,11 @@ export function RecruiterView() {
         </Link>
         <span className="exh-topbar-crumb">{activeNavItem ? activeNavItem.navTitle : 'Edgar Setyan'}</span>
         <div className="exh-topbar-actions">
+          {autoTourActive && (
+            <button className="exh-tour-stop-btn" onClick={() => setAutoTourActive(false)}>
+              ⏸ Stop tour
+            </button>
+          )}
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
           <Link to="/" className="exh-back-link">← Back to app</Link>
         </div>
@@ -763,7 +814,7 @@ export function RecruiterView() {
                 <button
                   key={item.id}
                   className={`exh-nav-item ${activeId === item.id ? 'exh-nav-item--active' : ''}`}
-                  onClick={() => navigate(item.path === '/' ? '/portfolio' : `/portfolio${item.path}`)}
+                  onClick={() => { setAutoTourActive(false); navigate(item.path === '/' ? '/portfolio' : `/portfolio${item.path}`) }}
                 >
                   {item.plate && <PlateMark n={item.plate} />}
                   <span className="exh-nav-item-text">

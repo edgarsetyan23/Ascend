@@ -135,6 +135,21 @@
   color: var(--exh-ink-muted);
   text-decoration: none;
 }
+
+.exh-tour-stop-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--exh-accent);
+  background: var(--exh-accent-soft);
+  border: 1px solid var(--exh-accent);
+  border-radius: 99px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.exh-tour-stop-btn:hover { background: var(--exh-accent); color: var(--exh-bg-raised); }
 .exh-back-link:hover { color: var(--exh-ink); }
 
 /* ── Shell layout ── */
@@ -246,11 +261,15 @@
 .exh-frame {
   max-width: 680px;
   position: relative;
-  padding: 26px 22px;
-  margin: -26px -22px 0;
 }
 
-/* ── Display-case corner brackets, on every exhibit page ── */
+/* ── Display-case corner brackets, on every exhibit page ──
+   Offset OUTSIDE the frame via negative position values on the
+   brackets themselves, rather than padding+negative-margin on the
+   frame — that earlier approach shifted .exh-frame's own left edge,
+   which threw off alignment with .exh-museum-banner sitting right
+   above it (that element wasn't given the same compensating margin,
+   so its underline no longer lined up with the frame below it). */
 
 .exh-case-bracket {
   position: absolute;
@@ -258,10 +277,10 @@
   height: 16px;
   pointer-events: none;
 }
-.exh-case-bracket--tl { top: 0;    left: 0;   border-top: 2px solid var(--exh-accent);    border-left: 2px solid var(--exh-accent); }
-.exh-case-bracket--tr { top: 0;    right: 0;  border-top: 2px solid var(--exh-accent);    border-right: 2px solid var(--exh-accent); }
-.exh-case-bracket--br { bottom: 0; right: 0;  border-bottom: 2px solid var(--exh-accent); border-right: 2px solid var(--exh-accent); }
-.exh-case-bracket--bl { bottom: 0; left: 0;   border-bottom: 2px solid var(--exh-accent); border-left: 2px solid var(--exh-accent); }
+.exh-case-bracket--tl { top: -14px;    left: -14px;   border-top: 2px solid var(--exh-accent);    border-left: 2px solid var(--exh-accent); }
+.exh-case-bracket--tr { top: -14px;    right: -14px;  border-top: 2px solid var(--exh-accent);    border-right: 2px solid var(--exh-accent); }
+.exh-case-bracket--br { bottom: -14px; right: -14px;  border-bottom: 2px solid var(--exh-accent); border-right: 2px solid var(--exh-accent); }
+.exh-case-bracket--bl { bottom: -14px; left: -14px;   border-bottom: 2px solid var(--exh-accent); border-left: 2px solid var(--exh-accent); }
 
 /* ── Introduction background path ── */
 

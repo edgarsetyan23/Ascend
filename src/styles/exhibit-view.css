@@ -1,0 +1,477 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   THE EXHIBIT — portfolio page, styled as a small gallery collection.
+   Signature idea: every experience/project is a numbered plate with a
+   short prose description, not a resume bullet list and not a dev-tool
+   pastiche. Warm paper background, a soft sage accent (not the earlier
+   dark "military" green). Scoped entirely under .exh-page.
+   ───────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+.exh-page {
+  /* ── Tokens (light / paper) ── */
+  --exh-bg: #faf9f5;
+  --exh-bg-raised: #ffffff;
+  --exh-sidebar-bg: #f1efe6;
+  --exh-ink: #191a14;
+  --exh-ink-muted: #5c5f4f;
+  --exh-ink-subtle: #8a8d78;
+  --exh-border: rgba(25, 26, 20, 0.12);
+  --exh-accent: #4f7a63;
+  --exh-accent-soft: rgba(79, 122, 99, 0.10);
+  --exh-red: #a13e2f;
+  --exh-red-soft: rgba(161, 62, 47, 0.10);
+  --exh-gray: #6b6e5e;
+  --exh-gray-soft: rgba(107, 110, 94, 0.12);
+
+  --exh-font-display: 'Source Serif 4', Georgia, serif;
+  --exh-font-body: 'Inter', -apple-system, sans-serif;
+  --exh-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  background: var(--exh-bg);
+  color: var(--exh-ink);
+  min-height: 100vh;
+  font-family: var(--exh-font-body);
+}
+
+[data-theme="dark"] .exh-page {
+  --exh-bg: #14150f;
+  --exh-bg-raised: #1b1c15;
+  --exh-sidebar-bg: #17180f;
+  --exh-ink: #e9ebe0;
+  --exh-ink-muted: #a3a690;
+  --exh-ink-subtle: #6b6e5c;
+  --exh-border: rgba(233, 235, 224, 0.12);
+  --exh-accent: #8fc2a6;
+  --exh-accent-soft: rgba(143, 194, 166, 0.12);
+  --exh-red: #d9776a;
+  --exh-red-soft: rgba(217, 119, 106, 0.14);
+  --exh-gray: #8b8e7c;
+  --exh-gray-soft: rgba(139, 142, 124, 0.14);
+}
+
+.exh-page * { box-sizing: border-box; }
+
+.exh-page :focus-visible {
+  outline: 2px solid var(--exh-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exh-page * { transition: none !important; animation: none !important; }
+}
+
+/* ── Top bar ── */
+
+.exh-topbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 56px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--exh-border);
+  background: var(--exh-bg-raised);
+}
+
+.exh-brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+  color: var(--exh-ink);
+  font-family: var(--exh-font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+.exh-brand-mark { color: var(--exh-accent); font-size: 0.85em; }
+
+.exh-topbar-crumb {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--exh-font-display);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--exh-ink-subtle);
+  text-align: center;
+}
+
+.exh-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.exh-back-link {
+  font-size: 0.85rem;
+  color: var(--exh-ink-muted);
+  text-decoration: none;
+}
+.exh-back-link:hover { color: var(--exh-ink); }
+
+/* ── Shell layout ── */
+
+.exh-shell {
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(100vh - 56px);
+}
+
+.exh-sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--exh-border);
+  background: var(--exh-sidebar-bg);
+  padding: 20px 12px;
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.exh-nav-group { margin-bottom: 20px; }
+
+.exh-nav-group-label {
+  font-family: var(--exh-font-display);
+  font-style: italic;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  color: var(--exh-ink-subtle);
+  padding: 0 10px 7px;
+}
+
+.exh-nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.exh-nav-item:hover { background: var(--exh-accent-soft); }
+.exh-nav-item--active { background: var(--exh-accent-soft); }
+.exh-nav-item--active .exh-nav-item-title { color: var(--exh-ink); font-weight: 600; }
+
+.exh-nav-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.exh-nav-item-title {
+  font-size: 0.85rem;
+  color: var(--exh-ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.exh-nav-item-sub {
+  font-size: 0.72rem;
+  color: var(--exh-ink-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.exh-sidebar-source-link {
+  margin-top: auto;
+  padding: 10px;
+  font-size: 0.78rem;
+  color: var(--exh-ink-subtle);
+  text-decoration: none;
+  border-top: 1px solid var(--exh-border);
+  padding-top: 14px;
+}
+.exh-sidebar-source-link:hover { color: var(--exh-accent); }
+
+.exh-main {
+  flex: 1;
+  min-width: 0;
+  padding: 48px 56px;
+}
+
+/* ── Plate mark ── */
+
+.exh-plate {
+  font-family: var(--exh-font-display);
+  font-size: 0.78rem;
+  color: var(--exh-accent);
+  border: 1px solid var(--exh-border);
+  border-radius: 4px;
+  min-width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--exh-bg-raised);
+}
+
+/* ── Exhibit frame ── */
+
+.exh-frame { max-width: 680px; }
+
+.exh-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.exh-eyebrow-text {
+  font-family: var(--exh-font-display);
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--exh-ink-subtle);
+}
+
+.exh-title {
+  font-family: var(--exh-font-display);
+  font-size: 1.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+
+.exh-byline {
+  font-size: 0.98rem;
+  color: var(--exh-ink-muted);
+  line-height: 1.6;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--exh-border);
+}
+
+.exh-intro-text {
+  font-size: 1rem;
+  color: var(--exh-ink-muted);
+  line-height: 1.7;
+  margin-bottom: 24px;
+  max-width: 52ch;
+}
+
+/* ── Root / overview links ── */
+
+.exh-root-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.exh-root-link {
+  font-size: 0.85rem;
+  color: var(--exh-ink);
+  text-decoration: none;
+  border: 1px solid var(--exh-border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  background: var(--exh-bg-raised);
+  transition: border-color 0.12s ease;
+}
+.exh-root-link:hover { border-color: var(--exh-accent); }
+.exh-root-link--primary {
+  background: var(--exh-accent);
+  color: var(--exh-bg-raised);
+  border-color: var(--exh-accent);
+  font-weight: 500;
+}
+.exh-root-link--primary:hover { opacity: 0.9; }
+
+/* ── Highlight list (replaces resume bullets with readable prose) ── */
+
+.exh-highlights {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.exh-highlight {
+  font-size: 0.96rem;
+  line-height: 1.7;
+  color: var(--exh-ink-muted);
+  padding-left: 20px;
+  position: relative;
+}
+.exh-highlight::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 8px;
+  height: 1px;
+  background: var(--exh-accent);
+}
+
+/* ── Detail panel (real code excerpt) ── */
+
+.exh-detail {
+  border: 1px solid var(--exh-border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 24px;
+}
+.exh-detail-label {
+  font-family: var(--exh-font-display);
+  font-style: italic;
+  font-size: 0.8rem;
+  color: var(--exh-ink-subtle);
+  background: var(--exh-sidebar-bg);
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--exh-border);
+}
+.exh-detail-file {
+  font-family: var(--exh-font-mono);
+  font-style: normal;
+  font-size: 0.72rem;
+  color: var(--exh-ink-muted);
+}
+.exh-detail-code {
+  background: var(--exh-bg-raised);
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin: 0;
+}
+.exh-detail-code code {
+  font-family: var(--exh-font-mono);
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--exh-ink-muted);
+  white-space: pre;
+}
+
+/* ── Skills ── */
+
+.exh-skills { display: flex; flex-direction: column; gap: 16px; }
+.exh-skill-row { display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+.exh-skill-category {
+  font-family: var(--exh-font-display);
+  font-style: italic;
+  font-size: 0.82rem;
+  color: var(--exh-ink-subtle);
+  width: 110px;
+  flex-shrink: 0;
+}
+.exh-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.exh-pill {
+  font-size: 0.78rem;
+  padding: 3px 9px;
+  border-radius: 5px;
+}
+.exh-pill--tag {
+  background: var(--exh-accent-soft);
+  color: var(--exh-accent);
+}
+
+/* ── Live tables ── */
+
+.exh-table-wrap { overflow-x: auto; margin-top: 14px; }
+.exh-table { width: 100%; border-collapse: collapse; }
+.exh-th {
+  text-align: left;
+  font-family: var(--exh-font-display);
+  font-style: italic;
+  font-size: 0.75rem;
+  color: var(--exh-ink-subtle);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--exh-border);
+}
+.exh-td {
+  padding: 9px 10px;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--exh-border);
+}
+.exh-td--bold { font-weight: 500; }
+.exh-td--muted { color: var(--exh-ink-subtle); }
+
+/* ── Analyzer ── */
+
+.exh-analyzer-card { margin-top: 4px; }
+.exh-analyzer-criteria { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.exh-dropzone-wrap { display: flex; flex-direction: column; gap: 12px; }
+.exh-analyzer-loading { display: flex; align-items: center; gap: 14px; padding: 20px 0; }
+.exh-analyzer-loading-title { font-weight: 500; margin-bottom: 2px; }
+.exh-analyzer-loading-sub { font-size: 0.82rem; color: var(--exh-ink-subtle); }
+.exh-spinner {
+  width: 22px; height: 22px;
+  border: 2px solid var(--exh-border);
+  border-top-color: var(--exh-accent);
+  border-radius: 50%;
+  animation: exh-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes exh-spin { to { transform: rotate(360deg); } }
+
+.exh-analyzer-result { display: grid; grid-template-columns: 160px 1fr; gap: 28px; }
+.exh-analyzer-left { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.exh-wordcount-note { font-size: 0.78rem; color: var(--exh-ink-subtle); }
+.exh-source-badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 5px; text-align: center; }
+.exh-source-badge--ai { background: var(--exh-accent-soft); color: var(--exh-accent); }
+.exh-source-badge--local { background: var(--exh-gray-soft); color: var(--exh-gray); }
+.exh-retry-btn {
+  font-size: 0.8rem;
+  color: var(--exh-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.exh-cat-bars { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.exh-detected-groups { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.exh-detected-group-label {
+  font-family: var(--exh-font-display);
+  font-style: italic;
+  font-size: 0.75rem;
+  color: var(--exh-ink-subtle);
+  display: block;
+  margin-bottom: 5px;
+}
+.exh-detected-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.exh-detected-tag { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; }
+.exh-detected-tag--aws { background: rgba(180, 130, 60, 0.12); color: #a8722f; }
+.exh-detected-tag--tech { background: var(--exh-accent-soft); color: var(--exh-accent); }
+.exh-recs { border-top: 1px solid var(--exh-border); padding-top: 14px; }
+.exh-recs-title { font-size: 0.8rem; font-weight: 500; margin-bottom: 10px; }
+.exh-rec { margin-bottom: 10px; }
+.exh-rec-label {
+  font-family: var(--exh-font-display);
+  font-style: italic;
+  font-size: 0.75rem;
+  color: var(--exh-ink-subtle);
+  margin-bottom: 2px;
+}
+.exh-rec-text { font-size: 0.85rem; color: var(--exh-ink-muted); }
+
+/* ── Misc states ── */
+
+.exh-loading, .exh-error { font-size: 0.9rem; color: var(--exh-ink-subtle); }
+.exh-error { color: var(--exh-red); }
+
+/* ── Responsive ── */
+
+@media (max-width: 860px) {
+  .exh-topbar-crumb { display: none; }
+  .exh-shell { flex-direction: column; }
+  .exh-sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 12px;
+  }
+  .exh-nav-group { margin-bottom: 0; margin-right: 14px; }
+  .exh-sidebar-source-link { display: none; }
+  .exh-main { padding: 28px 20px; }
+  .exh-analyzer-result { grid-template-columns: 1fr; }
+}

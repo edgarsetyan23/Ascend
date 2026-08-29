@@ -13,21 +13,21 @@ import {
   scoreResume,
   extractTextFromPdf,
 } from './ResumeReview.jsx'
-import '../styles/spec-view.css'
+import '../styles/exhibit-view.css'
 
 // ── Resume data ─────────────────────────────────────────────────────────────
-// Every entry below is rendered as a documented "endpoint" — method, path,
-// status code, and a JSON response body built from the same facts that are
-// on the PDF resume. Nothing here is decorative; the status codes reflect
-// what actually happened (200 = completed as scoped, 201 = built from
-// scratch, 202 = in progress, 400 = couldn't complete).
+// "The Exhibit" — every entry is a numbered plate in a small collection,
+// the way a gallery guide numbers its pieces. No invented content: every
+// fact below is the same one on the PDF resume, just laid out as prose
+// instead of a resume-shaped list of bullets.
 
 const EXPERIENCE = [
   {
     id: 'aws',
     path: '/experience/aws',
-    status: '200',
-    statusText: 'OK',
+    plate: '01',
+    navTitle: 'Amazon Web Services',
+    navSub: '2025 – 2026',
     data: {
       company: 'Amazon Web Services (AWS)',
       role: 'Software Development Engineer I, RDS Team',
@@ -45,8 +45,9 @@ const EXPERIENCE = [
   {
     id: 'tangerine-2021',
     path: '/experience/tangerine/2021',
-    status: '200',
-    statusText: 'OK',
+    plate: '02',
+    navTitle: 'Tangerine Bank',
+    navSub: 'Summer 2021',
     data: {
       company: 'Tangerine Bank',
       role: 'Software Developer Intern',
@@ -62,8 +63,9 @@ const EXPERIENCE = [
   {
     id: 'tangerine-2020',
     path: '/experience/tangerine/2020',
-    status: '200',
-    statusText: 'OK',
+    plate: '03',
+    navTitle: 'Tangerine Bank',
+    navSub: 'Summer 2020',
     data: {
       company: 'Tangerine Bank',
       role: 'Software Developer Intern',
@@ -81,8 +83,9 @@ const PROJECTS = [
   {
     id: 'ascend',
     path: '/projects/ascend',
-    status: '201',
-    statusText: 'Created',
+    plate: '01',
+    navTitle: 'Ascend',
+    navSub: 'Accountability Tracker',
     data: {
       name: 'Ascend — Accountability Tracker',
       stack: 'React 18, Vite, AWS Lambda, DynamoDB, API Gateway, Cognito, CDK, Node 22, Vercel',
@@ -111,8 +114,9 @@ export function useEntries(trackerId) {
   {
     id: 'oncall',
     path: '/projects/oncall-assistant',
-    status: '201',
-    statusText: 'Created',
+    plate: '02',
+    navTitle: 'On-Call Assistant',
+    navSub: 'Hackathon, 1st place',
     data: {
       name: 'On-Call Debugging Assistant',
       stack: 'AWS Lambda, Internal Web App — 1st place, AWS RDS Toronto Hackathon',
@@ -127,8 +131,9 @@ export function useEntries(trackerId) {
 const EDUCATION = {
   id: 'york',
   path: '/education/york',
-  status: '200',
-  statusText: 'OK',
+  plate: '01',
+  navTitle: 'York University',
+  navSub: 'Class of 2024',
   data: {
     school: 'York University',
     degree: 'Bachelor of Science Honours in Computer Science',
@@ -147,23 +152,23 @@ const SKILLS = {
 // ── Sidebar nav structure ────────────────────────────────────────────────────
 
 const NAV_GROUPS = [
-  { label: 'Overview', items: [{ id: 'root', method: 'GET', path: '/' }] },
+  { label: 'Introduction', items: [{ id: 'root', path: '/', navTitle: 'Edgar Setyan', navSub: null }] },
   {
-    label: 'Experience',
-    items: EXPERIENCE.map((e) => ({ id: e.id, method: 'GET', path: e.path })),
+    label: 'Field Work',
+    items: EXPERIENCE.map((e) => ({ id: e.id, path: e.path, plate: e.plate, navTitle: e.navTitle, navSub: e.navSub })),
   },
   {
-    label: 'Projects',
-    items: PROJECTS.map((p) => ({ id: p.id, method: 'GET', path: p.path })),
+    label: 'Studio Projects',
+    items: PROJECTS.map((p) => ({ id: p.id, path: p.path, plate: p.plate, navTitle: p.navTitle, navSub: p.navSub })),
   },
-  { label: 'Education', items: [{ id: 'york', method: 'GET', path: EDUCATION.path }] },
-  { label: 'Skills', items: [{ id: 'skills', method: 'GET', path: '/skills' }] },
+  { label: 'Education', items: [{ id: 'york', path: EDUCATION.path, plate: EDUCATION.plate, navTitle: EDUCATION.navTitle, navSub: EDUCATION.navSub }] },
+  { label: 'Toolkit', items: [{ id: 'skills', path: '/skills', navTitle: 'Technical Skills', navSub: null }] },
   {
-    label: 'Live',
+    label: 'Live Demonstrations',
     items: [
-      { id: 'leetcode', method: 'GET', path: '/live/leetcode' },
-      { id: 'activity', method: 'GET', path: '/live/activity' },
-      { id: 'analyzer', method: 'POST', path: '/analyzer/score' },
+      { id: 'leetcode', path: '/live/leetcode', navTitle: 'Problem-Solving Log', navSub: 'Live' },
+      { id: 'activity', path: '/live/activity', navTitle: 'Daily Practice', navSub: 'Live' },
+      { id: 'analyzer', path: '/analyzer/score', navTitle: 'Resume Review', navSub: 'Try it' },
     ],
   },
 ]
@@ -184,63 +189,26 @@ function sectionIdFromPathname(pathname) {
 
 // ── Small building blocks ────────────────────────────────────────────────────
 
-function MethodBadge({ method }) {
-  return <span className={`spec-method spec-method--${method.toLowerCase()}`}>{method}</span>
+function PlateMark({ n }) {
+  return <span className="exh-plate">{n}</span>
 }
 
-function StatusChip({ code, text }) {
-  const tier = code[0] // '2', '4', etc.
+function HighlightList({ items }) {
   return (
-    <span className={`spec-status spec-status--${tier}xx`}>
-      {code} {text}
-    </span>
+    <ul className="exh-highlights">
+      {items.map((item, i) => (
+        <li key={i} className="exh-highlight">{item}</li>
+      ))}
+    </ul>
   )
 }
 
-function JsonBlock({ data }) {
-  const entries = Object.entries(data)
+function DetailPanel({ file, code }) {
   return (
-    <pre className="spec-json">
-      <code>
-        <span className="spec-json-punct">{'{'}</span>
-        {'\n'}
-        {entries.map(([key, value], i) => {
-          const isLast = i === entries.length - 1
-          if (Array.isArray(value)) {
-            return (
-              <span key={key}>
-                <span className="spec-json-indent">  </span>
-                <span className="spec-json-key">"{key}"</span>
-                <span className="spec-json-punct">: [</span>
-                {'\n'}
-                {value.map((item, j) => (
-                  <span key={j}>
-                    <span className="spec-json-indent">    </span>
-                    <span className="spec-json-string">"{item}"</span>
-                    <span className="spec-json-punct">{j < value.length - 1 ? ',' : ''}</span>
-                    {'\n'}
-                  </span>
-                ))}
-                <span className="spec-json-indent">  </span>
-                <span className="spec-json-punct">]{isLast ? '' : ','}</span>
-                {'\n'}
-              </span>
-            )
-          }
-          return (
-            <span key={key}>
-              <span className="spec-json-indent">  </span>
-              <span className="spec-json-key">"{key}"</span>
-              <span className="spec-json-punct">: </span>
-              <span className="spec-json-string">"{value}"</span>
-              <span className="spec-json-punct">{isLast ? '' : ','}</span>
-              {'\n'}
-            </span>
-          )
-        })}
-        <span className="spec-json-punct">{'}'}</span>
-      </code>
-    </pre>
+    <div className="exh-detail">
+      <div className="exh-detail-label">Detail, enlarged — <span className="exh-detail-file">{file}</span></div>
+      <pre className="exh-detail-code"><code>{code}</code></pre>
+    </div>
   )
 }
 
@@ -258,12 +226,12 @@ const STATUS_BADGE = {
 function LeetcodeTable({ entries }) {
   if (!entries.length) return null
   return (
-    <div className="spec-table-wrap">
-      <table className="spec-table">
+    <div className="exh-table-wrap">
+      <table className="exh-table">
         <thead>
           <tr>
             {['Problem', 'Difficulty', 'Category', 'Status', 'Date'].map((h) => (
-              <th key={h} className="spec-th">{h}</th>
+              <th key={h} className="exh-th">{h}</th>
             ))}
           </tr>
         </thead>
@@ -272,20 +240,20 @@ function LeetcodeTable({ entries }) {
             const diff = DIFFICULTY_BADGE[e.difficulty]
             const stat = STATUS_BADGE[e.status]
             return (
-              <tr key={e.id ?? i} className="spec-tr">
-                <td className="spec-td spec-td--bold">{e.problem ?? '—'}</td>
-                <td className="spec-td">
+              <tr key={e.id ?? i} className="exh-tr">
+                <td className="exh-td exh-td--bold">{e.problem ?? '—'}</td>
+                <td className="exh-td">
                   {diff
-                    ? <span className="spec-pill" style={{ backgroundColor: diff.bg, color: diff.color }}>{e.difficulty}</span>
+                    ? <span className="exh-pill" style={{ backgroundColor: diff.bg, color: diff.color }}>{e.difficulty}</span>
                     : (e.difficulty ?? '—')}
                 </td>
-                <td className="spec-td">{e.category ?? '—'}</td>
-                <td className="spec-td">
+                <td className="exh-td">{e.category ?? '—'}</td>
+                <td className="exh-td">
                   {stat
-                    ? <span className="spec-pill" style={{ backgroundColor: stat.bg, color: stat.color }}>{e.status}</span>
+                    ? <span className="exh-pill" style={{ backgroundColor: stat.bg, color: stat.color }}>{e.status}</span>
                     : (e.status ?? '—')}
                 </td>
-                <td className="spec-td spec-td--muted">{e.date ?? '—'}</td>
+                <td className="exh-td exh-td--muted">{e.date ?? '—'}</td>
               </tr>
             )
           })}
@@ -297,41 +265,41 @@ function LeetcodeTable({ entries }) {
 
 function AnalyzerResult({ result, onReset }) {
   return (
-    <div className="spec-analyzer-result">
-      <div className="spec-analyzer-left">
+    <div className="exh-analyzer-result">
+      <div className="exh-analyzer-left">
         <ScoreCircle score={result.overall} />
-        <p className="spec-wordcount-note">{result.wordCount} words</p>
-        <span className={`spec-source-badge ${result.source === 'claude' ? 'spec-source-badge--ai' : 'spec-source-badge--local'}`}>
+        <p className="exh-wordcount-note">{result.wordCount} words</p>
+        <span className={`exh-source-badge ${result.source === 'claude' ? 'exh-source-badge--ai' : 'exh-source-badge--local'}`}>
           {result.source === 'claude' ? '✦ Scored by Claude AI' : '⚙ Scored locally'}
         </span>
-        <button className="spec-retry-btn" onClick={onReset}>
+        <button className="exh-retry-btn" onClick={onReset}>
           Try another →
         </button>
       </div>
-      <div className="spec-analyzer-right">
-        <div className="spec-cat-bars">
+      <div className="exh-analyzer-right">
+        <div className="exh-cat-bars">
           {result.categories.map((cat, i) => (
             <CatBar key={cat.key} label={cat.label} score={cat.score} weight={cat.weight} delay={i * 80} />
           ))}
         </div>
         {result.highlights && (
-          <div className="spec-detected-groups">
+          <div className="exh-detected-groups">
             {result.highlights.awsServices?.length > 0 && (
-              <div className="spec-detected-group">
-                <span className="spec-detected-group-label">AWS Services</span>
-                <div className="spec-detected-tags">
+              <div className="exh-detected-group">
+                <span className="exh-detected-group-label">AWS Services</span>
+                <div className="exh-detected-tags">
                   {result.highlights.awsServices.map(s => (
-                    <span key={s} className="spec-detected-tag spec-detected-tag--aws">{s}</span>
+                    <span key={s} className="exh-detected-tag exh-detected-tag--aws">{s}</span>
                   ))}
                 </div>
               </div>
             )}
             {result.highlights.techStack?.length > 0 && (
-              <div className="spec-detected-group">
-                <span className="spec-detected-group-label">Tech Stack</span>
-                <div className="spec-detected-tags">
+              <div className="exh-detected-group">
+                <span className="exh-detected-group-label">Tech Stack</span>
+                <div className="exh-detected-tags">
                   {result.highlights.techStack.map(t => (
-                    <span key={t} className="spec-detected-tag spec-detected-tag--tech">{t}</span>
+                    <span key={t} className="exh-detected-tag exh-detected-tag--tech">{t}</span>
                   ))}
                 </div>
               </div>
@@ -339,12 +307,12 @@ function AnalyzerResult({ result, onReset }) {
           </div>
         )}
         {result.recommendations?.length > 0 && (
-          <div className="spec-recs">
-            <p className="spec-recs-title">What to Fix</p>
+          <div className="exh-recs">
+            <p className="exh-recs-title">What to Fix</p>
             {result.recommendations.map((rec, i) => (
-              <div key={i} className="spec-rec">
-                <div className="spec-rec-label">{rec.category}</div>
-                <p className="spec-rec-text">{rec.text}</p>
+              <div key={i} className="exh-rec">
+                <div className="exh-rec-label">{rec.category}</div>
+                <p className="exh-rec-text">{rec.text}</p>
               </div>
             ))}
           </div>
@@ -354,18 +322,17 @@ function AnalyzerResult({ result, onReset }) {
   )
 }
 
-// ── Endpoint doc wrapper ─────────────────────────────────────────────────────
+// ── Exhibit frame — every plate shares this shell ───────────────────────────
 
-function EndpointDoc({ method, path, status, statusText, title, summary, children }) {
+function ExhibitFrame({ section, plate, title, byline, children }) {
   return (
-    <div className="spec-doc">
-      <div className="spec-doc-bar">
-        <MethodBadge method={method} />
-        <code className="spec-doc-path">{path}</code>
-        {status && <StatusChip code={status} text={statusText} />}
+    <div className="exh-frame">
+      <div className="exh-eyebrow">
+        {plate && <PlateMark n={plate} />}
+        <span className="exh-eyebrow-text">{section}</span>
       </div>
-      {title && <h1 className="spec-doc-title">{title}</h1>}
-      {summary && <p className="spec-doc-summary">{summary}</p>}
+      {title && <h1 className="exh-title">{title}</h1>}
+      {byline && <p className="exh-byline">{byline}</p>}
       {children}
     </div>
   )
@@ -427,151 +394,135 @@ export function RecruiterView() {
     }
   }
 
-  // Analyzer status reflects real request state, not decoration.
-  const analyzerStatus = analyzeErr
-    ? { code: '400', text: 'Bad Request' }
-    : score
-    ? { code: '200', text: 'OK' }
-    : (analyzing || extracting)
-    ? { code: '202', text: 'Accepted' }
-    : { code: '100', text: 'Continue' }
-
-  const findNav = (id) => NAV_GROUPS.flatMap((g) => g.items).find((i) => i.id === id)
-  const activeNav = findNav(activeId)
+  const activeNavItem = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.id === activeId)
 
   function renderBody() {
     if (activeId === 'root') {
       return (
-        <EndpointDoc
-          method="GET"
-          path="/"
-          status="200"
-          statusText="OK"
+        <ExhibitFrame
+          section="Introduction"
           title="Edgar Setyan"
-          summary="SDE I, AWS RDS · Toronto, ON — this page documents my background the way I'd document an API: pick an endpoint on the left."
+          byline="SDE I, AWS RDS · Toronto, ON"
         >
-          <div className="spec-root-links">
-            <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="spec-root-link">GitHub →</a>
-            <a href="https://www.linkedin.com/in/edgarsetyan/" target="_blank" rel="noopener noreferrer" className="spec-root-link">LinkedIn →</a>
-            <a href="mailto:edgar.setyan23@gmail.com" className="spec-root-link">edgar.setyan23@gmail.com</a>
-            <a href="/Edgar_Resume.pdf" download="Edgar_Setyan_Resume.pdf" className="spec-root-link spec-root-link--primary">Download résumé →</a>
+          <p className="exh-intro-text">
+            A small collection of the work behind my résumé — laid out the way I'd want to browse
+            someone else's. Pick a piece from the list on the left.
+          </p>
+          <div className="exh-root-links">
+            <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link">GitHub →</a>
+            <a href="https://www.linkedin.com/in/edgarsetyan/" target="_blank" rel="noopener noreferrer" className="exh-root-link">LinkedIn →</a>
+            <a href="mailto:edgar.setyan23@gmail.com" className="exh-root-link">edgar.setyan23@gmail.com</a>
+            <a href="/Edgar_Resume.pdf" download="Edgar_Setyan_Resume.pdf" className="exh-root-link exh-root-link--primary">Download résumé →</a>
           </div>
-        </EndpointDoc>
+        </ExhibitFrame>
       )
     }
 
     const exp = EXPERIENCE.find((e) => e.id === activeId)
     if (exp) {
       return (
-        <EndpointDoc method="GET" path={exp.path} status={exp.status} statusText={exp.statusText}
-          title={`${exp.data.role}`} summary={`${exp.data.company} · ${exp.data.location} · ${exp.data.period}`}>
-          <JsonBlock data={exp.data} />
-        </EndpointDoc>
+        <ExhibitFrame section="Field Work" plate={exp.plate}
+          title={exp.data.role} byline={`${exp.data.company} · ${exp.data.location} · ${exp.data.period}`}>
+          <HighlightList items={exp.data.highlights} />
+        </ExhibitFrame>
       )
     }
 
     const proj = PROJECTS.find((p) => p.id === activeId)
     if (proj) {
       return (
-        <EndpointDoc method="GET" path={proj.path} status={proj.status} statusText={proj.statusText}
-          title={proj.data.name} summary={proj.data.stack}>
-          <JsonBlock data={{ highlights: proj.data.highlights }} />
-          {proj.snippet && (
-            <div className="spec-snippet">
-              <div className="spec-snippet-file">{proj.snippet.file}</div>
-              <pre className="spec-snippet-code"><code>{proj.snippet.code}</code></pre>
-            </div>
-          )}
-        </EndpointDoc>
+        <ExhibitFrame section="Studio Projects" plate={proj.plate}
+          title={proj.data.name} byline={proj.data.stack}>
+          <HighlightList items={proj.data.highlights} />
+          {proj.snippet && <DetailPanel file={proj.snippet.file} code={proj.snippet.code} />}
+        </ExhibitFrame>
       )
     }
 
     if (activeId === 'york') {
       return (
-        <EndpointDoc method="GET" path={EDUCATION.path} status={EDUCATION.status} statusText={EDUCATION.statusText}
-          title={EDUCATION.data.school} summary={`${EDUCATION.data.degree} · ${EDUCATION.data.grad}`}>
-          <JsonBlock data={EDUCATION.data} />
-        </EndpointDoc>
+        <ExhibitFrame section="Education" plate={EDUCATION.plate}
+          title={EDUCATION.data.school} byline={`${EDUCATION.data.degree} · ${EDUCATION.data.grad}`} />
       )
     }
 
     if (activeId === 'skills') {
       return (
-        <EndpointDoc method="GET" path="/skills" status="200" statusText="OK"
-          title="Technical Skills" summary="Grouped by domain, not proficiency level — I don't self-rate skills on a bar chart.">
-          <div className="spec-skills">
+        <ExhibitFrame section="Toolkit" title="Technical Skills"
+          byline="Grouped by domain, not proficiency level — I don't self-rate skills on a bar chart.">
+          <div className="exh-skills">
             {Object.entries(SKILLS).map(([category, items]) => (
-              <div key={category} className="spec-skill-row">
-                <span className="spec-skill-category">{category}</span>
-                <div className="spec-pills">
+              <div key={category} className="exh-skill-row">
+                <span className="exh-skill-category">{category}</span>
+                <div className="exh-pills">
                   {items.map((item) => (
-                    <span key={item} className="spec-pill spec-pill--tag">{item}</span>
+                    <span key={item} className="exh-pill exh-pill--tag">{item}</span>
                   ))}
                 </div>
               </div>
             ))}
           </div>
-        </EndpointDoc>
+        </ExhibitFrame>
       )
     }
 
     if (activeId === 'leetcode') {
       return (
-        <EndpointDoc method="GET" path="/live/leetcode" status="200" statusText="OK"
-          title="LeetCode Progress" summary="Live-fetched, not a screenshot — this reflects my actual solved count as of now.">
-          {loading && <p className="spec-loading">Loading live data…</p>}
-          {error && <p className="spec-error">Could not load data: {error}</p>}
+        <ExhibitFrame section="Live Demonstrations" title="Problem-Solving Log"
+          byline="Live-fetched, not a screenshot — this reflects my actual solved count as of now.">
+          {loading && <p className="exh-loading">Loading live data…</p>}
+          {error && <p className="exh-error">Could not load data: {error}</p>}
           {!loading && !error && (
             <>
               <LeetCodeProfile fixedUsername="user2986fQ" fixedDisplayName="Eddy-Setyan" />
               <LeetcodeTable entries={leetcode} />
             </>
           )}
-        </EndpointDoc>
+        </ExhibitFrame>
       )
     }
 
     if (activeId === 'activity') {
       return (
-        <EndpointDoc method="GET" path="/live/activity" status="200" statusText="OK"
-          title="Daily Activity Log" summary={`${activity.length} entries logged in Ascend's activity tracker.`}>
-          {loading && <p className="spec-loading">Loading live data…</p>}
-          {error && <p className="spec-error">Could not load data: {error}</p>}
+        <ExhibitFrame section="Live Demonstrations" title="Daily Practice Log"
+          byline={`${activity.length} entries logged in Ascend's activity tracker.`}>
+          {loading && <p className="exh-loading">Loading live data…</p>}
+          {error && <p className="exh-error">Could not load data: {error}</p>}
           {!loading && !error && (
             <ActivityLog tracker={activityTracker} entries={activity} readOnly />
           )}
-        </EndpointDoc>
+        </ExhibitFrame>
       )
     }
 
     if (activeId === 'analyzer') {
       return (
-        <EndpointDoc method="POST" path="/analyzer/score" status={analyzerStatus.code} statusText={analyzerStatus.text}
-          title="Resume Analyzer" summary="A Claude-powered resume scorer benchmarked for early-career SWEs, built into Ascend. Drop a PDF — nothing is stored.">
-          <div className="spec-analyzer-card">
+        <ExhibitFrame section="Live Demonstrations" title="Resume Review, Live"
+          byline="A Claude-powered resume scorer benchmarked for early-career SWEs, built into Ascend. Drop a PDF — nothing is stored.">
+          <div className="exh-analyzer-card">
             {analyzing ? (
-              <div className="spec-analyzer-loading">
-                <div className="spec-spinner" />
+              <div className="exh-analyzer-loading">
+                <div className="exh-spinner" />
                 <div>
-                  <p className="spec-analyzer-loading-title">Analyzing with Claude AI…</p>
-                  <p className="spec-analyzer-loading-sub">Scoring across 6 categories for a 1-year SWE profile</p>
+                  <p className="exh-analyzer-loading-title">Analyzing with Claude AI…</p>
+                  <p className="exh-analyzer-loading-sub">Scoring across 6 categories for a 1-year SWE profile</p>
                 </div>
               </div>
             ) : score ? (
               <AnalyzerResult result={score} onReset={() => { setScore(null); setAnalyzeErr(null) }} />
             ) : (
-              <div className="spec-dropzone-wrap">
-                <div className="spec-analyzer-criteria">
+              <div className="exh-dropzone-wrap">
+                <div className="exh-analyzer-criteria">
                   {['Metrics & Impact', 'Action Verbs', 'AWS Depth', 'Tech Keywords', 'Structure', 'Length & Format'].map(c => (
-                    <span key={c} className="spec-pill spec-pill--tag">{c}</span>
+                    <span key={c} className="exh-pill exh-pill--tag">{c}</span>
                   ))}
                 </div>
                 <DropZone onFile={handleFile} isExtracting={extracting} />
-                {analyzeErr && <p className="spec-error">{analyzeErr}</p>}
+                {analyzeErr && <p className="exh-error">{analyzeErr}</p>}
               </div>
             )}
           </div>
-        </EndpointDoc>
+        </ExhibitFrame>
       )
     }
 
@@ -579,34 +530,35 @@ export function RecruiterView() {
   }
 
   return (
-    <div className="spec-page">
-      <nav className="spec-topbar">
-        <Link to="/" className="spec-brand">
-          <span className="spec-brand-mark">▸</span>
-          <span className="spec-brand-name">Ascend</span>
+    <div className="exh-page">
+      <nav className="exh-topbar">
+        <Link to="/" className="exh-brand">
+          <span className="exh-brand-mark">✦</span>
+          <span className="exh-brand-name">Ascend</span>
         </Link>
-        <code className="spec-topbar-url">
-          curl https://edgarsetyan.com/api{activeNav ? activeNav.path : '/'}
-        </code>
-        <div className="spec-topbar-actions">
+        <span className="exh-topbar-crumb">{activeNavItem ? activeNavItem.navTitle : 'Edgar Setyan'}</span>
+        <div className="exh-topbar-actions">
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
-          <Link to="/" className="spec-back-link">← Back to app</Link>
+          <Link to="/" className="exh-back-link">← Back to app</Link>
         </div>
       </nav>
 
-      <div className="spec-shell">
-        <aside className="spec-sidebar">
+      <div className="exh-shell">
+        <aside className="exh-sidebar">
           {NAV_GROUPS.map((group) => (
-            <div key={group.label} className="spec-nav-group">
-              <div className="spec-nav-group-label">{group.label}</div>
+            <div key={group.label} className="exh-nav-group">
+              <div className="exh-nav-group-label">{group.label}</div>
               {group.items.map((item) => (
                 <button
                   key={item.id}
-                  className={`spec-nav-item ${activeId === item.id ? 'spec-nav-item--active' : ''}`}
+                  className={`exh-nav-item ${activeId === item.id ? 'exh-nav-item--active' : ''}`}
                   onClick={() => navigate(item.path === '/' ? '/portfolio' : `/portfolio${item.path}`)}
                 >
-                  <MethodBadge method={item.method} />
-                  <span className="spec-nav-path">{item.path}</span>
+                  {item.plate && <PlateMark n={item.plate} />}
+                  <span className="exh-nav-item-text">
+                    <span className="exh-nav-item-title">{item.navTitle}</span>
+                    {item.navSub && <span className="exh-nav-item-sub">{item.navSub}</span>}
+                  </span>
                 </button>
               ))}
             </div>
@@ -615,13 +567,13 @@ export function RecruiterView() {
             href="https://github.com/edgarsetyan23/Ascend"
             target="_blank"
             rel="noopener noreferrer"
-            className="spec-sidebar-source-link"
+            className="exh-sidebar-source-link"
           >
-            View source →
+            View the code →
           </a>
         </aside>
 
-        <main className="spec-main">{renderBody()}</main>
+        <main className="exh-main">{renderBody()}</main>
       </div>
     </div>
   )

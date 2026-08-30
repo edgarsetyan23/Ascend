@@ -651,6 +651,21 @@ export function RecruiterView() {
   const [extracting,  setExtracting]  = useState(false)
   const [analyzeErr,  setAnalyzeErr]  = useState(null)
 
+  // Mobile gets a deliberately simpler page, not a shrunk-down copy
+  // of the desktop one: no 3D guide, no speech bubble, no floor, no
+  // guided tour. That whole system carries real weight (a WebGL
+  // bundle, positioning math tuned for a big screen) for something
+  // that reads as gimmicky rather than charming at phone size —
+  // simpler to just not build the page around it there, and let
+  // sidebar/card navigation (already the manual fallback on desktop
+  // too) be the whole story.
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 860)
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 860)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
   // The guide stands in the corner everywhere except the Introduction
   // plate, where "Start the tour" summons him to center stage. Resets
   // when you leave the Introduction plate, so returning later starts
@@ -841,8 +856,9 @@ export function RecruiterView() {
             byline="SDE I, AWS RDS · Toronto, ON"
           >
             <p className="exh-intro-text">
-              A small collection of the work behind my résumé — laid out the way I'd want to browse
-              someone else's. Pick a piece from the list on the left, or start the tour below.
+              {isMobile
+                ? "A small collection of the work behind my résumé — laid out the way I'd want to browse someone else's. Pick a piece below to dig in."
+                : "A small collection of the work behind my résumé — laid out the way I'd want to browse someone else's. Pick a piece from the list on the left, or start the tour below."}
             </p>
             <div className={`exh-root-links ${tourFinale ? 'exh-root-links--spotlight' : ''}`}>
               <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link">
@@ -859,12 +875,14 @@ export function RecruiterView() {
               </a>
             </div>
 
-            <button
-              className="exh-start-tour"
-              onClick={autoTourActive ? cancelAutoTour : startAutoTour}
-            >
-              {autoTourActive ? 'Stop the tour ✕' : tourStarted ? 'Pick a stop below ↓' : "Come on, I'll show you around →"}
-            </button>
+            {!isMobile && (
+              <button
+                className="exh-start-tour"
+                onClick={autoTourActive ? cancelAutoTour : startAutoTour}
+              >
+                {autoTourActive ? 'Stop the tour ✕' : tourStarted ? 'Pick a stop below ↓' : "Come on, I'll show you around →"}
+              </button>
+            )}
 
             <div className="exh-tour-grid">
               {NAV_GROUPS.filter((g) => g.label !== 'Introduction').map((group, i) => (
@@ -1033,7 +1051,7 @@ export function RecruiterView() {
 
   return (
     <div className="exh-page">
-      <div className="exh-floor" aria-hidden="true" />
+      {!isMobile && <div className="exh-floor" aria-hidden="true" />}
       <nav className="exh-topbar">
         <Link to="/" className="exh-brand">
           <span className="exh-brand-mark">✦</span>
@@ -1041,7 +1059,7 @@ export function RecruiterView() {
         </Link>
         <span className="exh-topbar-crumb">{activeNavItem ? activeNavItem.navTitle : 'Edgar Setyan'}</span>
         <div className="exh-topbar-actions">
-          {autoTourActive && (
+          {autoTourActive && !isMobile && (
             <>
               <button className="exh-tour-next-btn" onClick={advanceTour}>
                 {autoTourStep === TOUR_SEQUENCE.length - 1 ? 'Back to start →' : 'Next stop →'}
@@ -1106,47 +1124,49 @@ export function RecruiterView() {
         </main>
       </div>
 
-      <div
-        className={`exh-guide-wrap ${guideIsHero ? 'exh-guide-wrap--hero' : ''}`}
-        style={
-          guideTargetRect
-            ? { right: `${guideTargetRect.right}px`, bottom: `${guideTargetRect.bottom}px`, transform: 'translate(0, 0)' }
-            : !guideIsHero && guideHomeRect
-            ? { right: `${guideHomeRect.right}px`, bottom: `${guideHomeRect.bottom}px`, transform: 'translate(0, 0)' }
-            : undefined
-        }
-      >
-        <div key={`${activeId}-${tourStarted}-${walkTick}`} className="exh-guide-caption exh-fade-in">
-          {guideTargetRect
-            ? 'On my way →'
-            : tourFinale
-            ? "That's the tour! I'd love to actually connect — pick one below."
-            : guideIsHero
-            ? "Whenever you're ready — hit Next stop up top, or pick any stop below."
-            : GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
-          {/* Points at wherever his head actually is. His head sits
-              exactly on the model's Y-rotation axis, so idle sway,
-              walking, and the click-spin never move it off-center —
-              canvas-center is always his head, in both corner and
-              hero mode. Corner mode right-aligns the caption and
-              canvas to the same edge, so "half the canvas width
-              in from that edge" lands the tail right above him;
-              hero mode already centers everything, so its own CSS
-              override (no inline style here) is already correct. */}
-          <span
-            className="exh-speech-tail"
-            style={!guideIsHero ? { right: guideSize / 2 - 7.5 } : undefined}
-            aria-hidden="true"
-          />
+      {!isMobile && (
+        <div
+          className={`exh-guide-wrap ${guideIsHero ? 'exh-guide-wrap--hero' : ''}`}
+          style={
+            guideTargetRect
+              ? { right: `${guideTargetRect.right}px`, bottom: `${guideTargetRect.bottom}px`, transform: 'translate(0, 0)' }
+              : !guideIsHero && guideHomeRect
+              ? { right: `${guideHomeRect.right}px`, bottom: `${guideHomeRect.bottom}px`, transform: 'translate(0, 0)' }
+              : undefined
+          }
+        >
+          <div key={`${activeId}-${tourStarted}-${walkTick}`} className="exh-guide-caption exh-fade-in">
+            {guideTargetRect
+              ? 'On my way →'
+              : tourFinale
+              ? "That's the tour! I'd love to actually connect — pick one below."
+              : guideIsHero
+              ? "Whenever you're ready — hit Next stop up top, or pick any stop below."
+              : GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
+            {/* Points at wherever his head actually is. His head sits
+                exactly on the model's Y-rotation axis, so idle sway,
+                walking, and the click-spin never move it off-center —
+                canvas-center is always his head, in both corner and
+                hero mode. Corner mode right-aligns the caption and
+                canvas to the same edge, so "half the canvas width
+                in from that edge" lands the tail right above him;
+                hero mode already centers everything, so its own CSS
+                override (no inline style here) is already correct. */}
+            <span
+              className="exh-speech-tail"
+              style={!guideIsHero ? { right: guideSize / 2 - 7.5 } : undefined}
+              aria-hidden="true"
+            />
+          </div>
+          <Suspense fallback={<div className="exh-guide-canvas" style={{ width: guideSize, height: guideSize }} />}>
+            <TourGuide
+              accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light}
+              size={guideSize}
+              walkKey={`${activeId}-${tourStarted}-${walkTick}`}
+            />
+          </Suspense>
         </div>
-        <Suspense fallback={<div className="exh-guide-canvas" style={{ width: guideSize, height: guideSize }} />}>
-          <TourGuide
-            accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light}
-            size={guideSize}
-            walkKey={`${activeId}-${tourStarted}-${walkTick}`}
-          />
-        </Suspense>
-      </div>
+      )}
     </div>
   )
 }

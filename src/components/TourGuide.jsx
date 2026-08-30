@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 
 // A small, persistent low-poly guide — stylized after a real photo (dark
-// curly hair, beard, warm skin tone, dark top), holding a little tour flag.
+// curly hair, warm skin tone, dark top), holding a little tour flag.
 // Built entirely from primitive geometry: no external 3D asset, no
 // attempt at a literal photorealistic likeness, just a friendly low-poly
 // nod to the reference. Mounted once and kept alive across navigation —
@@ -70,7 +70,6 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
 
     const skinMat  = track(new THREE.MeshStandardMaterial({ color: 0xc99a72, roughness: 0.65, flatShading: true }))
     const hairMat  = track(new THREE.MeshStandardMaterial({ color: 0x6b4a30, roughness: 0.8, flatShading: true }))
-    const beardMat = track(new THREE.MeshStandardMaterial({ color: 0x8a6a4a, roughness: 0.85, flatShading: true }))
     const shirtMat = track(new THREE.MeshStandardMaterial({ color: 0x2e332f, roughness: 0.75, flatShading: true }))
     const flagMat  = track(new THREE.MeshStandardMaterial({ color: new THREE.Color(accentColor), roughness: 0.5, flatShading: true }))
     const poleMat  = track(new THREE.MeshStandardMaterial({ color: 0x8a8d78, roughness: 0.6, flatShading: true }))
@@ -179,30 +178,10 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
       guide.add(chunk)
     })
 
-    // Light beard — a small, tight cluster on the chin/jaw, kept well
-    // below the mouth. Earlier version climbed upward toward the
-    // cheeks, which traced a grin-like curve — this stays low and
-    // centered so it reads as a beard, not an expression. More spots
-    // than before, each smaller, so it reads as beard texture rather
-    // than a few big chunks sitting on the jaw like pebbles.
-    const beardGeo = track(new THREE.IcosahedronGeometry(0.06, 0))
-    const beardSpots = [
-      [0, 0.09, 0.35, 0.95],      // chin, lowest and most forward
-      [-0.06, 0.10, 0.33, 0.75],
-      [0.06, 0.10, 0.33, 0.75],
-      [-0.11, 0.12, 0.30, 0.65],
-      [0.11, 0.12, 0.30, 0.65],
-      [-0.16, 0.14, 0.25, 0.55],  // jaw, tucked back toward the ear
-      [0.16, 0.14, 0.25, 0.55],
-      [-0.19, 0.17, 0.18, 0.42],  // faint trace up toward the sideburn
-      [0.19, 0.17, 0.18, 0.42],
-    ]
-    beardSpots.forEach(([x, y, z, s]) => {
-      const spot = new THREE.Mesh(beardGeo, beardMat)
-      spot.position.set(x, y, z)
-      spot.scale.setScalar(s)
-      guide.add(spot)
-    })
+    // No beard — tried a couple of shapes here and neither one read
+    // right (chin-strap-thin, then a lumpy mass that still didn't
+    // look like real facial hair at this scale/poly-count). Clean-
+    // shaven instead of a bad beard.
 
     // Raised arm holding a small tour flag.
     const armGeo = track(new THREE.CylinderGeometry(0.06, 0.075, 0.42, 6))

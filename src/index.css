@@ -1787,19 +1787,26 @@ a {
   overflow: hidden;
 }
 
-/* Ambient colour orbs */
+/* Ambient colour orbs — slow drift so the scene reads as alive */
 .auth-gate::before {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: -10%;
   background:
     radial-gradient(ellipse 60% 45% at 15% 85%, rgba(108,99,255,0.38) 0%, transparent 65%),
     radial-gradient(ellipse 50% 40% at 85% 12%, rgba(212,168,67,0.26) 0%, transparent 60%),
     radial-gradient(ellipse 40% 30% at 55% 95%, rgba(124,106,255,0.22) 0%, transparent 55%);
   pointer-events: none;
+  animation: auth-orbit 26s ease-in-out infinite;
 }
 
-/* Star field */
+@keyframes auth-orbit {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(1.5%, -2%) scale(1.04); }
+  66%      { transform: translate(-2%, 1.5%) scale(0.98); }
+}
+
+/* Star field — gentle twinkle */
 .auth-gate::after {
   content: '';
   position: absolute;
@@ -1826,6 +1833,12 @@ a {
     radial-gradient(1px   1px   at 19% 40%, rgba(255,255,255,0.50) 50%, transparent 50%),
     radial-gradient(1px   1px   at 60% 90%, rgba(255,255,255,0.35) 50%, transparent 50%);
   pointer-events: none;
+  animation: auth-twinkle 5s ease-in-out infinite alternate;
+}
+
+@keyframes auth-twinkle {
+  0%   { opacity: 0.55; }
+  100% { opacity: 1; }
 }
 
 .auth-card {
@@ -1848,6 +1861,12 @@ a {
   gap: 8px;
   position: relative;
   z-index: 1;
+  animation: auth-card-in 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes auth-card-in {
+  0%   { opacity: 0; transform: translateY(18px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* Gold shimmer across the top of the card */
@@ -1933,23 +1952,44 @@ a {
   letter-spacing: 0.08em;
 }
 
+.auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 13px;
+  font-size: 0.9rem;
+  color: rgba(212,168,67,0.55);
+  pointer-events: none;
+}
+
 .auth-input {
-  padding: 10px 13px;
+  padding: 10px 13px 10px 34px;
   border: 1px solid rgba(255,255,255,0.10);
   border-radius: var(--radius);
   background: rgba(255,255,255,0.05);
   color: rgba(232, 237, 248, 0.92);
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
+  width: 100%;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 .auth-input::placeholder { color: rgba(255,255,255,0.25); }
 .auth-input:focus {
   border-color: rgba(212,168,67,0.45);
   background: rgba(255,255,255,0.08);
+  box-shadow: 0 0 0 3px rgba(212,168,67,0.10);
+}
+.auth-input:focus + .auth-input-icon,
+.auth-input-wrap:has(.auth-input:focus) .auth-input-icon {
+  color: rgba(212,168,67,0.90);
 }
 
 .auth-input--code {
+  padding-left: 13px;
   letter-spacing: 0.3em;
   font-size: 1.3rem;
   text-align: center;
@@ -1985,10 +2025,45 @@ a {
 .auth-forgot-link:hover { color: var(--gold); }
 
 .auth-blurb {
-  font-size: 0.8rem;
-  color: rgba(255,255,255,0.45);
+  font-size: 0.85rem;
+  color: rgba(225, 230, 245, 0.72);
   text-align: center;
   line-height: 1.6;
+  margin: 0 0 14px;
+  max-width: 300px;
+}
+
+.auth-features {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.auth-feature {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(212, 168, 67, 0.08);
+  border: 1px solid rgba(212, 168, 67, 0.22);
+  color: rgba(212, 168, 67, 0.80);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.auth-feature-icon {
+  font-size: 0.85rem;
+  filter: drop-shadow(0 0 6px rgba(212,168,67,0.5));
+}
+
+.auth-private-note {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.32);
+  text-align: center;
+  line-height: 1.5;
   margin: 0 0 4px;
   max-width: 280px;
 }

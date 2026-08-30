@@ -65,7 +65,7 @@ export function AuthGate({ children }) {
   }
 
   const subtitle = {
-    login:  'Sign in to your account',
+    login:  'Welcome back',
     signup: 'Create your account',
     confirm: `Check ${email} for a verification code`,
     forgot: 'Enter your email to reset your password',
@@ -88,12 +88,22 @@ export function AuthGate({ children }) {
         <p className="auth-tagline">Track what matters.</p>
 
         {mode === 'login' && (
-          <p className="auth-blurb">
-            A personal tracker for LeetCode, job applications, and daily progress.
-            This is a private app —{' '}
-            <a href="/portfolio" className="auth-blurb-link">visit the portfolio</a>
-            {' '}if you're a recruiter or just browsing.
-          </p>
+          <>
+            <p className="auth-blurb">
+              A personal command center for LeetCode grinding, job-application
+              pipelines, and the daily habits that actually move the needle.
+            </p>
+            <div className="auth-features">
+              <span className="auth-feature"><span className="auth-feature-icon">🎯</span>LeetCode drills</span>
+              <span className="auth-feature"><span className="auth-feature-icon">📋</span>Application pipeline</span>
+              <span className="auth-feature"><span className="auth-feature-icon">🔥</span>Daily streaks</span>
+            </div>
+            <p className="auth-private-note">
+              This is a private, single-user app —{' '}
+              <a href="/portfolio" className="auth-blurb-link">visit the portfolio</a>
+              {' '}if you're a recruiter or just browsing.
+            </p>
+          </>
         )}
 
         {mode !== 'login' && (
@@ -108,17 +118,20 @@ export function AuthGate({ children }) {
           {mode !== 'confirm' && (
             <label className="auth-label">
               Email
-              <input
-                type="email"
-                className="auth-input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoFocus={mode !== 'reset'}
-                autoComplete="email"
-                placeholder="you@example.com"
-                readOnly={mode === 'reset'}
-              />
+              <div className="auth-input-wrap">
+                <span className="auth-input-icon" aria-hidden="true">✉</span>
+                <input
+                  type="email"
+                  className="auth-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoFocus={mode !== 'reset'}
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  readOnly={mode === 'reset'}
+                />
+              </div>
             </label>
           )}
 
@@ -126,16 +139,19 @@ export function AuthGate({ children }) {
           {(mode === 'login' || mode === 'signup') && (
             <label className="auth-label">
               Password
-              <input
-                type="password"
-                className="auth-input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                placeholder={mode === 'signup' ? 'Min 8 characters' : '••••••••'}
-              />
+              <div className="auth-input-wrap">
+                <span className="auth-input-icon" aria-hidden="true">🔒</span>
+                <input
+                  type="password"
+                  className="auth-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                  placeholder={mode === 'signup' ? 'Min 8 characters' : '••••••••'}
+                />
+              </div>
             </label>
           )}
 
@@ -172,6 +188,8 @@ export function AuthGate({ children }) {
           {mode === 'reset' && (
             <label className="auth-label">
               New Password
+              <div className="auth-input-wrap">
+              <span className="auth-input-icon" aria-hidden="true">🔒</span>
               <input
                 type="password"
                 className="auth-input"
@@ -182,6 +200,7 @@ export function AuthGate({ children }) {
                 autoComplete="new-password"
                 placeholder="Min 8 characters"
               />
+              </div>
             </label>
           )}
 

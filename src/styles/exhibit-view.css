@@ -94,6 +94,7 @@
 .exh-topbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 20px;
   height: 56px;
   padding: 0 20px;
@@ -400,6 +401,24 @@
 }
 @media (max-width: 640px) {
   .exh-banner-flourish { display: none; }
+  .exh-museum-banner-name { font-size: 1.3rem; }
+}
+
+/* .exh-topbar-actions never wraps or shrinks (flex-shrink: 0, no
+   flex-wrap) — fine normally, but during an active tour it holds up
+   to 4 items (Next stop, Stop tour, theme toggle, Back to app) that
+   together are wider than a phone screen, pushing the layout into
+   horizontal overflow. Compact the buttons and drop the redundant
+   back link (the brand mark already goes to the same place) instead
+   of letting it overflow or wrap out of the fixed-height topbar. */
+@media (max-width: 640px) {
+  .exh-topbar { gap: 10px; padding: 0 14px; }
+  .exh-topbar-actions { gap: 8px; }
+  .exh-back-link { display: none; }
+  .exh-tour-next-btn, .exh-tour-stop-btn {
+    padding: 5px 9px;
+    font-size: 0.74rem;
+  }
 }
 
 .exh-eyebrow {
@@ -518,6 +537,9 @@
 @media (max-width: 560px) {
   .exh-frame-emblem { width: 52px; height: 52px; padding: 9px; }
   .exh-frame-emblem--icon svg { width: 28px; height: 28px; }
+  /* flex-wrap alone leaves an awkward "two then one stretched
+     alone" layout at this width — a clean single column instead. */
+  .exh-stat { min-width: 100%; }
 }
 
 .exh-title {
@@ -738,8 +760,18 @@
 
 @media (max-width: 860px) {
   .exh-guide-wrap { right: 10px; bottom: 8px; }
-  .exh-guide-canvas { width: 130px !important; height: 130px !important; }
-  .exh-guide-caption { font-size: 0.78rem; max-width: 50vw; white-space: normal; text-align: right; }
+  .exh-guide-canvas { width: 110px !important; height: 110px !important; }
+  .exh-guide-caption { font-size: 0.76rem; max-width: 46vw; white-space: normal; text-align: right; }
+}
+
+/* On a narrow phone, 110px + a multi-line caption easily runs past
+   what the old 180px page clearance assumed — he'd overlap real
+   content. Shrink him further and give the page enough room to
+   actually clear his full footprint. */
+@media (max-width: 480px) {
+  .exh-guide-wrap { right: 8px; bottom: 6px; }
+  .exh-guide-canvas { width: 86px !important; height: 86px !important; }
+  .exh-guide-caption { font-size: 0.72rem; max-width: 56vw; padding: 6px 10px; }
 }
 
 /* ── Root / overview links ── */
@@ -1109,9 +1141,18 @@
   }
   .exh-nav-group { margin-bottom: 0; margin-right: 14px; }
   .exh-sidebar-source-link { display: none; }
-  /* The guide shrinks to 130px below this width (see the guide-wrap
-     rules above), so it needs much less reserved clearance than the
-     default. */
-  .exh-main { padding: 28px 20px 180px; }
+  /* The guide shrinks below this width (see the guide-wrap rules
+     above), but a wrapped multi-line caption at any size can still
+     run past a too-tight clearance — 210px leaves real headroom
+     instead of just matching his canvas size. */
+  .exh-main { padding: 28px 20px 210px; }
   .exh-analyzer-result { grid-template-columns: 1fr; }
+  /* A 280px band is a fifth-plus of most phone screens — too heavy
+     a footprint for the ambiance it's providing at this size. */
+  .exh-floor { height: 150px; }
+}
+
+@media (max-width: 480px) {
+  .exh-main { padding-bottom: 170px; }
+  .exh-floor { height: 110px; }
 }

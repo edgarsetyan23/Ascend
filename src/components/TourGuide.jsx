@@ -9,13 +9,17 @@ import * as THREE from 'three'
 // only the caption text (and, on the Introduction plate, its size and
 // screen position) changes — so it never tears down and rebuilds its
 // WebGL scene on every click. Passing a new `walkKey` (the caller
-// changes it on navigation, and again when "Start the tour" is clicked)
-// triggers a brief walk-cycle burst so the guide visibly moves instead
-// of just idling in place.
-export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey }) {
+// changes it on navigation) triggers a brief walk-cycle burst so the
+// guide visibly moves instead of just idling in place. Passing a new
+// `celebrateKey` (the caller changes it when "Start the tour" is
+// clicked) plays the same hop-and-spin as clicking him directly —
+// reusing that flourish programmatically instead of a second one, so
+// starting the tour reads as an event, not just a state flip.
+export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebrateKey }) {
   const containerRef = useRef(null)
   const walkUntilRef = useRef(0)
   const isFirstWalkKeyRef = useRef(true)
+  const isFirstCelebrateKeyRef = useRef(true)
   const clickStartRef = useRef(-Infinity)
 
   // Nothing to "walk to" on first mount — only trigger on real changes.
@@ -23,6 +27,11 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey }) {
     if (isFirstWalkKeyRef.current) { isFirstWalkKeyRef.current = false; return }
     walkUntilRef.current = performance.now() + 1100
   }, [walkKey])
+
+  useEffect(() => {
+    if (isFirstCelebrateKeyRef.current) { isFirstCelebrateKeyRef.current = false; return }
+    clickStartRef.current = performance.now()
+  }, [celebrateKey])
 
   useEffect(() => {
     const container = containerRef.current

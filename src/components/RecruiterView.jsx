@@ -240,8 +240,9 @@ function sectionIdFromPathname(pathname) {
   return PATH_TO_ID[sub] ?? 'root'
 }
 
-// What the guide "says" as you move between sections — written to
-// sound like one person talking, not six copies of the same template.
+// What the guide "says" on the overview cards — one summary per
+// section, since a card stands for the whole group (all 3 Field Work
+// entries, both projects), not any one exhibit inside it.
 const GUIDE_LINES = {
   'Introduction': "You're just in time — the doors are still open. I'm Edgar, come on in.",
   'Field Work': 'Two internships and the job that came after graduating.',
@@ -250,6 +251,25 @@ const GUIDE_LINES = {
   'Toolkit': 'What I actually reach for day to day.',
   'Live Demonstrations': "These are real and running — go ahead, try them.",
 }
+
+// What he says once you're actually standing at one specific exhibit
+// — every fact here is already sitting in that entry's own data
+// (a stat, a highlight, the note), just spoken instead of read. This
+// is the difference between "reactive" and "one line per section":
+// the three Field Work pages used to share the exact same caption;
+// now each gets its own, tied to what's actually on that page.
+const EXHIBIT_LINES = {
+  aws: 'Ten thousand requests a second, and I still answered the pager.',
+  'tangerine-2021': 'Second summer, same bank — this time I was in the deploy pipeline.',
+  'tangerine-2020': 'The first one — cut build errors in half with Maven before anything else.',
+  ascend: "Meta moment: you're looking at the project I'm describing right now.",
+  oncall: "Three days, one team, first place — still the fastest I've ever shipped something.",
+  york: 'Everything above traces back here, four years earlier.',
+  leetcode: 'Live-pulled from LeetCode — refresh and the numbers actually move.',
+  activity: 'Every entry here is one I actually logged.',
+  analyzer: "Drop your résumé in — I'm curious what it says about you.",
+}
+
 const ID_TO_GROUP = Object.fromEntries(
   NAV_GROUPS.flatMap((g) => g.items.map((item) => [item.id, g.label]))
 )
@@ -689,12 +709,17 @@ export function RecruiterView() {
   // Drives the finale beat: visitors drift in from the edges and the
   // contact links get a spotlight, nudging toward "now go connect."
   const [tourFinale, setTourFinale] = useState(false)
+  // Bumped once per "Start the tour" click — gives the guide his hop
+  // -and-spin flourish and the page a brief spotlight dim, so hitting
+  // the button reads as an event instead of a plain state change.
+  const [celebrateTick, setCelebrateTick] = useState(0)
 
   function startAutoTour() {
     setTourStarted(true)
     setAutoTourActive(true)
     setAutoTourStep(0)
     setTourFinale(false)
+    setCelebrateTick((t) => t + 1)
   }
 
   // Any deliberate manual navigation (a card, the sidebar, the stop
@@ -1142,7 +1167,7 @@ export function RecruiterView() {
               ? "That's the tour! I'd love to actually connect — pick one below."
               : guideIsHero
               ? "Whenever you're ready — hit Next stop up top, or pick any stop below."
-              : GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
+              : EXHIBIT_LINES[activeId] ?? GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
             {/* Points at wherever his head actually is. His head sits
                 exactly on the model's Y-rotation axis, so idle sway,
                 walking, and the click-spin never move it off-center —
@@ -1163,9 +1188,18 @@ export function RecruiterView() {
               accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light}
               size={guideSize}
               walkKey={`${activeId}-${tourStarted}-${walkTick}`}
+              celebrateKey={celebrateTick}
             />
           </Suspense>
         </div>
+      )}
+      {/* A brief dim-and-lift on the rest of the page as he glides to
+          center stage — keyed to celebrateTick so it replays every
+          "Start the tour" click, not just the first. Doesn't need to
+          be perfectly synced to the 1s glide; roughly bracketing it
+          is enough to read as one moment. */}
+      {!isMobile && guideIsHero && (
+        <div key={celebrateTick} className="exh-spotlight" aria-hidden="true" />
       )}
     </div>
   )

@@ -635,6 +635,28 @@
   align-items: center;
 }
 
+/* Dims the rest of the page as he glides to center stage, like a
+   spotlight coming up on an exhibit — gives "Start the tour" a beat
+   of its own instead of being a plain instant state change. Base
+   opacity: 0 is the safe default if the animation never runs
+   (prefers-reduced-motion strips it globally) — without it, a
+   reduced-motion visitor would see a permanent dark overlay instead
+   of no effect at all. */
+@keyframes exh-spotlight-flash {
+  0%   { opacity: 0; }
+  35%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+.exh-spotlight {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 46%, transparent 0%, transparent 22%, rgba(10, 10, 8, 0.4) 62%);
+  animation: exh-spotlight-flash 1.6s ease both;
+}
+
 .exh-guide-caption {
   position: relative;
   font-family: var(--exh-font-display);

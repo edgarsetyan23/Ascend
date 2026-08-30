@@ -237,14 +237,14 @@
   flex: 1;
   min-width: 0;
   padding: 48px 56px;
-  /* The guide and visitors are fixed to the bottom corners, sitting
-     on TOP of the page rather than pushing content up — fine when
-     there's a lot of empty space below the last content, but on a
-     shorter window (a smaller monitor, a non-maximized browser) real
-     content can end up close enough to the bottom that they visually
-     overlap it. Reserving room below the last element means that
-     never happens, regardless of viewport height. */
-  padding-bottom: 320px;
+  /* The guide is fixed to the bottom-right corner, sitting on TOP of
+     the page rather than pushing content up — fine when there's a
+     lot of empty space below the last content, but on a shorter
+     window (a smaller monitor, a non-maximized browser) real content
+     can end up close enough to the bottom that it visually overlaps
+     him. Reserving room below the last element means that never
+     happens, regardless of viewport height. */
+  padding-bottom: 280px;
 }
 
 /* ── Plate mark ── */
@@ -328,21 +328,6 @@
 
 @media (max-width: 860px) {
   .exh-intro-path { display: none; }
-}
-
-.exh-museum-visitors {
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 65%;
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0.9;
-}
-.exh-museum-visitors canvas { display: block; width: 100%; }
-
-@media (max-width: 860px) {
-  .exh-museum-visitors { display: none; }
 }
 
 /* Full-bleed entrance sign — spans the entire page width (a sibling
@@ -1016,9 +1001,9 @@
   }
   .exh-nav-group { margin-bottom: 0; margin-right: 14px; }
   .exh-sidebar-source-link { display: none; }
-  /* Visitors are hidden and the guide shrinks to 130px below this
-     width (see the guide-wrap rules above), so it needs much less
-     reserved clearance than the default. */
-  .exh-main { padding: 28px 20px 200px; }
+  /* The guide shrinks to 130px below this width (see the guide-wrap
+     rules above), so it needs much less reserved clearance than the
+     default. */
+  .exh-main { padding: 28px 20px 180px; }
   .exh-analyzer-result { grid-template-columns: 1fr; }
 }

@@ -19,7 +19,6 @@ import '../styles/exhibit-view.css'
 // downloads once someone actually lands on /portfolio, not as part of
 // the base app bundle.
 const TourGuide = lazy(() => import('./TourGuide.jsx').then((m) => ({ default: m.TourGuide })))
-const MuseumVisitors = lazy(() => import('./MuseumVisitors.jsx').then((m) => ({ default: m.MuseumVisitors })))
 const ACCENT = { light: '#4f7a63', dark: '#8fc2a6' }
 
 // ── Resume data ─────────────────────────────────────────────────────────────
@@ -50,6 +49,12 @@ const EXPERIENCE = [
       { value: '60+', label: 'AWS accounts remediated' },
       { value: '25+', label: 'incidents resolved' },
     ],
+    // A prose lede synthesized from the highlights below — same
+    // facts (RDS team, Toronto, the load-testing framework, the
+    // config API, on-call, the account cleanup), just woven into a
+    // paragraph instead of only existing as bullet fragments. No new
+    // claims added.
+    intro: "A year on RDS's engineering team in Toronto, split roughly in half between building and keeping things running. On the building side: a load-testing framework and an instance configuration API, both shipped end-to-end. On the running side: the on-call rotation — 25+ incidents deep — plus a sweep across 60+ AWS accounts to clean up infrastructure that had gone stale.",
     data: {
       company: 'Amazon Web Services (AWS)',
       role: 'Software Development Engineer I, RDS Team',
@@ -846,6 +851,7 @@ export function RecruiterView() {
           title={exp.data.role} byline={`${exp.data.company} · ${exp.data.location} · ${exp.data.period}`}
           emblem={exp.logo && <img src={exp.logo} alt={exp.data.company} />}
           flashAccent={exp.flashAccent}>
+          {exp.intro && <p className="exh-intro-text">{exp.intro}</p>}
           {exp.stats && <StatRow stats={exp.stats} accent={exp.flashAccent} />}
           <HighlightList items={exp.data.highlights} />
         </ExhibitFrame>
@@ -1036,10 +1042,6 @@ export function RecruiterView() {
           <div key={activeId} className="exh-plate-enter">{renderBody()}</div>
         </main>
       </div>
-
-      <Suspense fallback={null}>
-        <MuseumVisitors size={260} gathered={tourFinale} />
-      </Suspense>
 
       <div
         className={`exh-guide-wrap ${guideIsHero ? 'exh-guide-wrap--hero' : ''}`}

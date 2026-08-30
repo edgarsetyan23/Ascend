@@ -732,11 +732,13 @@ export function RecruiterView() {
   }, [activeId])
 
   // The guided tour: once started, steps through TOUR_SEQUENCE in
-  // order, but never on its own — each stop waits for an explicit
-  // "Next stop" click (advanceTour) rather than moving after a
-  // timer. Any manual navigation elsewhere (sidebar, a card, browser
-  // back/forward) cancels it — see handleCardClick and the sidebar
-  // button below — so it never fights a visitor who takes over.
+  // order. Stop 1 happens on its own, right after the "Start the
+  // tour" celebration beat (see the auto-advance effect below) —
+  // every stop after that waits for an explicit "Next stop" click
+  // (advanceTour) rather than moving on a timer. Any manual
+  // navigation elsewhere (sidebar, a card, browser back/forward)
+  // cancels it — see handleCardClick and the sidebar button below —
+  // so it never fights a visitor who takes over.
   const [autoTourActive, setAutoTourActive] = useState(false)
   const [autoTourStep, setAutoTourStep] = useState(0)
   // True for the moment right after the tour finishes on its own
@@ -765,6 +767,34 @@ export function RecruiterView() {
     setAutoTourActive(false)
     setTourFinale(false)
   }
+
+  // Mirrors autoTourActive into a ref so the delayed auto-advance
+  // below — a setTimeout scheduled once per "Start the tour" click —
+  // can check the LATEST value when it fires instead of the one
+  // captured when it was scheduled. Without this, clicking "Stop the
+  // tour" during the guide's hop-in beat wouldn't actually stop him
+  // from walking off to stop 1 a moment later anyway.
+  const autoTourActiveRef = useRef(false)
+  useEffect(() => { autoTourActiveRef.current = autoTourActive }, [autoTourActive])
+
+  // "Start the tour" takes him to stop 1 on his own, right after his
+  // hop-in celebration on the Introduction plate — only stop 2 onward
+  // wait for an explicit "Next stop" click. The delay just clears
+  // that celebration beat (the flash/spotlight/burst below run ~1.6s)
+  // rather than needing to be frame-perfect against it. Keyed to
+  // celebrateTick alone so it only ever fires from a fresh "Start the
+  // tour" click, never from unrelated state changes mid-tour.
+  useEffect(() => {
+    if (celebrateTick === 0 || !autoTourActive) return
+    const timer = setTimeout(() => {
+      if (!autoTourActiveRef.current) return
+      const path = TOUR_SEQUENCE[0]
+      navigate(path === '/' ? '/portfolio' : `/portfolio${path}`)
+      setAutoTourStep(1)
+    }, 1700)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [celebrateTick])
 
   // Called only by the "Next stop" click — takes the guide to the
   // current step's page. On the last stop (always back home), it
@@ -1202,7 +1232,7 @@ export function RecruiterView() {
               : tourFinale
               ? "That's the tour! I'd love to actually connect — pick one below."
               : guideIsHero
-              ? "Whenever you're ready — hit Next stop up top, or pick any stop below."
+              ? "Alright, let's start with the first stop →"
               : EXHIBIT_LINES[activeId] ?? GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
             {/* Points at wherever his head actually is. His head sits
                 exactly on the model's Y-rotation axis, so idle sway,

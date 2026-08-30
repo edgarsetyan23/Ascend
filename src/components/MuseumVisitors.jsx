@@ -10,8 +10,14 @@ import * as THREE from 'three'
 // the guide's own corner presence — same FOV and camera distance as
 // TourGuide.jsx — so they read as the same scale as him, not tiny
 // background props.
-export function MuseumVisitors({ size = 260 }) {
+export function MuseumVisitors({ size = 260, gathered = false }) {
   const containerRef = useRef(null)
+  // Read inside the animation loop via a ref rather than a `useEffect`
+  // dependency — the scene/geometry only needs building once; whether
+  // the visitors are gathered can just change what the loop eases
+  // toward, without tearing down and rebuilding the whole WebGL scene.
+  const gatheredRef = useRef(gathered)
+  useEffect(() => { gatheredRef.current = gathered }, [gathered])
 
   useEffect(() => {
     const container = containerRef.current
@@ -111,6 +117,12 @@ export function MuseumVisitors({ size = 260 }) {
       { ...buildVisitor(0x82755f, true),  baseX: 2.7,  baseZ: -1.0, scale: 1.05, phase: 3.5 },
       { ...buildVisitor(0x6f8275, false), baseX: 4.1,  baseZ: -0.7, scale: 1.15, phase: 4.1 },
     ]
+    // Mutable per-visitor "current" x, eased toward either the spread-
+    // out resting position or the gathered-at-center one each frame —
+    // this is what makes the regroup at tour's end a glide instead of
+    // a snap.
+    visitors.forEach((v) => { v.curX = v.baseX })
+
     visitors.forEach(({ group, baseX, baseZ, scale }) => {
       group.position.set(baseX, baseY, baseZ)
       group.scale.setScalar(scale)
@@ -133,10 +145,17 @@ export function MuseumVisitors({ size = 260 }) {
     const clock = new THREE.Clock()
     const animate = () => {
       const t = clock.getElapsedTime()
-      visitors.forEach(({ group, head, baseX, baseZ, phase }) => {
-        // A slow shuffling drift + weight-shift bounce — reads as
-        // restless standing rather than a locked-in-place prop.
-        group.position.x = baseX + Math.sin(t * 0.18 + phase) * 0.14
+      visitors.forEach((v) => {
+        const { group, head, baseX, baseZ, phase } = v
+        // Ease curX toward the resting spread or a tight center
+        // cluster, depending on gatheredRef — a glide, not a snap.
+        const target = gatheredRef.current ? baseX * 0.1 : baseX
+        v.curX += (target - v.curX) * 0.02
+
+        // A slow shuffling drift + weight-shift bounce on top of
+        // wherever curX currently is — reads as restless standing
+        // rather than a locked-in-place prop.
+        group.position.x = v.curX + Math.sin(t * 0.18 + phase) * 0.14
         group.position.z = baseZ
         group.position.y = baseY + Math.abs(Math.sin(t * 1.1 + phase)) * 0.025
         group.rotation.y = Math.PI + Math.sin(t * 0.3 + phase) * 0.08

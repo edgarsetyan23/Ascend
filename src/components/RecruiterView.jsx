@@ -36,6 +36,7 @@ const EXPERIENCE = [
     navTitle: 'Amazon Web Services',
     navSub: '2025 – 2026',
     note: 'My first job after graduating.',
+    logo: '/logos/aws.svg',
     data: {
       company: 'Amazon Web Services (AWS)',
       role: 'Software Development Engineer I, RDS Team',
@@ -57,6 +58,7 @@ const EXPERIENCE = [
     navTitle: 'Tangerine Bank',
     navSub: 'Summer 2021',
     note: 'My second internship — same company, a year later.',
+    logo: '/logos/tangerine.svg',
     data: {
       company: 'Tangerine Bank',
       role: 'Software Developer Intern',
@@ -76,6 +78,7 @@ const EXPERIENCE = [
     navTitle: 'Tangerine Bank',
     navSub: 'Summer 2020',
     note: 'My first internship — where it started.',
+    logo: '/logos/tangerine.svg',
     data: {
       company: 'Tangerine Bank',
       role: 'Software Developer Intern',
@@ -147,11 +150,16 @@ const EDUCATION = {
   navTitle: 'York University',
   navSub: 'Class of 2024',
   note: 'Where it started, before any of the above.',
+  logo: '/logos/york.svg',
   data: {
     school: 'York University',
     degree: 'Bachelor of Science Honours in Computer Science',
     location: 'Toronto, ON',
     grad: 'Class of 2024',
+    // Empty until real course names are dropped in — nothing renders
+    // for this until then (see the coursework block below), rather
+    // than shipping placeholder/invented course names.
+    coursework: [],
   },
 }
 
@@ -531,7 +539,33 @@ function DownloadIcon() {
   )
 }
 
-function ExhibitFrame({ section, plate, title, note, byline, children }) {
+// Studio Projects have no real-world logo to show (they're personal
+// work, not an employer), so each gets a small hand-drawn icon badge
+// instead — same "big emblem" treatment as the company logos on
+// Field Work/Education, just built from a glyph instead of a
+// sourced image.
+function AscendIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 6l1.5 1.5L8 5" />
+      <path d="M11 6h9" />
+      <path d="M4 12l1.5 1.5L8 11" />
+      <path d="M11 12h9" />
+      <path d="M4 18l1.5 1.5L8 17" />
+      <path d="M11 18h9" />
+    </svg>
+  )
+}
+function OnCallIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 01-3.46 0" />
+    </svg>
+  )
+}
+
+function ExhibitFrame({ section, plate, title, note, byline, emblem, emblemVariant = 'logo', children }) {
   return (
     <div className="exh-frame">
       <CaseBrackets />
@@ -539,8 +573,17 @@ function ExhibitFrame({ section, plate, title, note, byline, children }) {
         {plate && <PlateMark n={plate} />}
         <span className="exh-eyebrow-text">{section}</span>
       </div>
-      {title && <h1 className="exh-title">{title}</h1>}
-      {note && <p className="exh-note">{note}</p>}
+      <div className="exh-frame-head">
+        <div className="exh-frame-head-text">
+          {title && <h1 className="exh-title">{title}</h1>}
+          {note && <p className="exh-note">{note}</p>}
+        </div>
+        {emblem && (
+          <div className={`exh-frame-emblem ${emblemVariant === 'icon' ? 'exh-frame-emblem--icon' : ''}`}>
+            {emblem}
+          </div>
+        )}
+      </div>
       {byline && <p className="exh-byline">{byline}</p>}
       {children}
     </div>
@@ -585,17 +628,33 @@ export function RecruiterView() {
   // fights a visitor who takes over.
   const [autoTourActive, setAutoTourActive] = useState(false)
   const [autoTourStep, setAutoTourStep] = useState(0)
+  // True for the moment right after the tour finishes on its own
+  // (last stop is always back home) — distinct from just "not
+  // active," since that's also true before a tour ever started.
+  // Drives the finale beat: visitors drift in from the edges and the
+  // contact links get a spotlight, nudging toward "now go connect."
+  const [tourFinale, setTourFinale] = useState(false)
 
   function startAutoTour() {
     setTourStarted(true)
     setAutoTourActive(true)
     setAutoTourStep(0)
+    setTourFinale(false)
+  }
+
+  // Any deliberate manual navigation (a card, the sidebar, the stop
+  // button) cancels the tour and clears the finale — a visitor taking
+  // over shouldn't stay parked in "just finished" mode.
+  function cancelAutoTour() {
+    setAutoTourActive(false)
+    setTourFinale(false)
   }
 
   useEffect(() => {
     if (!autoTourActive) return
     if (autoTourStep >= TOUR_SEQUENCE.length) {
       setAutoTourActive(false)
+      setTourFinale(true)
       return
     }
     // A longer beat on the very first step (he's just arrived at
@@ -624,7 +683,7 @@ export function RecruiterView() {
   const [walkTick, setWalkTick] = useState(0)
 
   function handleCardClick(e, path) {
-    setAutoTourActive(false)
+    cancelAutoTour()
     const rect = e.currentTarget.getBoundingClientRect()
     setGuideTargetRect({
       right: window.innerWidth - (rect.left + rect.width / 2),
@@ -693,7 +752,7 @@ export function RecruiterView() {
               A small collection of the work behind my résumé — laid out the way I'd want to browse
               someone else's. Pick a piece from the list on the left, or start the tour below.
             </p>
-            <div className="exh-root-links">
+            <div className={`exh-root-links ${tourFinale ? 'exh-root-links--spotlight' : ''}`}>
               <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link">
                 <span className="exh-root-link-icon"><GitHubIcon /></span> GitHub
               </a>
@@ -710,7 +769,7 @@ export function RecruiterView() {
 
             <button
               className="exh-start-tour"
-              onClick={autoTourActive ? () => setAutoTourActive(false) : startAutoTour}
+              onClick={autoTourActive ? cancelAutoTour : startAutoTour}
             >
               {autoTourActive ? 'Stop the tour ✕' : tourStarted ? 'Pick a stop below ↓' : "Come on, I'll show you around →"}
             </button>
@@ -750,7 +809,8 @@ export function RecruiterView() {
     if (exp) {
       return (
         <ExhibitFrame section="Field Work" plate={exp.plate} note={exp.note}
-          title={exp.data.role} byline={`${exp.data.company} · ${exp.data.location} · ${exp.data.period}`}>
+          title={exp.data.role} byline={`${exp.data.company} · ${exp.data.location} · ${exp.data.period}`}
+          emblem={exp.logo && <img src={exp.logo} alt={exp.data.company} />}>
           <HighlightList items={exp.data.highlights} />
         </ExhibitFrame>
       )
@@ -760,7 +820,8 @@ export function RecruiterView() {
     if (proj) {
       return (
         <ExhibitFrame section="Studio Projects" plate={proj.plate} note={proj.note}
-          title={proj.data.name} byline={proj.data.stack}>
+          title={proj.data.name} byline={proj.data.stack}
+          emblem={proj.id === 'ascend' ? <AscendIcon /> : <OnCallIcon />} emblemVariant="icon">
           <HighlightList items={proj.data.highlights} />
           {proj.snippet && <DetailPanel file={proj.snippet.file} code={proj.snippet.code} />}
         </ExhibitFrame>
@@ -770,7 +831,21 @@ export function RecruiterView() {
     if (activeId === 'york') {
       return (
         <ExhibitFrame section="Education" plate={EDUCATION.plate} note={EDUCATION.note}
-          title={EDUCATION.data.school} byline={`${EDUCATION.data.degree} · ${EDUCATION.data.grad}`} />
+          title={EDUCATION.data.school} byline={`${EDUCATION.data.degree} · ${EDUCATION.data.grad}`}
+          emblem={<img src={EDUCATION.logo} alt={EDUCATION.data.school} />}>
+          {EDUCATION.data.coursework?.length > 0 && (
+            <div className="exh-skills">
+              <div className="exh-skill-row">
+                <span className="exh-skill-category">Coursework</span>
+                <div className="exh-pills">
+                  {EDUCATION.data.coursework.map((c) => (
+                    <span key={c} className="exh-pill exh-pill--tag">{c}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </ExhibitFrame>
       )
     }
 
@@ -867,7 +942,7 @@ export function RecruiterView() {
         <span className="exh-topbar-crumb">{activeNavItem ? activeNavItem.navTitle : 'Edgar Setyan'}</span>
         <div className="exh-topbar-actions">
           {autoTourActive && (
-            <button className="exh-tour-stop-btn" onClick={() => setAutoTourActive(false)}>
+            <button className="exh-tour-stop-btn" onClick={cancelAutoTour}>
               ⏸ Stop tour
             </button>
           )}
@@ -900,7 +975,7 @@ export function RecruiterView() {
                 <button
                   key={item.id}
                   className={`exh-nav-item ${activeId === item.id ? 'exh-nav-item--active' : ''}`}
-                  onClick={() => { setAutoTourActive(false); navigate(item.path === '/' ? '/portfolio' : `/portfolio${item.path}`) }}
+                  onClick={() => { cancelAutoTour(); navigate(item.path === '/' ? '/portfolio' : `/portfolio${item.path}`) }}
                 >
                   {item.plate && <PlateMark n={item.plate} />}
                   <span className="exh-nav-item-text">
@@ -927,7 +1002,7 @@ export function RecruiterView() {
       </div>
 
       <Suspense fallback={null}>
-        <MuseumVisitors size={260} />
+        <MuseumVisitors size={260} gathered={tourFinale} />
       </Suspense>
 
       <div
@@ -937,6 +1012,8 @@ export function RecruiterView() {
         <div key={`${activeId}-${tourStarted}-${walkTick}`} className="exh-guide-caption exh-fade-in">
           {guideTargetRect
             ? 'On my way →'
+            : tourFinale
+            ? "That's the tour! I'd love to actually connect — pick one below."
             : guideIsHero
             ? "Let's start with Field Work — or pick any stop below."
             : GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}

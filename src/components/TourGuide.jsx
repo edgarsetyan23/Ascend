@@ -142,23 +142,34 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
     mouth.position.set(0, 0.28, 0.345)
     guide.add(mouth)
 
-    // Hair — a small number of large, elongated angular chunks, not
-    // small round tufts. Low-poly hair is conventionally built from a
-    // few flat triangular planes with a directional sweep (real
-    // technique, not a guess) — a handful of little spheres just
-    // reads as a cluster of circles, which is what this replaces.
-    // Kept short this round: smaller base chunks, pulled up and in
-    // toward the skull instead of the previous longer cut that swept
-    // down past ear level on the sides.
-    const hairChunkGeo = track(new THREE.IcosahedronGeometry(0.19, 0))
+    // Hair — two layers, not one. Last round's "shorter cut" shrank
+    // and spread out the individual angular chunks to pull the
+    // silhouette in, but with nothing guaranteeing they still
+    // overlapped, real gaps of bare scalp opened up between them.
+    // Coverage and surface texture are two different jobs now:
+    //
+    // 1. A solid base cap — smoother (subdivision 1, not 0), sized
+    //    and positioned to fully wrap the scalp from crown to ear
+    //    level with margin to spare, checked against the head's own
+    //    real geometry so there's no gap by construction, not by eye.
+    const hairBaseGeo = track(new THREE.IcosahedronGeometry(0.34, 1))
+    const hairBase = new THREE.Mesh(hairBaseGeo, hairMat)
+    hairBase.position.set(0, 0.58, -0.04)
+    hairBase.scale.set(1.0, 0.82, 0.92)
+    guide.add(hairBase)
+
+    // 2. Small angular chunks sitting proud of that base, purely for
+    //    the low-poly "chunky hair" texture — since the base already
+    //    guarantees full coverage underneath, these don't have to
+    //    tile perfectly against each other the way the old single-
+    //    layer version did.
+    const hairChunkGeo = track(new THREE.IcosahedronGeometry(0.15, 0))
     const hairChunks = [
       // [x, y, z, scaleX, scaleY, scaleZ, rotZ]
-      [0, 0.60, -0.07, 1.2, 0.7, 1.0, 0],            // crown/back mass — flatter, less tall
-      [-0.27, 0.56, 0.04, 0.65, 0.85, 0.7, -0.3],    // left side — higher and tighter, not swept down
-      [0.27, 0.56, 0.04, 0.65, 0.85, 0.7, 0.3],      // right side — higher and tighter
-      [0, 0.66, 0.12, 0.85, 0.6, 0.75, 0],           // front/top, slight forward sweep
-      [-0.13, 0.70, -0.05, 0.6, 0.65, 0.65, -0.2],   // crown-left fill
-      [0.13, 0.70, -0.05, 0.6, 0.65, 0.65, 0.2],     // crown-right fill
+      [0, 0.74, 0.03, 0.95, 0.55, 0.75, 0],          // crown/top
+      [-0.24, 0.62, -0.12, 0.7, 0.7, 0.65, -0.25],   // left side
+      [0.24, 0.62, -0.12, 0.7, 0.7, 0.65, 0.25],     // right side
+      [0, 0.58, -0.26, 0.85, 0.6, 0.7, 0],           // back
     ]
     hairChunks.forEach(([x, y, z, sx, sy, sz, rz]) => {
       const chunk = new THREE.Mesh(hairChunkGeo, hairMat)

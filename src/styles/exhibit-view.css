@@ -150,6 +150,24 @@
   cursor: pointer;
 }
 .exh-tour-stop-btn:hover { background: var(--exh-accent); color: var(--exh-bg-raised); }
+
+/* The primary "go" action — filled, next to the outline "stop"
+   button, so it's clearly the one to reach for when you're ready to
+   move on (nothing advances on its own anymore). */
+.exh-tour-next-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--exh-bg-raised);
+  background: var(--exh-accent);
+  border: 1px solid var(--exh-accent);
+  border-radius: 99px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.exh-tour-next-btn:hover { opacity: 0.88; }
 .exh-back-link:hover { color: var(--exh-ink); }
 
 /* ── Shell layout ── */

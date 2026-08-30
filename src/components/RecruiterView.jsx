@@ -660,11 +660,12 @@ export function RecruiterView() {
     if (activeId !== 'root') setTourStarted(false)
   }, [activeId])
 
-  // The auto-advancing guided tour: once started, steps through
-  // TOUR_SEQUENCE on a timer until it's back home. Any manual
-  // navigation (sidebar, a card, browser back/forward) cancels it —
-  // see handleCardClick and the sidebar button below — so it never
-  // fights a visitor who takes over.
+  // The guided tour: once started, steps through TOUR_SEQUENCE in
+  // order, but never on its own — each stop waits for an explicit
+  // "Next stop" click (advanceTour) rather than moving after a
+  // timer. Any manual navigation elsewhere (sidebar, a card, browser
+  // back/forward) cancels it — see handleCardClick and the sidebar
+  // button below — so it never fights a visitor who takes over.
   const [autoTourActive, setAutoTourActive] = useState(false)
   const [autoTourStep, setAutoTourStep] = useState(0)
   // True for the moment right after the tour finishes on its own
@@ -689,23 +690,21 @@ export function RecruiterView() {
     setTourFinale(false)
   }
 
-  useEffect(() => {
-    if (!autoTourActive) return
-    if (autoTourStep >= TOUR_SEQUENCE.length) {
+  // Called only by the "Next stop" click — takes the guide to the
+  // current step's page. On the last stop (always back home), it
+  // navigates AND ends the tour in the same click, so there's no
+  // dangling extra click once you're already back at the start.
+  function advanceTour() {
+    const path = TOUR_SEQUENCE[autoTourStep]
+    const isLastStop = autoTourStep === TOUR_SEQUENCE.length - 1
+    navigate(path === '/' ? '/portfolio' : `/portfolio${path}`)
+    if (isLastStop) {
       setAutoTourActive(false)
       setTourFinale(true)
-      return
-    }
-    // A longer beat on the very first step (he's just arrived at
-    // center stage), a normal pace after that.
-    const delay = autoTourStep === 0 ? 1900 : 3600
-    const timer = window.setTimeout(() => {
-      const path = TOUR_SEQUENCE[autoTourStep]
-      navigate(path === '/' ? '/portfolio' : `/portfolio${path}`)
+    } else {
       setAutoTourStep((s) => s + 1)
-    }, delay)
-    return () => window.clearTimeout(timer)
-  }, [autoTourActive, autoTourStep])
+    }
+  }
 
   // Refs for measuring the 5 exhibit cards' real on-screen positions,
   // so the background trail (IntroPath) can actually connect to them.
@@ -984,9 +983,14 @@ export function RecruiterView() {
         <span className="exh-topbar-crumb">{activeNavItem ? activeNavItem.navTitle : 'Edgar Setyan'}</span>
         <div className="exh-topbar-actions">
           {autoTourActive && (
-            <button className="exh-tour-stop-btn" onClick={cancelAutoTour}>
-              ⏸ Stop tour
-            </button>
+            <>
+              <button className="exh-tour-next-btn" onClick={advanceTour}>
+                {autoTourStep === TOUR_SEQUENCE.length - 1 ? 'Back to start →' : 'Next stop →'}
+              </button>
+              <button className="exh-tour-stop-btn" onClick={cancelAutoTour}>
+                ⏸ Stop tour
+              </button>
+            </>
           )}
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
           <Link to="/" className="exh-back-link">← Back to app</Link>
@@ -1053,7 +1057,7 @@ export function RecruiterView() {
             : tourFinale
             ? "That's the tour! I'd love to actually connect — pick one below."
             : guideIsHero
-            ? "Let's start with Field Work — or pick any stop below."
+            ? "Whenever you're ready — hit Next stop up top, or pick any stop below."
             : GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
           {/* Points at wherever his head actually is. His head sits
               exactly on the model's Y-rotation axis, so idle sway,

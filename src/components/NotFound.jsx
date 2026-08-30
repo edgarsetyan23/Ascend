@@ -12,7 +12,7 @@ export function NotFound() {
         </p>
         <div className="nf-actions">
           <Link to="/" className="nf-btn nf-btn--primary">Return to Ascend</Link>
-          <a href="/portfolio" className="nf-btn nf-btn--ghost">View Portfolio</a>
+          <a href="/portfolio" className="nf-btn nf-btn--ghost">View the Gallery</a>
         </div>
       </div>
     </div>

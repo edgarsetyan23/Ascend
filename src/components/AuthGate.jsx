@@ -86,6 +86,7 @@ export function AuthGate({ children }) {
         <div className="auth-logo">🔱</div>
         <h1 className="auth-title">Ascend</h1>
         <p className="auth-tagline">Track what matters.</p>
+        <p className="auth-plaque">Private collection · restricted access</p>
 
         {mode === 'login' && (
           <>
@@ -99,15 +100,15 @@ export function AuthGate({ children }) {
               <span className="auth-feature"><span className="auth-feature-icon">🔥</span>Daily streaks</span>
             </div>
             <p className="auth-private-note">
-              This is a private, single-user app —{' '}
-              <a href="/portfolio" className="auth-blurb-link">visit the portfolio</a>
-              {' '}if you're a recruiter or just browsing.
+              Not on public display —{' '}
+              <a href="/portfolio" className="auth-blurb-link">the gallery</a>
+              {' '}is this way if you're a recruiter or just browsing.
             </p>
           </>
         )}
 
         {mode !== 'login' && (
-          <a href="/portfolio" className="auth-portfolio-link">View portfolio →</a>
+          <a href="/portfolio" className="auth-portfolio-link">View the gallery →</a>
         )}
 
         <p className="auth-subtitle">{subtitle}</p>

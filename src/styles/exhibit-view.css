@@ -237,6 +237,14 @@
   flex: 1;
   min-width: 0;
   padding: 48px 56px;
+  /* The guide and visitors are fixed to the bottom corners, sitting
+     on TOP of the page rather than pushing content up — fine when
+     there's a lot of empty space below the last content, but on a
+     shorter window (a smaller monitor, a non-maximized browser) real
+     content can end up close enough to the bottom that they visually
+     overlap it. Reserving room below the last element means that
+     never happens, regardless of viewport height. */
+  padding-bottom: 320px;
 }
 
 /* ── Plate mark ── */
@@ -431,6 +439,67 @@
   color: var(--exh-accent);
 }
 .exh-frame-emblem--icon svg { width: 38px; height: 38px; }
+
+/* Flash treatment — currently only the AWS entry opts in (via
+   flashAccent). A diagonal light sweep across the badge plus an
+   accent-colored border, so this one plate visually pops instead of
+   blending into the site's otherwise-uniform sage green. */
+.exh-frame-emblem--flash {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--exh-flash-accent, var(--exh-accent));
+  box-shadow: 0 6px 20px rgba(25, 26, 20, 0.14);
+}
+@keyframes exh-emblem-shine {
+  0%   { transform: translateX(-140%) rotate(20deg); }
+  45%  { transform: translateX(160%) rotate(20deg); }
+  100% { transform: translateX(160%) rotate(20deg); }
+}
+.exh-frame-emblem--flash::after {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -20%;
+  width: 35%;
+  height: 220%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.85), transparent);
+  animation: exh-emblem-shine 3.4s ease-in-out infinite;
+  animation-delay: 0.8s;
+  pointer-events: none;
+}
+
+/* Headline stat callouts — same numbers already in the highlight
+   prose below, pulled out into a big-number row instead of staying
+   buried mid-sentence. --exh-stat-accent (set inline per entry) lets
+   one entry break from the site's uniform sage accent. */
+.exh-stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 4px 0 28px;
+}
+.exh-stat {
+  flex: 1;
+  min-width: 130px;
+  padding: 14px 16px 12px;
+  border-radius: 10px;
+  background: var(--exh-sidebar-bg);
+  border-top: 3px solid var(--exh-stat-accent, var(--exh-accent));
+}
+.exh-stat-value {
+  display: block;
+  font-family: var(--exh-font-display);
+  font-weight: 700;
+  font-size: 1.7rem;
+  line-height: 1.15;
+  color: var(--exh-stat-accent, var(--exh-accent));
+}
+.exh-stat-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--exh-ink-muted);
+  margin-top: 3px;
+}
 
 @media (max-width: 560px) {
   .exh-frame-emblem { width: 52px; height: 52px; padding: 9px; }
@@ -947,6 +1016,9 @@
   }
   .exh-nav-group { margin-bottom: 0; margin-right: 14px; }
   .exh-sidebar-source-link { display: none; }
-  .exh-main { padding: 28px 20px; }
+  /* Visitors are hidden and the guide shrinks to 130px below this
+     width (see the guide-wrap rules above), so it needs much less
+     reserved clearance than the default. */
+  .exh-main { padding: 28px 20px 200px; }
   .exh-analyzer-result { grid-template-columns: 1fr; }
 }

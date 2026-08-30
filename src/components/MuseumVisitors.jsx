@@ -121,6 +121,25 @@ export function MuseumVisitors({ size = 260, gathered = false }) {
     // out resting position or the gathered-at-center one each frame —
     // this is what makes the regroup at tour's end a glide instead of
     // a snap.
+    // The x-spread above was tuned by eye against one particular (very
+    // wide) test window. On a narrower monitor/browser window, the
+    // container is narrower, the camera's horizontal frustum at the
+    // visitors' depth is correspondingly narrower, and those same
+    // absolute x values land outside it — visitors get clipped by the
+    // canvas edge instead of just standing closer together. Rescale
+    // every baseX by how much room is actually available, so they
+    // fit regardless of window size instead of only fitting the one
+    // window this was eyeballed on.
+    const REPRESENTATIVE_VISITOR_Z = -0.75
+    const distToVisitors = camera.position.z - REPRESENTATIVE_VISITOR_Z
+    const halfHeightAtVisitors = distToVisitors * Math.tan((camera.fov * Math.PI) / 360)
+    const halfWidthAtVisitors = halfHeightAtVisitors * camera.aspect
+    const SAFE_FRACTION = 0.85 // leave margin — nobody sits right at the frustum edge
+    const maxSafeX = halfWidthAtVisitors * SAFE_FRACTION
+    const maxDesignedX = Math.max(...visitors.map((v) => Math.abs(v.baseX)))
+    const spreadScale = Math.min(1, maxSafeX / maxDesignedX)
+    visitors.forEach((v) => { v.baseX *= spreadScale })
+
     visitors.forEach((v) => { v.curX = v.baseX })
 
     visitors.forEach(({ group, baseX, baseZ, scale }) => {

@@ -37,6 +37,19 @@ const EXPERIENCE = [
     navSub: '2025 – 2026',
     note: 'My first job after graduating.',
     logo: '/logos/aws.svg',
+    // Real AWS brand orange — used only here, as a deliberate one-off
+    // accent so this entry (current job, most weight on the résumé)
+    // visually pops against the site's uniform sage green rather than
+    // blending in with every other plate.
+    flashAccent: '#FF9900',
+    // Same three numbers already sitting in the highlight sentences
+    // below — pulled out, not invented, and given a big-number
+    // callout treatment instead of staying buried mid-paragraph.
+    stats: [
+      { value: '10,000+', label: 'sustained TPS' },
+      { value: '60+', label: 'AWS accounts remediated' },
+      { value: '25+', label: 'incidents resolved' },
+    ],
     data: {
       company: 'Amazon Web Services (AWS)',
       role: 'Software Development Engineer I, RDS Team',
@@ -255,6 +268,24 @@ const CARD_LOGOS = {
 
 function PlateMark({ n }) {
   return <span className="exh-plate">{n}</span>
+}
+
+// Big-number callouts for an entry's headline stats — same facts
+// already in its highlight sentences, just pulled out and given a
+// treatment that actually catches the eye instead of staying buried
+// mid-paragraph. `accent` overrides the site's sage green for entries
+// that want their own visual identity (currently just AWS).
+function StatRow({ stats, accent }) {
+  return (
+    <div className="exh-stat-row" style={accent ? { '--exh-stat-accent': accent } : undefined}>
+      {stats.map((s) => (
+        <div key={s.label} className="exh-stat">
+          <span className="exh-stat-value">{s.value}</span>
+          <span className="exh-stat-label">{s.label}</span>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function HighlightList({ items }) {
@@ -565,7 +596,7 @@ function OnCallIcon() {
   )
 }
 
-function ExhibitFrame({ section, plate, title, note, byline, emblem, emblemVariant = 'logo', children }) {
+function ExhibitFrame({ section, plate, title, note, byline, emblem, emblemVariant = 'logo', flashAccent, children }) {
   return (
     <div className="exh-frame">
       <CaseBrackets />
@@ -579,7 +610,10 @@ function ExhibitFrame({ section, plate, title, note, byline, emblem, emblemVaria
           {note && <p className="exh-note">{note}</p>}
         </div>
         {emblem && (
-          <div className={`exh-frame-emblem ${emblemVariant === 'icon' ? 'exh-frame-emblem--icon' : ''}`}>
+          <div
+            className={`exh-frame-emblem ${emblemVariant === 'icon' ? 'exh-frame-emblem--icon' : ''} ${flashAccent ? 'exh-frame-emblem--flash' : ''}`}
+            style={flashAccent ? { '--exh-flash-accent': flashAccent } : undefined}
+          >
             {emblem}
           </div>
         )}
@@ -810,7 +844,9 @@ export function RecruiterView() {
       return (
         <ExhibitFrame section="Field Work" plate={exp.plate} note={exp.note}
           title={exp.data.role} byline={`${exp.data.company} · ${exp.data.location} · ${exp.data.period}`}
-          emblem={exp.logo && <img src={exp.logo} alt={exp.data.company} />}>
+          emblem={exp.logo && <img src={exp.logo} alt={exp.data.company} />}
+          flashAccent={exp.flashAccent}>
+          {exp.stats && <StatRow stats={exp.stats} accent={exp.flashAccent} />}
           <HighlightList items={exp.data.highlights} />
         </ExhibitFrame>
       )
@@ -1017,7 +1053,20 @@ export function RecruiterView() {
             : guideIsHero
             ? "Let's start with Field Work — or pick any stop below."
             : GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
-          <span className="exh-speech-tail" aria-hidden="true" />
+          {/* Points at wherever his head actually is. His head sits
+              exactly on the model's Y-rotation axis, so idle sway,
+              walking, and the click-spin never move it off-center —
+              canvas-center is always his head, in both corner and
+              hero mode. Corner mode right-aligns the caption and
+              canvas to the same edge, so "half the canvas width
+              in from that edge" lands the tail right above him;
+              hero mode already centers everything, so its own CSS
+              override (no inline style here) is already correct. */}
+          <span
+            className="exh-speech-tail"
+            style={!guideIsHero ? { right: guideSize / 2 - 7.5 } : undefined}
+            aria-hidden="true"
+          />
         </div>
         <Suspense fallback={<div className="exh-guide-canvas" style={{ width: guideSize, height: guideSize }} />}>
           <TourGuide

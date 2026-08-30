@@ -2411,8 +2411,8 @@ a {
   color: var(--text);
   background-color: var(--bg);
   background-image:
-    radial-gradient(rgba(108, 99, 255, 0.07) 1px, transparent 1px),
-    radial-gradient(ellipse 800px 600px at 8% 12%, rgba(108, 99, 255, 0.07) 0%, transparent 65%),
+    radial-gradient(rgba(79, 122, 99, 0.07) 1px, transparent 1px),
+    radial-gradient(ellipse 800px 600px at 8% 12%, rgba(79, 122, 99, 0.07) 0%, transparent 65%),
     radial-gradient(ellipse 600px 500px at 92% 28%, rgba(212, 168, 67, 0.05) 0%, transparent 65%),
     radial-gradient(ellipse 700px 500px at 44% 88%, rgba(45, 212, 191, 0.05) 0%, transparent 65%);
   background-size: 28px 28px, 100% 100%, 100% 100%, 100% 100%;
@@ -2422,8 +2422,8 @@ a {
 
 [data-theme="dark"] .rc-page {
   background-image:
-    radial-gradient(rgba(124, 106, 255, 0.14) 1px, transparent 1px),
-    radial-gradient(ellipse 800px 600px at 8% 12%, rgba(124, 106, 255, 0.13) 0%, transparent 65%),
+    radial-gradient(rgba(143, 194, 166, 0.14) 1px, transparent 1px),
+    radial-gradient(ellipse 800px 600px at 8% 12%, rgba(143, 194, 166, 0.13) 0%, transparent 65%),
     radial-gradient(ellipse 600px 500px at 92% 28%, rgba(212, 168, 67, 0.09) 0%, transparent 65%),
     radial-gradient(ellipse 700px 500px at 44% 88%, rgba(45, 212, 191, 0.09) 0%, transparent 65%);
 }
@@ -2466,7 +2466,7 @@ a {
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(108, 99, 255, 0.12);
+  border-bottom: 1px solid rgba(79, 122, 99, 0.12);
   box-shadow: var(--shadow);
   position: sticky;
   top: 0;
@@ -2474,10 +2474,10 @@ a {
 }
 
 [data-theme="dark"] .rc-nav {
-  background: rgba(10, 16, 30, 0.72);
+  background: rgba(20, 21, 15, 0.72);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(124, 106, 255, 0.15);
+  border-bottom: 1px solid rgba(143, 194, 166, 0.15);
 }
 
 .rc-nav-inner {
@@ -2577,7 +2577,7 @@ a {
 }
 
 [data-theme="dark"] .rc-name {
-  background: linear-gradient(135deg, #e2e8f0 10%, #a78bfa 100%);
+  background: linear-gradient(135deg, var(--text) 10%, var(--accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -2587,8 +2587,8 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(124, 106, 255, 0.1);
-  border: 1px solid rgba(124, 106, 255, 0.22);
+  background: rgba(79, 122, 99, 0.1);
+  border: 1px solid rgba(79, 122, 99, 0.22);
   border-radius: 99px;
   padding: 4px 14px;
   font-size: 0.8rem;
@@ -2725,11 +2725,11 @@ a {
 
 .rc-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 0 0 1px rgba(108, 99, 255, 0.2), 0 12px 36px rgba(108, 99, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(79, 122, 99, 0.2), 0 12px 36px rgba(79, 122, 99, 0.1);
 }
 
 [data-theme="dark"] .rc-card:hover {
-  box-shadow: 0 0 0 1px rgba(124, 106, 255, 0.28), 0 12px 36px rgba(124, 106, 255, 0.13);
+  box-shadow: 0 0 0 1px rgba(143, 194, 166, 0.28), 0 12px 36px rgba(143, 194, 166, 0.13);
 }
 
 .rc-card--aws {
@@ -2926,7 +2926,7 @@ a {
 }
 
 [data-theme="dark"] .rc-th {
-  background: #192540;
+  background: var(--bg-hover);
 }
 
 .rc-td {
@@ -2945,7 +2945,7 @@ a {
 }
 
 [data-theme="dark"] .rc-tr:hover {
-  background: linear-gradient(90deg, rgba(124, 106, 255, 0.06), transparent);
+  background: linear-gradient(90deg, rgba(143, 194, 166, 0.06), transparent);
 }
 
 .rc-empty {
@@ -3109,7 +3109,7 @@ a {
   padding: 2px 8px;
   border-radius: 99px;
   border: 1px solid var(--accent-glow);
-  background: rgba(108, 99, 255, 0.08);
+  background: rgba(79, 122, 99, 0.08);
 }
 
 .rc-analyzer-tabs {
@@ -3124,7 +3124,7 @@ a {
 }
 
 [data-theme="dark"] .rc-analyzer-tabs {
-  background: #192540;
+  background: var(--bg);
 }
 
 .rc-analyzer-tab {
@@ -3146,7 +3146,7 @@ a {
 }
 
 [data-theme="dark"] .rc-analyzer-tab--active {
-  background: #1b2840;
+  background: var(--bg-surface);
 }
 
 .rc-analyzer-card {

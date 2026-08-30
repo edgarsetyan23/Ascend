@@ -1,23 +1,32 @@
 /* ─── CSS Custom Properties ──────────────────────────────────────────────── */
 
+/* Same "Exhibit" identity as /portfolio — warm paper, sage accent,
+   a serif display face for headings — so the app you actually use
+   day to day and the page you send recruiters read as one thing,
+   not two unrelated products sharing a login screen. The Auth Gate
+   and 404 keep their own self-contained "mythology" theme (see their
+   section below) — deliberately separate, left untouched here. */
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap');
+
 :root {
-  --bg: #f0f4ff;
+  --bg: #fffdf7;
   --bg-surface: #ffffff;
-  --bg-hover: #e8eeff;
-  --border: #dde4f0;
-  --text: #0d1117;
-  --text-muted: #5a6478;
-  --text-subtle: #8b95a8;
-  --shadow: 0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-lg: 0 12px 32px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06);
+  --bg-hover: rgba(79, 122, 99, 0.08);
+  --border: rgba(25, 26, 20, 0.12);
+  --text: #191a14;
+  --text-muted: #5c5f4f;
+  --text-subtle: #8a8d78;
+  --shadow: 0 1px 4px rgba(25, 26, 20, 0.08), 0 1px 2px rgba(25, 26, 20, 0.05);
+  --shadow-lg: 0 12px 32px rgba(25, 26, 20, 0.14), 0 4px 8px rgba(25, 26, 20, 0.07);
   --radius: 10px;
   --radius-lg: 14px;
   --sidebar-width: 230px;
   --topbar-height: 64px;
-  --accent: #6c63ff;
-  --accent-glow: rgba(108, 99, 255, 0.32);
+  --accent: #4f7a63;
+  --accent-glow: rgba(79, 122, 99, 0.28);
   --gold: #d4a843;
   --gold-glow: rgba(212, 168, 67, 0.30);
+  --font-display: 'Source Serif 4', Georgia, serif;
   /* Spacing scale */
   --space-1: 4px;
   --space-2: 8px;
@@ -28,17 +37,17 @@
 }
 
 [data-theme="dark"] {
-  --bg: #07090f;
-  --bg-surface: #111928;
-  --bg-hover: #1c2840;
-  --border: #253554;
-  --text: #e8edf8;
-  --text-muted: #8898b8;
-  --text-subtle: #4e5e7a;
+  --bg: #14150f;
+  --bg-surface: #1b1c15;
+  --bg-hover: rgba(143, 194, 166, 0.10);
+  --border: rgba(233, 235, 224, 0.12);
+  --text: #e9ebe0;
+  --text-muted: #a3a690;
+  --text-subtle: #6b6e5c;
   --shadow: 0 1px 4px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4);
   --shadow-lg: 0 12px 40px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4);
-  --accent: #7c6aff;
-  --accent-glow: rgba(124, 106, 255, 0.34);
+  --accent: #8fc2a6;
+  --accent-glow: rgba(143, 194, 166, 0.30);
   --gold: #d4a843;
   --gold-glow: rgba(212, 168, 67, 0.30);
 }
@@ -103,7 +112,7 @@ a {
 }
 
 [data-theme="dark"] .sidebar {
-  background: linear-gradient(180deg, #0f2240 0%, #07090f 100%);
+  background: linear-gradient(180deg, #1b1c15 0%, #0d0e09 100%);
   box-shadow: 1px 0 0 var(--border), 4px 0 24px rgba(0,0,0,0.25);
 }
 
@@ -122,9 +131,10 @@ a {
 }
 
 .sidebar-title {
-  font-weight: 900;
-  font-size: 1.15rem;
-  letter-spacing: -0.03em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: -0.01em;
   background: linear-gradient(135deg, var(--accent), var(--gold));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -313,8 +323,8 @@ a {
 }
 
 [data-theme="dark"] .topbar {
-  background: linear-gradient(90deg, #111928 0%, #0d1320 100%);
-  box-shadow: 0 1px 0 var(--border), 0 4px 32px rgba(0,0,0,0.4), 0 0 80px rgba(124,106,255,0.04);
+  background: linear-gradient(90deg, var(--bg-surface) 0%, var(--bg) 100%);
+  box-shadow: 0 1px 0 var(--border), 0 4px 32px rgba(0,0,0,0.4), 0 0 80px rgba(143,194,166,0.04);
 }
 
 .topbar-left {
@@ -335,7 +345,7 @@ a {
 }
 
 [data-theme="dark"] .tracker-name {
-  background: linear-gradient(135deg, #e8edf8 60%, var(--accent));
+  background: linear-gradient(135deg, var(--text) 60%, var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -370,7 +380,7 @@ a {
 }
 
 [data-theme="dark"] .stats-bar {
-  background: linear-gradient(90deg, #0c1425 0%, #090e18 100%);
+  background: linear-gradient(90deg, var(--bg-surface) 0%, var(--bg) 100%);
 }
 
 .stat-chip {
@@ -387,7 +397,7 @@ a {
 }
 
 [data-theme="dark"] .stat-chip {
-  background: color-mix(in srgb, var(--stat-color, var(--accent)) 10%, #111928);
+  background: color-mix(in srgb, var(--stat-color, var(--accent)) 10%, var(--bg-surface));
   border-color: color-mix(in srgb, var(--stat-color, var(--accent)) 20%, var(--border));
   border-top-color: var(--stat-color, var(--accent));
 }
@@ -433,8 +443,8 @@ a {
 }
 
 [data-theme="dark"] .tracker-table-wrap {
-  background: #0f1628;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px var(--border), 0 0 60px rgba(124,106,255,0.04);
+  background: var(--bg-surface);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px var(--border), 0 0 60px rgba(143,194,166,0.04);
 }
 
 /* ─── Toolbar ────────────────────────────────────────────────────────────── */
@@ -498,7 +508,7 @@ a {
   background: linear-gradient(135deg, var(--accent), #c49a45);
   color: #fff;
   border-color: var(--accent);
-  box-shadow: 0 2px 12px var(--accent-glow), 0 0 0 1px rgba(108, 99, 255, 0.15);
+  box-shadow: 0 2px 12px var(--accent-glow), 0 0 0 1px rgba(79, 122, 99, 0.15);
 }
 
 .btn--primary:hover {
@@ -566,7 +576,7 @@ a {
 }
 
 [data-theme="dark"] .table-th {
-  background: #192540;
+  background: var(--bg-hover);
 }
 
 .table-th:hover {
@@ -601,7 +611,7 @@ a {
 }
 
 [data-theme="dark"] .table-row:hover {
-  background: linear-gradient(90deg, rgba(124, 106, 255, 0.10), transparent);
+  background: linear-gradient(90deg, rgba(143, 194, 166, 0.10), transparent);
 }
 
 .table-td {
@@ -709,9 +719,9 @@ a {
 }
 
 [data-theme="dark"] .modal {
-  background: #111928;
-  border-color: #253554;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,106,255,0.1);
+  background: var(--bg-surface);
+  border-color: var(--border);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(143,194,166,0.1);
 }
 
 .modal-header {
@@ -723,12 +733,13 @@ a {
 }
 
 [data-theme="dark"] .modal-header {
-  background: linear-gradient(90deg, rgba(124,106,255,0.06), transparent);
+  background: linear-gradient(90deg, rgba(143,194,166,0.06), transparent);
 }
 
 .modal-title {
-  font-size: 1.05rem;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
@@ -1360,9 +1371,9 @@ a {
 }
 
 .resume-source-badge--ai {
-  background: rgba(108, 99, 255, 0.1);
+  background: rgba(79, 122, 99, 0.1);
   color: var(--accent);
-  border: 1px solid rgba(108, 99, 255, 0.2);
+  border: 1px solid rgba(79, 122, 99, 0.2);
 }
 
 .resume-source-badge--local {
@@ -2200,9 +2211,9 @@ a {
 [data-theme="dark"] .skeleton {
   background: linear-gradient(
     90deg,
-    #111827 25%,
-    #1b2840 50%,
-    #111827 75%
+    var(--bg) 25%,
+    var(--bg-surface) 50%,
+    var(--bg) 75%
   );
   background-size: 600px 100%;
 }
@@ -2307,7 +2318,7 @@ a {
 }
 
 [data-theme="dark"] .toast {
-  background: #111928;
+  background: var(--bg-surface);
 }
 
 @keyframes toast-in {
@@ -2362,7 +2373,7 @@ a {
 }
 
 .toast-retry:hover {
-  background: rgba(108, 99, 255, 0.1);
+  background: rgba(79, 122, 99, 0.1);
 }
 
 .toast-close {
@@ -2552,8 +2563,8 @@ a {
 }
 
 [data-theme="dark"] .rc-hero {
-  background: linear-gradient(135deg, #111928 0%, #0c1425 100%);
-  box-shadow: 0 0 0 1px rgba(124, 106, 255, 0.22), 0 0 80px rgba(124, 106, 255, 0.1), var(--shadow-lg);
+  background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg) 100%);
+  box-shadow: 0 0 0 1px rgba(143, 194, 166, 0.22), 0 0 80px rgba(143, 194, 166, 0.1), var(--shadow-lg);
 }
 
 .rc-name {
@@ -2709,7 +2720,7 @@ a {
 }
 
 [data-theme="dark"] .rc-card {
-  background: #111928;
+  background: var(--bg-surface);
 }
 
 .rc-card:hover {
@@ -2892,7 +2903,7 @@ a {
 }
 
 [data-theme="dark"] .rc-table-wrap {
-  background: #111928;
+  background: var(--bg-surface);
 }
 
 .rc-table {
@@ -3486,7 +3497,7 @@ a {
               0 8px 28px var(--tier-glow, transparent);
 }
 
-[data-theme="dark"] .gaming-card { background: #111928; }
+[data-theme="dark"] .gaming-card { background: var(--bg-surface); }
 
 /* Demigod — pulsing divine glow */
 .gaming-card--demigod {
@@ -3770,7 +3781,7 @@ a {
 }
 
 [data-theme="dark"] .activity-entry {
-  background: #0f1628;
+  background: var(--bg-surface);
 }
 
 .activity-entry-main {

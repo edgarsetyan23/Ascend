@@ -653,8 +653,59 @@
   z-index: 4;
   pointer-events: none;
   opacity: 0;
-  background: radial-gradient(circle at 50% 46%, transparent 0%, transparent 22%, rgba(10, 10, 8, 0.4) 62%);
+  background: radial-gradient(circle at 50% 46%, transparent 0%, transparent 22%, rgba(10, 10, 8, 0.5) 62%);
   animation: exh-spotlight-flash 1.6s ease both;
+}
+
+/* A quick bright pulse announcing the spot he's headed to — plays
+   first and fades fast, so the slower dim (above) reads as settling
+   into place after the flash rather than the whole effect being one
+   flat fade. Same safe-default reasoning as the dim: opacity 0 at
+   rest, so reduced-motion (which strips the animation) shows nothing
+   instead of a stray glow stuck on screen. */
+@keyframes exh-tour-flash {
+  0%   { opacity: 0; transform: translate(-50%, 50%) scale(0.4); }
+  22%  { opacity: 1; transform: translate(-50%, 50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, 50%) scale(1.7); }
+}
+.exh-tour-flash {
+  position: fixed;
+  left: 50%;
+  bottom: 46%;
+  transform: translate(-50%, 50%);
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--exh-accent-soft) 0%, transparent 72%);
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  animation: exh-tour-flash 0.7s ease-out both;
+}
+
+/* The particle burst — a dozen small dots flung outward from the
+   same point, each animating to its own randomized end position via
+   the --tx/--ty custom properties set inline per particle. */
+@keyframes exh-burst-particle {
+  0%   { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0.4); }
+}
+.exh-tour-burst {
+  position: fixed;
+  left: 50%;
+  bottom: 46%;
+  transform: translate(-50%, 50%);
+  z-index: 6;
+  pointer-events: none;
+}
+.exh-tour-burst-particle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background: var(--exh-accent);
+  opacity: 0;
+  animation: exh-burst-particle 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .exh-guide-caption {

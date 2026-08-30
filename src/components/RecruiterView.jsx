@@ -621,6 +621,42 @@ function OnCallIcon() {
   )
 }
 
+// A dozen small particles bursting outward from where the guide
+// lands center-stage — mounted fresh once per celebrateTick (the
+// parent keys it), so building the angles/distances directly in the
+// function body is enough; no memoization needed for something that
+// only exists for under a second and remounts clean every time.
+function TourBurst() {
+  const count = 12
+  const particles = Array.from({ length: count }, (_, i) => {
+    const angle = (i / count) * Math.PI * 2 + (Math.random() * 0.3 - 0.15)
+    const distance = 70 + Math.random() * 60
+    return {
+      tx: Math.cos(angle) * distance,
+      ty: Math.sin(angle) * distance,
+      delay: Math.random() * 0.12,
+      size: 4 + Math.random() * 4,
+    }
+  })
+  return (
+    <div className="exh-tour-burst" aria-hidden="true">
+      {particles.map((p, i) => (
+        <span
+          key={i}
+          className="exh-tour-burst-particle"
+          style={{
+            '--tx': `${p.tx}px`,
+            '--ty': `${p.ty}px`,
+            width: p.size,
+            height: p.size,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
 function ExhibitFrame({ section, plate, title, note, byline, emblem, emblemVariant = 'logo', flashAccent, children }) {
   return (
     <div className="exh-frame">
@@ -1193,13 +1229,19 @@ export function RecruiterView() {
           </Suspense>
         </div>
       )}
-      {/* A brief dim-and-lift on the rest of the page as he glides to
-          center stage — keyed to celebrateTick so it replays every
-          "Start the tour" click, not just the first. Doesn't need to
-          be perfectly synced to the 1s glide; roughly bracketing it
-          is enough to read as one moment. */}
+      {/* Three layers for the "Start the tour" moment, all keyed to
+          celebrateTick so they replay every click, not just the
+          first: a quick bright flash announcing the spot he's headed
+          to, a slower dim-and-lift on everything else as he glides
+          there, and a burst of particles once he arrives. None of it
+          needs to be frame-perfect against the 1s CSS glide; roughly
+          bracketing it reads as one moment either way. */}
       {!isMobile && guideIsHero && (
-        <div key={celebrateTick} className="exh-spotlight" aria-hidden="true" />
+        <>
+          <div key={`flash-${celebrateTick}`} className="exh-tour-flash" aria-hidden="true" />
+          <div key={`dim-${celebrateTick}`} className="exh-spotlight" aria-hidden="true" />
+          <TourBurst key={`burst-${celebrateTick}`} />
+        </>
       )}
     </div>
   )

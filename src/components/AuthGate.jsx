@@ -83,10 +83,10 @@ export function AuthGate({ children }) {
   return (
     <div className="auth-gate">
       <div className="auth-card">
-        <div className="auth-logo">🔱</div>
+        <div className="auth-logo">☕</div>
         <h1 className="auth-title">Ascend</h1>
         <p className="auth-tagline">Track what matters.</p>
-        <p className="auth-plaque">Private collection · restricted access</p>
+        <p className="auth-plaque">Exhibit 0 · handle with caffeine</p>
 
         {mode === 'login' && (
           <>
@@ -100,9 +100,9 @@ export function AuthGate({ children }) {
               <span className="auth-feature"><span className="auth-feature-icon">🔥</span>Daily streaks</span>
             </div>
             <p className="auth-private-note">
-              Not on public display —{' '}
+              Staff only past this point (headcount: 1) —{' '}
               <a href="/portfolio" className="auth-blurb-link">the gallery</a>
-              {' '}is this way if you're a recruiter or just browsing.
+              {' '}is this way if you're a recruiter or just here to snoop.
             </p>
           </>
         )}

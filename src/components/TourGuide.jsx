@@ -119,9 +119,11 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
     head.position.y = 0.42
     guide.add(head)
 
-    // Face — exactly three deliberate shapes (two eyes, one nose),
-    // the minimum that reads as "a face" without cluttering the head
-    // with dozens of tiny pieces.
+    // Face — two eyes, a nose, and a mouth. A flat, slightly curved
+    // sliver for the mouth (not a round shape, which reads as
+    // surprise rather than a neutral/friendly expression) sitting in
+    // the gap between the nose and where the beard starts, so it
+    // stays clear of both instead of crowding either.
     const eyeGeo = track(new THREE.SphereGeometry(0.045, 6, 4))
     eyeGeo.scale(1, 1, 0.6)
     const eyeMat = track(new THREE.MeshStandardMaterial({ color: 0x211a14, roughness: 0.4, flatShading: true }))
@@ -134,20 +136,29 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
     nose.rotation.x = Math.PI / 2.3
     guide.add(nose)
 
+    const mouthGeo = track(new THREE.BoxGeometry(0.1, 0.022, 0.02))
+    const mouthMat = track(new THREE.MeshStandardMaterial({ color: 0x5a3a2e, roughness: 0.6, flatShading: true }))
+    const mouth = new THREE.Mesh(mouthGeo, mouthMat)
+    mouth.position.set(0, 0.28, 0.345)
+    guide.add(mouth)
+
     // Hair — a small number of large, elongated angular chunks, not
     // small round tufts. Low-poly hair is conventionally built from a
     // few flat triangular planes with a directional sweep (real
     // technique, not a guess) — a handful of little spheres just
     // reads as a cluster of circles, which is what this replaces.
-    const hairChunkGeo = track(new THREE.IcosahedronGeometry(0.22, 0))
+    // Kept short this round: smaller base chunks, pulled up and in
+    // toward the skull instead of the previous longer cut that swept
+    // down past ear level on the sides.
+    const hairChunkGeo = track(new THREE.IcosahedronGeometry(0.19, 0))
     const hairChunks = [
       // [x, y, z, scaleX, scaleY, scaleZ, rotZ]
-      [0, 0.62, -0.08, 1.35, 0.85, 1.15, 0],         // main crown/back mass
-      [-0.29, 0.5, 0.06, 0.8, 1.15, 0.85, -0.35],    // left side, swept down
-      [0.29, 0.5, 0.06, 0.8, 1.15, 0.85, 0.35],      // right side, swept down
-      [0, 0.68, 0.13, 1.0, 0.7, 0.9, 0],             // front/top, slight forward sweep
-      [-0.14, 0.72, -0.06, 0.75, 0.75, 0.8, -0.2],   // crown-left fill
-      [0.14, 0.72, -0.06, 0.75, 0.75, 0.8, 0.2],     // crown-right fill
+      [0, 0.60, -0.07, 1.2, 0.7, 1.0, 0],            // crown/back mass — flatter, less tall
+      [-0.27, 0.56, 0.04, 0.65, 0.85, 0.7, -0.3],    // left side — higher and tighter, not swept down
+      [0.27, 0.56, 0.04, 0.65, 0.85, 0.7, 0.3],      // right side — higher and tighter
+      [0, 0.66, 0.12, 0.85, 0.6, 0.75, 0],           // front/top, slight forward sweep
+      [-0.13, 0.70, -0.05, 0.6, 0.65, 0.65, -0.2],   // crown-left fill
+      [0.13, 0.70, -0.05, 0.6, 0.65, 0.65, 0.2],     // crown-right fill
     ]
     hairChunks.forEach(([x, y, z, sx, sy, sz, rz]) => {
       const chunk = new THREE.Mesh(hairChunkGeo, hairMat)
@@ -158,16 +169,22 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
     })
 
     // Light beard — a small, tight cluster on the chin/jaw, kept well
-    // below the mouth line. Earlier version climbed upward toward the
+    // below the mouth. Earlier version climbed upward toward the
     // cheeks, which traced a grin-like curve — this stays low and
-    // centered so it reads as a beard, not an expression.
-    const beardGeo = track(new THREE.IcosahedronGeometry(0.075, 0))
+    // centered so it reads as a beard, not an expression. More spots
+    // than before, each smaller, so it reads as beard texture rather
+    // than a few big chunks sitting on the jaw like pebbles.
+    const beardGeo = track(new THREE.IcosahedronGeometry(0.06, 0))
     const beardSpots = [
-      [0, 0.1, 0.34, 1.05],    // chin, lowest and most forward
-      [-0.09, 0.13, 0.31, 0.8],
-      [0.09, 0.13, 0.31, 0.8],
-      [-0.16, 0.15, 0.24, 0.65], // jaw, tucked back toward the ear — not higher than the chin
-      [0.16, 0.15, 0.24, 0.65],
+      [0, 0.09, 0.35, 0.95],      // chin, lowest and most forward
+      [-0.06, 0.10, 0.33, 0.75],
+      [0.06, 0.10, 0.33, 0.75],
+      [-0.11, 0.12, 0.30, 0.65],
+      [0.11, 0.12, 0.30, 0.65],
+      [-0.16, 0.14, 0.25, 0.55],  // jaw, tucked back toward the ear
+      [0.16, 0.14, 0.25, 0.55],
+      [-0.19, 0.17, 0.18, 0.42],  // faint trace up toward the sideburn
+      [0.19, 0.17, 0.18, 0.42],
     ]
     beardSpots.forEach(([x, y, z, s]) => {
       const spot = new THREE.Mesh(beardGeo, beardMat)

@@ -875,15 +875,19 @@ export function RecruiterView() {
                   style={{ animationDelay: `${200 + i * 90}ms` }}
                   onClick={(e) => handleCardClick(e, group.items[0].path)}
                 >
-                  {CARD_LOGOS[group.label] && (
-                    <div className="exh-card-logos">
-                      {CARD_LOGOS[group.label].map((logo) => (
-                        <span key={logo.alt} className="exh-card-logo-chip">
-                          <img src={logo.src} alt={logo.alt} />
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  <CaseBrackets />
+                  <div className="exh-card-eyebrow">
+                    <PlateMark n={String(i + 1).padStart(2, '0')} />
+                    {CARD_LOGOS[group.label] && (
+                      <div className="exh-card-logos">
+                        {CARD_LOGOS[group.label].map((logo) => (
+                          <span key={logo.alt} className="exh-card-logo-chip">
+                            <img src={logo.src} alt={logo.alt} />
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <span className="exh-card-label">{group.label}</span>
                   <span className="exh-card-teaser">{GUIDE_LINES[group.label]}</span>
                   <span className="exh-card-count">

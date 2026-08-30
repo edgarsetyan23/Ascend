@@ -13,6 +13,8 @@
   --exh-bg: #fffdf7;
   --exh-bg-raised: #ffffff;
   --exh-sidebar-bg: #f7f5ea;
+  --exh-floor: #e6e0cc;
+  --exh-floor-line: rgba(25, 26, 20, 0.22);
   --exh-ink: #191a14;
   --exh-ink-muted: #5c5f4f;
   --exh-ink-subtle: #8a8d78;
@@ -38,6 +40,8 @@
   --exh-bg: #14150f;
   --exh-bg-raised: #1b1c15;
   --exh-sidebar-bg: #17180f;
+  --exh-floor: #232419;
+  --exh-floor-line: rgba(143, 194, 166, 0.3);
   --exh-ink: #e9ebe0;
   --exh-ink-muted: #a3a690;
   --exh-ink-subtle: #6b6e5c;
@@ -558,16 +562,30 @@
    shell/content/guide are all effectively above it), spans the full
    page width — under the sidebar too, since a floor doesn't stop at
    a nav column. */
+/* A distinctly-toned plane (not just a lighter tint of the page
+   background), a plank texture, and an accent boundary line with an
+   inset shadow lip underneath it — reads as an actual change of
+   surface where the wall ends and the floor begins, not a faint tint
+   that only registers up close. */
 .exh-floor {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 260px;
+  height: 280px;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(to top, var(--exh-sidebar-bg) 0%, transparent 100%);
-  border-top: 1px solid var(--exh-border);
+  background:
+    repeating-linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.05) 0px,
+      rgba(0, 0, 0, 0.05) 1px,
+      transparent 1px,
+      transparent 84px
+    ),
+    linear-gradient(to top, var(--exh-floor) 0%, var(--exh-floor) 45%, var(--exh-bg) 100%);
+  border-top: 2px solid var(--exh-floor-line);
+  box-shadow: inset 0 14px 22px -14px rgba(0, 0, 0, 0.3);
 }
 
 /* ── Persistent tour guide (fixed corner companion) ── */
@@ -695,10 +713,28 @@
 }
 
 .exh-guide-canvas {
+  position: relative;
   filter: drop-shadow(0 8px 20px rgba(25, 26, 20, 0.18));
   pointer-events: auto;
 }
 .exh-guide-canvas canvas { display: block; }
+
+/* A grounding shadow under his feet — centered on the canvas itself
+   (not the wrap, which can be wider than him when the caption text
+   is long), so it stays under him regardless of caption length. */
+.exh-guide-canvas::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  width: 46%;
+  height: 8%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.38) 0%, transparent 72%);
+  filter: blur(2px);
+  z-index: -1;
+  pointer-events: none;
+}
 
 @media (max-width: 860px) {
   .exh-guide-wrap { right: 10px; bottom: 8px; }
@@ -801,15 +837,23 @@
   margin-top: 36px;
 }
 
+/* A plaque, not a dashboard card — the same display-case corner
+   brackets and numbered plate mark used on every individual exhibit
+   page, just at card scale, so the overview grid reads as five more
+   pieces in the same collection instead of a different, generic UI
+   pattern bolted on for navigation. Square-ish corners (not the
+   rounded-10px "app card" radius) reinforce that it's a placard, not
+   a tile. */
 .exh-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
   text-align: left;
-  padding: 16px 18px;
+  padding: 22px 18px 16px;
   border: 1px solid var(--exh-border);
-  border-radius: 10px;
+  border-radius: 3px;
   background: var(--exh-bg-raised);
   cursor: pointer;
   font-family: inherit;
@@ -817,13 +861,26 @@
 }
 .exh-card:hover {
   border-color: var(--exh-accent);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(25, 26, 20, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(25, 26, 20, 0.1);
 }
+/* The card's own corner brackets stay faint until hover/focus — full
+   strength on every card at once reads as busy/noisy at this size
+   and count, so they light up as you engage with one instead. */
+.exh-card .exh-case-bracket { opacity: 0.35; transition: opacity 0.15s ease; }
+.exh-card:hover .exh-case-bracket,
+.exh-card:focus-visible .exh-case-bracket { opacity: 1; }
+
+.exh-card-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
 .exh-card-logos {
   display: flex;
   gap: 6px;
-  margin-bottom: 4px;
 }
 .exh-card-logo-chip {
   display: flex;
@@ -851,8 +908,13 @@
   color: var(--exh-ink);
 }
 .exh-card-teaser {
+  /* Same treatment as .exh-note on the individual plates — italic
+     serif, accent-colored — so the card reads as a small version of
+     the same plaque, not a different UI vocabulary. */
+  font-family: var(--exh-font-display);
+  font-style: italic;
   font-size: 0.85rem;
-  color: var(--exh-ink-muted);
+  color: var(--exh-accent);
   line-height: 1.5;
 }
 .exh-card-count {

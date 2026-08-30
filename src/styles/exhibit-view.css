@@ -176,6 +176,13 @@
   display: flex;
   align-items: flex-start;
   min-height: calc(100vh - 56px);
+  /* Establishes a stacking context above .exh-floor — without this,
+     a position:fixed floor can paint over static in-flow content
+     (default stacking puts positioned elements above non-positioned
+     ones regardless of DOM order) whenever the page is scrolled such
+     that real content sits within the floor's bottom band. */
+  position: relative;
+  z-index: 1;
 }
 
 .exh-sidebar {
@@ -540,6 +547,27 @@
   line-height: 1.7;
   margin-bottom: 24px;
   max-width: 52ch;
+}
+
+/* ── Gallery floor ──
+   The stretch of bare background below the content, where the guide
+   stands, had zero museum identity of its own — just empty page.
+   This gives it one: a soft floor plane with a defining line where
+   the wall ends, rather than a blank stretch that reads as
+   unfinished background. Sits behind everything (z-index 0, the
+   shell/content/guide are all effectively above it), spans the full
+   page width — under the sidebar too, since a floor doesn't stop at
+   a nav column. */
+.exh-floor {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 260px;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, var(--exh-sidebar-bg) 0%, transparent 100%);
+  border-top: 1px solid var(--exh-border);
 }
 
 /* ── Persistent tour guide (fixed corner companion) ── */

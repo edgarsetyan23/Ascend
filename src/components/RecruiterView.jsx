@@ -776,6 +776,60 @@ export function RecruiterView() {
   const guideIsHero = activeId === 'root' && tourStarted
   const guideSize = guideIsHero ? 400 : 260
 
+  // Corner mode used to anchor him to the raw viewport corner
+  // (right: 20px, bottom: 12px), completely independent of where the
+  // actual content column sits — on a wide window that leaves a huge
+  // dead gap between the last content and him. Measuring the real
+  // .exh-frame instead and deriving his resting spot from ITS edges
+  // means he stands right where the content actually ends, on every
+  // page, at any window size — not a fixed distance from an
+  // unrelated screen corner. Skipped in hero mode, which already has
+  // its own deliberate centered position.
+  const [guideHomeRect, setGuideHomeRect] = useState(null)
+  useLayoutEffect(() => {
+    if (guideIsHero) return
+    const el = document.querySelector('.exh-frame')
+    if (!el) { setGuideHomeRect(null); return }
+
+    function measure() {
+      // Below this width the sidebar collapses and the whole layout
+      // stacks — content and the guide are already close together
+      // there, so defer entirely to the simpler mobile CSS corner
+      // position instead of fighting it with a computed one.
+      if (window.innerWidth <= 860) { setGuideHomeRect(null); return }
+      const wrapEl = document.querySelector('.exh-guide-wrap')
+      if (!wrapEl) return
+      const rect = el.getBoundingClientRect()
+      // right/bottom position the WRAP'S OWN right/bottom edge — with
+      // align-items: flex-end the wrap grows leftward and upward from
+      // that anchor, so its own width/height have to be subtracted or
+      // "just past the frame's edge" still leaves the wrap's body
+      // (and the caption, which is often wider than the canvas)
+      // overlapping the content instead of clearing it. Measuring the
+      // wrap's actual current size — stable regardless of where it's
+      // positioned — makes this correct for any caption length or
+      // guide size instead of assuming one.
+      const wrapRect = wrapEl.getBoundingClientRect()
+      const GAP = 28
+      const right = Math.max(20, window.innerWidth - rect.right - GAP - wrapRect.width)
+      const rawBottom = window.innerHeight - rect.bottom - GAP - wrapRect.height
+      // Clamp so a very tall page never pushes him below the fold and
+      // a very short one never floats him implausibly close to the
+      // top — he stays in a believable "standing in the room" range.
+      const bottom = Math.min(Math.max(rawBottom, 12), window.innerHeight * 0.5)
+      setGuideHomeRect({ right, bottom })
+    }
+
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    window.addEventListener('resize', measure)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', measure)
+    }
+  }, [activeId, guideIsHero, autoTourActive, tourFinale])
+
   function renderBody() {
     if (activeId === 'root') {
       return (
@@ -975,6 +1029,7 @@ export function RecruiterView() {
 
   return (
     <div className="exh-page">
+      <div className="exh-floor" aria-hidden="true" />
       <nav className="exh-topbar">
         <Link to="/" className="exh-brand">
           <span className="exh-brand-mark">✦</span>
@@ -1049,7 +1104,13 @@ export function RecruiterView() {
 
       <div
         className={`exh-guide-wrap ${guideIsHero ? 'exh-guide-wrap--hero' : ''}`}
-        style={guideTargetRect ? { right: `${guideTargetRect.right}px`, bottom: `${guideTargetRect.bottom}px`, transform: 'translate(0, 0)' } : undefined}
+        style={
+          guideTargetRect
+            ? { right: `${guideTargetRect.right}px`, bottom: `${guideTargetRect.bottom}px`, transform: 'translate(0, 0)' }
+            : !guideIsHero && guideHomeRect
+            ? { right: `${guideHomeRect.right}px`, bottom: `${guideHomeRect.bottom}px`, transform: 'translate(0, 0)' }
+            : undefined
+        }
       >
         <div key={`${activeId}-${tourStarted}-${walkTick}`} className="exh-guide-caption exh-fade-in">
           {guideTargetRect

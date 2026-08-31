@@ -119,14 +119,16 @@ const PROJECTS = [
     navSub: 'Accountability Tracker',
     note: "The project this whole page you're looking at is built on.",
     data: {
-      name: 'Ascend — Accountability Tracker',
+      name: 'Ascend — Personal Accountability Platform',
       stack: 'React 18, Vite, AWS Lambda, DynamoDB, API Gateway, Cognito, CDK, Node 22, Vercel',
+      // Three specific engineering decisions instead of a flat feature
+      // dump — each one is something you'd actually get asked to
+      // defend in an interview, not just a checklist of technologies.
       highlights: [
-        'Built a full-stack personal productivity tracker with multiple tracker types (LeetCode, Daily Activity, Job Applications, Gaming).',
-        'Architected a serverless backend with AWS CDK: HTTP API Gateway, JWT authorizer, 4 Lambda functions, and DynamoDB single-table design.',
-        'Implemented this page (/portfolio) itself via a hardcoded-owner Lambda whitelist — no auth required, read-only, tracker whitelist enforced server-side.',
-        'Built a Gmail email scanner using a new-tab redirect OAuth flow to avoid Cross-Origin-Opener-Policy restrictions; fetches only email metadata, pipes it through Claude Haiku for extraction, deduplicates against existing entries, and shows a review modal for bulk import.',
-        'Built a LeetCode profile banner: a Vercel serverless proxy to the LeetCode GraphQL API with a 5-minute CDN cache, displaying live solved counts, difficulty breakdown, and language stats.',
+        'Auth: Cognito JWTs live in React state only, never localStorage. API Gateway’s JWT authorizer validates every request before it reaches Lambda — an unauthenticated call never touches application code.',
+        'Data model: single-table DynamoDB — PK = USER#{sub}, SK = TRACKER#{id}#ENTRY#{uuid}, plus a GSI for entries ordered by creation time. Loading a tab is one Query. No scans, no joins.',
+        'This page is the proof: /portfolio runs on its own unauthenticated Lambda with the owner’s Cognito sub baked in at deploy time. No user input ever touches the partition key, and a non-whitelisted tracker 404s instead of 403s.',
+        'Also built: a Gmail scanner (new-tab OAuth to dodge Cross-Origin-Opener-Policy, metadata-only fetch, Claude Haiku extraction) and a live LeetCode profile banner (cached GraphQL proxy).',
       ],
     },
     snippet: {

@@ -4,9 +4,11 @@ A personal accountability tracker built with a production AWS stack. Tracks Leet
 
 **Live:** [edgarsetyan.com](https://edgarsetyan.com) · **Portfolio:** [edgarsetyan.com/portfolio](https://edgarsetyan.com/portfolio)
 
-![Ascend demo](docs/demo.gif)
-
-> Screenshots and demo GIF coming. Live now: [edgarsetyan.com/portfolio](https://edgarsetyan.com/portfolio)
+<p>
+  <img src="docs/screenshot-gallery.jpg" width="32%" alt="The Edgar Setyan Gallery — the public portfolio's Introduction plate" />
+  <img src="docs/screenshot-exhibit.jpg" width="32%" alt="An exhibit plate on the public portfolio, framed like a museum display case" />
+  <img src="docs/screenshot-resume-review.jpg" width="32%" alt="Resume Review — a live Claude-powered resume scorer on the public portfolio" />
+</p>
 
 ---
 

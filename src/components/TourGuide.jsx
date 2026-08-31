@@ -2,7 +2,11 @@ import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 
 // A small, persistent low-poly guide — stylized after a real photo (dark
-// curly hair, warm skin tone, dark top), holding a little tour flag.
+// curly hair, warm skin tone, dark top), holding a small magnifying glass —
+// "let's take a closer look," which is what both a museum guide and a
+// resume reviewer actually do. Read better here than the generic tour-
+// group flag it replaced, and its lens tints with the current accent
+// color instead of just being a random prop.
 // Built entirely from primitive geometry: no external 3D asset, no
 // attempt at a literal photorealistic likeness, just a friendly low-poly
 // nod to the reference. Mounted once and kept alive across navigation —
@@ -71,8 +75,8 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
     const skinMat  = track(new THREE.MeshStandardMaterial({ color: 0xc99a72, roughness: 0.65, flatShading: true }))
     const hairMat  = track(new THREE.MeshStandardMaterial({ color: 0x6b4a30, roughness: 0.8, flatShading: true }))
     const shirtMat = track(new THREE.MeshStandardMaterial({ color: 0x2e332f, roughness: 0.75, flatShading: true }))
-    const flagMat  = track(new THREE.MeshStandardMaterial({ color: new THREE.Color(accentColor), roughness: 0.5, flatShading: true }))
-    const poleMat  = track(new THREE.MeshStandardMaterial({ color: 0x8a8d78, roughness: 0.6, flatShading: true }))
+    const lensMat  = track(new THREE.MeshStandardMaterial({ color: new THREE.Color(accentColor), roughness: 0.25, flatShading: true, transparent: true, opacity: 0.45 }))
+    const metalMat = track(new THREE.MeshStandardMaterial({ color: 0x8a8d78, roughness: 0.4, metalness: 0.3, flatShading: true }))
 
     const guide = new THREE.Group()
 
@@ -183,23 +187,36 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
     // look like real facial hair at this scale/poly-count). Clean-
     // shaven instead of a bad beard.
 
-    // Raised arm holding a small tour flag.
+    // Raised arm holding a small magnifying glass.
     const armGeo = track(new THREE.CylinderGeometry(0.06, 0.075, 0.42, 6))
     const armR = new THREE.Mesh(armGeo, skinMat)
     armR.position.set(0.32, -0.02, 0)
     armR.rotation.z = -0.9
     guide.add(armR)
 
-    const poleGeo = track(new THREE.CylinderGeometry(0.02, 0.02, 0.42, 5))
-    const pole = new THREE.Mesh(poleGeo, poleMat)
-    pole.position.set(0.52, 0.35, 0)
-    guide.add(pole)
+    // Handle — same size/position the old flagpole used, so the arm's
+    // raised pose didn't need to change, just what's at the end of it.
+    const handleGeo = track(new THREE.CylinderGeometry(0.02, 0.02, 0.42, 5))
+    const handle = new THREE.Mesh(handleGeo, metalMat)
+    handle.position.set(0.52, 0.35, 0)
+    guide.add(handle)
 
-    const flagGeo = track(new THREE.ConeGeometry(0.12, 0.17, 3))
-    const flag = new THREE.Mesh(flagGeo, flagMat)
-    flag.position.set(0.58, 0.5, 0)
-    flag.rotation.z = -Math.PI / 2
-    guide.add(flag)
+    // Ring + lens, grouped so the idle/walk/click sway below (ported
+    // straight from the old flag-flutter animation) swings them
+    // together as one rigid head instead of drifting apart. A torus
+    // and a disc both face +Z by default — the same direction the
+    // camera looks from — so no extra rotation is needed to make the
+    // glass read face-on.
+    const magHead = new THREE.Group()
+    const ringGeo = track(new THREE.TorusGeometry(0.09, 0.018, 6, 12))
+    const ring = new THREE.Mesh(ringGeo, metalMat)
+    magHead.add(ring)
+    const lensGeo = track(new THREE.CircleGeometry(0.078, 10))
+    const lens = new THREE.Mesh(lensGeo, lensMat)
+    lens.position.z = -0.006
+    magHead.add(lens)
+    magHead.position.set(0.6, 0.58, 0)
+    guide.add(magHead)
 
     // Relaxed arm at side.
     const armL = new THREE.Mesh(armGeo, skinMat)
@@ -248,7 +265,7 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
       const walkFacing = -0.15
       let facing = idleFacing * (1 - intensity) + walkFacing * intensity
       let bob = walkBob + idleBob
-      let flagSpeed = 2.2
+      let magSpeed = 2.2
 
       // A cute little hop-and-spin when he's clicked — layered on top
       // of whatever else is happening (idle or walking), not a
@@ -258,12 +275,14 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
         const hop = Math.sin(clickP * Math.PI) * 0.28
         bob += hop
         facing += clickP * Math.PI * 2
-        flagSpeed = 8
+        magSpeed = 8
       }
 
       guide.position.y = bob
       guide.rotation.y = facing
-      flag.rotation.y = Math.sin(t * flagSpeed) * 0.25
+      // A gentle waggle rather than the old flag's full flutter — a
+      // rigid glass shouldn't swing as wide as fabric would.
+      magHead.rotation.y = Math.sin(t * magSpeed) * 0.18
 
       renderer.render(scene, camera)
       frameId = requestAnimationFrame(animate)

@@ -13,8 +13,6 @@
   --exh-bg: #fffdf7;
   --exh-bg-raised: #ffffff;
   --exh-sidebar-bg: #f7f5ea;
-  --exh-floor: #e6e0cc;
-  --exh-floor-line: rgba(25, 26, 20, 0.22);
   --exh-ink: #191a14;
   --exh-ink-muted: #5c5f4f;
   --exh-ink-subtle: #8a8d78;
@@ -40,8 +38,6 @@
   --exh-bg: #14150f;
   --exh-bg-raised: #1b1c15;
   --exh-sidebar-bg: #17180f;
-  --exh-floor: #232419;
-  --exh-floor-line: rgba(143, 194, 166, 0.3);
   --exh-ink: #e9ebe0;
   --exh-ink-muted: #a3a690;
   --exh-ink-subtle: #6b6e5c;
@@ -181,11 +177,6 @@
   display: flex;
   align-items: flex-start;
   min-height: calc(100vh - 56px);
-  /* Establishes a stacking context above .exh-floor — without this,
-     a position:fixed floor can paint over static in-flow content
-     (default stacking puts positioned elements above non-positioned
-     ones regardless of DOM order) whenever the page is scrolled such
-     that real content sits within the floor's bottom band. */
   position: relative;
   z-index: 1;
 }
@@ -568,41 +559,6 @@
   max-width: 52ch;
 }
 
-/* ── Gallery floor ──
-   The stretch of bare background below the content, where the guide
-   stands, had zero museum identity of its own — just empty page.
-   This gives it one: a soft floor plane with a defining line where
-   the wall ends, rather than a blank stretch that reads as
-   unfinished background. Sits behind everything (z-index 0, the
-   shell/content/guide are all effectively above it), spans the full
-   page width — under the sidebar too, since a floor doesn't stop at
-   a nav column. */
-/* A distinctly-toned plane (not just a lighter tint of the page
-   background), a plank texture, and an accent boundary line with an
-   inset shadow lip underneath it — reads as an actual change of
-   surface where the wall ends and the floor begins, not a faint tint
-   that only registers up close. */
-.exh-floor {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 280px;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    repeating-linear-gradient(
-      to right,
-      rgba(0, 0, 0, 0.05) 0px,
-      rgba(0, 0, 0, 0.05) 1px,
-      transparent 1px,
-      transparent 84px
-    ),
-    linear-gradient(to top, var(--exh-floor) 0%, var(--exh-floor) 45%, var(--exh-bg) 100%);
-  border-top: 2px solid var(--exh-floor-line);
-  box-shadow: inset 0 14px 22px -14px rgba(0, 0, 0, 0.3);
-}
-
 /* ── Persistent tour guide (fixed corner companion) ── */
 
 .exh-guide-wrap {
@@ -950,13 +906,6 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(25, 26, 20, 0.1);
 }
-/* The card's own corner brackets stay faint until hover/focus — full
-   strength on every card at once reads as busy/noisy at this size
-   and count, so they light up as you engage with one instead. */
-.exh-card .exh-case-bracket { opacity: 0.35; transition: opacity 0.15s ease; }
-.exh-card:hover .exh-case-bracket,
-.exh-card:focus-visible .exh-case-bracket { opacity: 1; }
-
 .exh-card-eyebrow {
   display: flex;
   align-items: center;

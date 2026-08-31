@@ -657,10 +657,15 @@ function TourBurst() {
   )
 }
 
-function ExhibitFrame({ section, plate, title, note, byline, emblem, emblemVariant = 'logo', flashAccent, children }) {
+function ExhibitFrame({ section, plate, title, note, byline, emblem, emblemVariant = 'logo', flashAccent, noBrackets, children }) {
   return (
     <div className="exh-frame">
-      <CaseBrackets />
+      {/* Skipped on the Introduction plate (noBrackets) — that page
+          already has a bracketed set on each of its 5 exhibit cards
+          below, so a 6th set framing the plate itself just piled on
+          more corners rather than reading as "under glass." Every
+          other, single-exhibit plate keeps the vitrine framing. */}
+      {!noBrackets && <CaseBrackets />}
       <div className="exh-eyebrow">
         {plate && <PlateMark n={plate} />}
         <span className="exh-eyebrow-text">{section}</span>
@@ -945,6 +950,7 @@ export function RecruiterView() {
             section="Introduction"
             title="Edgar Setyan"
             byline="SDE I, AWS RDS · Toronto, ON"
+            noBrackets
           >
             <p className="exh-intro-text">
               {isMobile
@@ -984,7 +990,6 @@ export function RecruiterView() {
                   style={{ animationDelay: `${200 + i * 90}ms` }}
                   onClick={(e) => handleCardClick(e, group.items[0].path)}
                 >
-                  <CaseBrackets />
                   <div className="exh-card-eyebrow">
                     <PlateMark n={String(i + 1).padStart(2, '0')} />
                     {CARD_LOGOS[group.label] && (
@@ -1142,7 +1147,6 @@ export function RecruiterView() {
 
   return (
     <div className="exh-page">
-      {!isMobile && <div className="exh-floor" aria-hidden="true" />}
       <nav className="exh-topbar">
         <Link to="/" className="exh-brand">
           <span className="exh-brand-mark">✦</span>

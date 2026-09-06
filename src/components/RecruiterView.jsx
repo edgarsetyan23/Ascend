@@ -1115,7 +1115,7 @@ export function RecruiterView() {
                 cards) — this is ordinary navigation, not the tour. */}
             <div className="exh-featured-row">
               <Link to={`/portfolio${EXPERIENCE[0].path}`} className="exh-featured-card">
-                <span className="exh-featured-card-eyebrow">Field Work</span>
+                <span className="exh-featured-card-eyebrow">Most Recent</span>
                 <span className="exh-featured-card-title">Amazon Web Services</span>
                 <span className="exh-featured-card-why">
                   The year right after graduating — a load-testing prototype, real on-call pages, and a long AWS account cleanup.
@@ -1123,7 +1123,7 @@ export function RecruiterView() {
                 <span className="exh-featured-card-arrow">Read the story →</span>
               </Link>
               <Link to={`/portfolio${PROJECTS[0].path}`} className="exh-featured-card">
-                <span className="exh-featured-card-eyebrow">Studio Projects</span>
+                <span className="exh-featured-card-eyebrow">Behind This Page</span>
                 <span className="exh-featured-card-title">Ascend</span>
                 <span className="exh-featured-card-why">
                   The app running this very page, built the way I'd actually want to defend it in an interview.

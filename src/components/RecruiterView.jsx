@@ -301,21 +301,6 @@ const ID_TO_GROUP = Object.fromEntries(
   NAV_GROUPS.flatMap((g) => g.items.map((item) => [item.id, g.label]))
 )
 
-// Real company/institution marks, sourced from Wikimedia Commons
-// (public-domain or copyright-ineligible logo files; trademark use here
-// is purely factual — identifying where I worked/studied, not implying
-// endorsement). Only sections tied to an actual organization get one —
-// no logo is invented for the personal-project sections.
-const CARD_LOGOS = {
-  'Field Work': [
-    { src: '/logos/aws.svg', alt: 'Amazon Web Services' },
-    { src: '/logos/tangerine.svg', alt: 'Tangerine Bank' },
-  ],
-  'Education': [
-    { src: '/logos/york.svg', alt: 'York University' },
-  ],
-}
-
 // ── Small building blocks ────────────────────────────────────────────────────
 
 function PlateMark({ n }) {
@@ -1147,6 +1132,10 @@ export function RecruiterView() {
               </Link>
             </div>
 
+            {/* An index, not a second row of cards — Field Work and Studio
+                Projects already got their full-weight pitch in the
+                featured row above, so this repeats the same five topics
+                as a plain numbered list instead of five more boxes. */}
             <div className="exh-tour-grid">
               {NAV_GROUPS.filter((g) => g.label !== 'Introduction').map((group, i) => (
                 <Link
@@ -1157,23 +1146,16 @@ export function RecruiterView() {
                   style={{ animationDelay: `${200 + i * 90}ms` }}
                   onClick={handleCardClick}
                 >
-                  <div className="exh-card-eyebrow">
-                    <PlateMark n={String(i + 1).padStart(2, '0')} />
-                    {CARD_LOGOS[group.label] && (
-                      <div className="exh-card-logos">
-                        {CARD_LOGOS[group.label].map((logo) => (
-                          <span key={logo.alt} className="exh-card-logo-chip">
-                            <img src={logo.src} alt={logo.alt} />
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                  <div className="exh-card-row">
+                    <span className="exh-card-eyebrow">
+                      <PlateMark n={String(i + 1).padStart(2, '0')} />
+                      <span className="exh-card-label">{group.label}</span>
+                    </span>
+                    <span className="exh-card-count">
+                      {group.items.length} {group.items.length === 1 ? 'entry' : 'entries'} →
+                    </span>
                   </div>
-                  <span className="exh-card-label">{group.label}</span>
                   <span className="exh-card-teaser">{GUIDE_LINES[group.label]}</span>
-                  <span className="exh-card-count">
-                    {group.items.length} {group.items.length === 1 ? 'entry' : 'entries'} →
-                  </span>
                 </Link>
               ))}
             </div>

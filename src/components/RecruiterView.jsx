@@ -101,6 +101,14 @@ const EXPERIENCE = [
     navSub: 'Summer 2021',
     note: 'My second internship — same company, a year later.',
     logo: '/logos/tangerine.svg',
+    // Same treatment as the AWS entry: a prose lede synthesized purely
+    // from the highlights below (no new facts), plus the concrete
+    // tools those highlights already name, pulled into a tag row.
+    // Two bullets and a bare highlight list read thin next to AWS's
+    // paragraph-plus-stats — this brings it up to the same pattern
+    // instead of leaving the shortest entries the least developed.
+    intro: 'Second summer at Tangerine, one step further into the stack: Java components for a high-traffic application, then SQL and indexing work to cut query latency. By the end of it I was in the deploy pipeline itself — tightening Docker configs and supporting Kubernetes operations, which cut deployment errors by 20%.',
+    techTags: ['Java', 'SQL', 'Docker', 'Kubernetes'],
     data: {
       company: 'Tangerine Bank',
       role: 'Software Developer Intern',
@@ -121,6 +129,8 @@ const EXPERIENCE = [
     navSub: 'Summer 2020',
     note: 'My first internship — where it started.',
     logo: '/logos/tangerine.svg',
+    intro: 'First internship, first real production codebase: building features for a high-performance Java application with scalable design in mind, then automating the build process with Maven — cutting build errors in half and improving CI reliability and developer velocity.',
+    techTags: ['Java', 'Maven', 'CI'],
     data: {
       company: 'Tangerine Bank',
       role: 'Software Developer Intern',
@@ -332,6 +342,28 @@ function HighlightList({ items }) {
         <li key={i} className="exh-highlight exh-fade-in" style={{ animationDelay: `${80 + i * 60}ms` }}>{item}</li>
       ))}
     </ul>
+  )
+}
+
+// Reuses the same tag-chip language the résumé analyzer already uses
+// for "AWS Services"/"Tech Stack" (.exh-detected-*) — the entries
+// short enough to need this are the ones whose highlights already
+// name concrete tools (Java, Docker, Maven…), so surfacing them as
+// scannable chips is the same move the analyzer makes on any resume,
+// just applied to mine. No new facts — every tag here is a word
+// already sitting in that entry's own highlight bullets above.
+function TechTagRow({ tags }) {
+  return (
+    <div className="exh-detected-groups exh-tech-tags">
+      <div className="exh-detected-group">
+        <span className="exh-detected-group-label">Stack</span>
+        <div className="exh-detected-tags">
+          {tags.map((t) => (
+            <span key={t} className="exh-detected-tag exh-detected-tag--tech">{t}</span>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -1197,6 +1229,7 @@ export function RecruiterView() {
           {exp.intro && <p className="exh-intro-text">{exp.intro}</p>}
           {exp.stats && <StatRow stats={exp.stats} accent={exp.flashAccent} />}
           <HighlightList items={exp.data.highlights} />
+          {exp.techTags && <TechTagRow tags={exp.techTags} />}
         </ExhibitFrame>
       )
     }

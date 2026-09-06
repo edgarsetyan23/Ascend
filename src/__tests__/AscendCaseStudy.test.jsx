@@ -7,6 +7,14 @@ import { AscendCaseStudy } from '../components/portfolio/AscendCaseStudy.jsx';
 // isn't available in this jsdom test environment. AscendCaseStudy has
 // no such dependency, so it's tested directly instead.
 describe('AscendCaseStudy', () => {
+  // The "Show me the engineering" and "Try the sample workflow"
+  // buttons in RecruiterView.jsx both set aria-controls="ascend-case-study"
+  // — this id is that contract's other half.
+  test('exposes the id the exhibit\'s action buttons point aria-controls at', () => {
+    render(<AscendCaseStudy />);
+    expect(document.getElementById('ascend-case-study')).not.toBeNull();
+  });
+
   test('renders every required case-study section', () => {
     render(<AscendCaseStudy />);
     ['The problem', 'System overview', 'Engineering decisions', 'Limitations and next steps', 'Explore']

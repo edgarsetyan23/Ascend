@@ -23,6 +23,45 @@
 }
 .exh-cs-toggle:hover { background: var(--exh-accent); color: var(--exh-bg-raised); }
 
+/* One action row near the top of the Ascend exhibit — source link,
+   the case-study reveal, and a direct shortcut into its demo — so the
+   sample workflow doesn't only become reachable after reading the
+   whole case study. Both buttons already carry their own vertical
+   margin for when they stand alone elsewhere; reset it here so the
+   row's own gap does the spacing instead of double-margins. */
+.exh-cs-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin: 4px 0 20px;
+}
+.exh-cs-actions-row .exh-repo-link,
+.exh-cs-actions-row .exh-cs-toggle { margin: 0; }
+
+/* Filled instead of the plain toggle's soft outline — reads as the
+   primary action of the three, since it's the one most visitors
+   without time to read the full case study will actually want. */
+.exh-cs-toggle--demo {
+  color: var(--exh-bg-raised);
+  background: var(--exh-accent);
+}
+.exh-cs-toggle--demo:hover {
+  color: var(--exh-bg-raised);
+  background: var(--exh-accent);
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* The demo heading becomes a scripted focus target (see
+   goToSampleWorkflow in RecruiterView.jsx) — give it a visible ring
+   like any other focusable element gets, even though it's never part
+   of the normal Tab order. */
+#ascend-demo-heading:focus-visible {
+  outline: 2px solid var(--exh-accent);
+  outline-offset: 3px;
+}
+
 .exh-cs {
   margin-top: 28px;
   padding-top: 24px;
@@ -260,6 +299,10 @@
   background: var(--exh-bg-raised);
 }
 .exh-demo-label {
+  /* Now an <h3> (see AscendDemo.jsx) so it's a real heading and a
+     valid programmatic-focus target, not just a styled <div> — reset
+     the browser's default heading margin rather than inherit it. */
+  margin-top: 0;
   display: inline-block;
   font-size: 0.72rem;
   font-weight: 700;

@@ -200,6 +200,24 @@
   min-height: calc(100vh - 56px);
   position: relative;
   z-index: 1;
+  /* Sidebar (250px) + main (capped 900px) + a dedicated 360px gutter
+     for the fixed-position guide and his speech bubble (corner-mode
+     wrap tops out around 300px, plus the guide's own GAP/margin —
+     see guideHomeRect in RecruiterView.jsx) sum to 1510px. Below that
+     width the shell just fills the viewport as before (main's own
+     flex:1 shrinks it, same as pre-existing responsive behavior);
+     above it, the whole sidebar+content+guide-gutter composition
+     centers as one unit instead of hugging the left edge and leaving
+     the rest of a wide monitor empty. The guide himself is still
+     positioned by measuring .exh-frame's real rect at runtime (see
+     guideHomeRect), so centering this container is what actually
+     moves him — no separate position math to keep in sync.
+     box-sizing: border-box (set globally on .exh-page *) means the
+     padding is carved out of max-width, not added on top of it, so
+     sidebar+main still land in exactly the 1150px left of it. */
+  max-width: 1510px;
+  margin: 0 auto;
+  padding-right: 360px;
 }
 
 .exh-sidebar {
@@ -1279,7 +1297,10 @@
 
 @media (max-width: 860px) {
   .exh-topbar-crumb { display: none; }
-  .exh-shell { flex-direction: column; }
+  /* No guide gutter to reserve below this width — undo the desktop
+     composition-centering budget entirely so the stacked mobile
+     layout gets its full width back. */
+  .exh-shell { flex-direction: column; max-width: none; margin: 0; padding-right: 0; }
   .exh-sidebar {
     width: 100%;
     height: auto;

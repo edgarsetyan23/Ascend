@@ -3,6 +3,24 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { AscendDemo } from '../components/portfolio/AscendDemo.jsx';
 
 describe('AscendDemo', () => {
+  // RecruiterView.jsx's "Try the sample workflow" shortcut finds this
+  // element with document.getElementById('ascend-demo-heading') and
+  // calls .focus() on it once the case study mounts — a MutationObserver
+  // fallback covers the mount timing itself (untestable here: the full
+  // RecruiterView tree pulls in pdfjs-dist, which needs DOMMatrix and
+  // isn't available in jsdom), but this contract — the id existing and
+  // being focusable — is exactly what that shortcut depends on, and is
+  // real to break if AscendDemo's markup changes later.
+  test('exposes a focusable heading at the id the "Try the sample workflow" shortcut targets', () => {
+    render(<AscendDemo />);
+    const heading = document.getElementById('ascend-demo-heading');
+    expect(heading).not.toBeNull();
+    expect(heading.tagName).toBe('H3');
+    expect(heading).toHaveAttribute('tabindex', '-1');
+    heading.focus();
+    expect(heading).toHaveFocus();
+  });
+
   test('labels itself as sample data, not a live operation', () => {
     render(<AscendDemo />);
     expect(screen.getByText('Interactive demo · Sample data')).toBeInTheDocument();

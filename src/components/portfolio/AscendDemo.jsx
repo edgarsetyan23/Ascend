@@ -44,7 +44,14 @@ export function AscendDemo() {
 
   return (
     <div className="exh-demo">
-      <div className="exh-demo-label">Interactive demo · Sample data</div>
+      {/* Real heading (not just a styled label) — gives screen-reader
+          heading navigation a landmark here, and gives the "Try the
+          sample workflow" shortcut in RecruiterView.jsx a specific,
+          sensible element to move keyboard focus to (tabIndex="-1":
+          focusable via script, not part of normal Tab order). */}
+      <h3 id="ascend-demo-heading" tabIndex={-1} className="exh-demo-label">
+        Interactive demo · Sample data
+      </h3>
       <p className="exh-demo-note">
         This is the review step from Ascend's real Gmail scanner, with four
         fictional applications standing in for a scanned inbox — no Gmail

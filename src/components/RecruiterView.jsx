@@ -57,12 +57,15 @@ const EXPERIENCE = [
     // so it's labeled as one and kept last rather than leading with an
     // unqualified "10,000+" that would read as achieved throughput.
     // The target stays fused to its qualifier in the VALUE itself
-    // ("10,000+ TPS target") rather than relying on a small caption
-    // underneath to carry that distinction.
+    // ("10,000+ TPS target") — the caption doesn't need to also spell
+    // out "not measured production traffic" on top of that; the
+    // qualifier only needs to appear once, not in every element that
+    // touches this number (see the intro paragraph and highlights
+    // below, which state it plainly a single time each).
     stats: [
       { value: '25+', label: 'on-call incidents resolved' },
       { value: '60+', label: 'AWS accounts · stale deployments remediated' },
-      { value: '10,000+ TPS target', label: 'local load-test prototype, not measured production traffic' },
+      { value: '10,000+ TPS target', label: 'Local load-testing prototype' },
     ],
     // A prose lede synthesized from the highlights below — same facts,
     // woven into a paragraph instead of only existing as bullet
@@ -78,8 +81,12 @@ const EXPERIENCE = [
       location: 'Toronto, ON',
       period: 'Jan 2025 – Jan 2026',
       highlights: [
-        'Implemented core business logic for a synchronous RDS instance-configuration API on a separate branch, including DynamoDB persistence and CloudWatch instrumentation; the implementation was approved but never finalized or merged.',
-        'Developed a local load-testing prototype for a distributed telemetry service with a 10,000+ TPS design target, adding ECS task-health and CPU monitoring to investigate capacity and surface bottlenecks; a prototype, not merged into production.',
+        // The approved-but-unmerged status is stated once, plainly, in
+        // the intro paragraph above — repeating it in full on every
+        // bullet that touches this work reads as over-qualified. These
+        // two just describe what was built, without implying it shipped.
+        'Implemented core business logic for a synchronous RDS instance-configuration API on a separate branch, including DynamoDB persistence and CloudWatch instrumentation.',
+        'Developed a local load-testing prototype for a distributed telemetry service with a 10,000+ TPS design target, adding ECS task-health and CPU monitoring to investigate capacity and surface bottlenecks.',
         'Supported on-call for a metrics ingestion service; triaged and resolved 25+ production incidents, executed mitigations via runbooks, and delivered follow-up fixes to prevent recurrence.',
         'Remediated stale CloudFormation deployments across 60+ AWS accounts by auditing stacks, removing failed/obsolete resources, and safely re-deploying to restore consistent infrastructure.',
         'Refactored CloudWatch dashboards to stay within service limits and automated KPI extraction for Monthly Business Reviews, reducing manual reporting overhead.',
@@ -279,10 +286,10 @@ const GUIDE_LINES = {
 // the three Field Work pages used to share the exact same caption;
 // now each gets its own, tied to what's actually on that page.
 const EXHIBIT_LINES = {
-  aws: "The 10,000+ number was a target I built a load-test prototype toward — the on-call pager was the part that was actually live.",
+  aws: 'Some of this work was about building; some was about keeping systems running. The on-call work connected the code to what happened in production.',
   'tangerine-2021': 'Second summer, same bank — this time I was in the deploy pipeline.',
   'tangerine-2020': 'The first one — cut build errors in half with Maven before anything else.',
-  ascend: "Meta moment: you're on the project I'm describing. The trickiest call was keeping this page's read access completely separate from mine — different Lambda, different IAM role, no shared code path.",
+  ascend: 'This portfolio reads live data through its own read-only API. The case study explains how that stays separate from my private trackers.',
   oncall: 'Three days, one team — we turned a ticket ID into a guided troubleshooting checklist so on-call didn’t rely on memory at 3 a.m.',
   york: 'Everything above traces back here — the CS fundamentals that made the AWS and Ascend work possible.',
   leetcode: 'Live-pulled from LeetCode — refresh and the numbers actually move.',
@@ -766,6 +773,53 @@ export function RecruiterView() {
     if (activeId !== 'ascend') setShowEngineering(false)
   }, [activeId])
 
+  // "Try the sample workflow" — opens the case study (if collapsed)
+  // and takes the visitor straight to the demo inside it, rather than
+  // making them read down to the Explore section. Setting this flag
+  // and showEngineering together, then reacting to the flag in an
+  // effect below, means the scroll/focus attempt always happens AFTER
+  // React has committed the case study (and the demo inside it) to
+  // the DOM — never racing the render that adds them.
+  const [pendingDemoFocus, setPendingDemoFocus] = useState(false)
+
+  function goToSampleWorkflow() {
+    setShowEngineering(true)
+    setPendingDemoFocus(true)
+  }
+
+  useEffect(() => {
+    if (!pendingDemoFocus) return
+
+    function focusDemo() {
+      const heading = document.getElementById('ascend-demo-heading')
+      if (!heading) return false
+      heading.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
+      heading.focus({ preventScroll: true })
+      return true
+    }
+
+    // Usually the demo heading is already in the DOM by the time this
+    // effect runs (React commits state updates from the same click
+    // together before effects fire) — but rather than assume that,
+    // fall back to watching for it: covers a slow/interrupted render
+    // instead of silently doing nothing if the elements aren't there
+    // on the very first check.
+    if (focusDemo()) {
+      setPendingDemoFocus(false)
+      return
+    }
+    const container = document.querySelector('.exh-main')
+    if (!container) { setPendingDemoFocus(false); return }
+    const observer = new MutationObserver(() => {
+      if (focusDemo()) {
+        observer.disconnect()
+        setPendingDemoFocus(false)
+      }
+    })
+    observer.observe(container, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [pendingDemoFocus, activeId])
+
   // The guided tour: once started, steps through TOUR_SEQUENCE in
   // order. Stop 1 happens on its own, right after the "Start the
   // tour" celebration beat (see the auto-advance effect below) —
@@ -1149,25 +1203,45 @@ export function RecruiterView() {
           title={proj.data.name} byline={proj.data.stack}
           emblem={proj.id === 'ascend' ? <AscendIcon /> : <OnCallIcon />} emblemVariant="icon">
           <HighlightList items={proj.data.highlights} />
-          {proj.repoUrl && (
-            <a href={proj.repoUrl} target="_blank" rel="noopener noreferrer" className="exh-repo-link">
-              <span className="exh-root-link-icon"><GitHubIcon /></span> View the source on GitHub →
-            </a>
-          )}
-          {proj.snippet && <DetailPanel file={proj.snippet.file} code={proj.snippet.code} />}
-          {proj.id === 'ascend' && (
-            <>
+          {proj.id === 'ascend' ? (
+            // Grouped as one action row near the top of the exhibit —
+            // source, the case-study reveal, and a direct shortcut
+            // into its demo — rather than the sample-workflow action
+            // only being reachable after reading the whole case study.
+            <div className="exh-cs-actions-row">
+              {proj.repoUrl && (
+                <a href={proj.repoUrl} target="_blank" rel="noopener noreferrer" className="exh-repo-link">
+                  <span className="exh-root-link-icon"><GitHubIcon /></span> View the source on GitHub →
+                </a>
+              )}
               <button
                 type="button"
                 className="exh-cs-toggle"
                 onClick={() => setShowEngineering((s) => !s)}
                 aria-expanded={showEngineering}
+                aria-controls="ascend-case-study"
               >
                 {showEngineering ? 'Hide the engineering ↑' : 'Show me the engineering →'}
               </button>
-              {showEngineering && <AscendCaseStudy />}
-            </>
+              <button
+                type="button"
+                className="exh-cs-toggle exh-cs-toggle--demo"
+                onClick={goToSampleWorkflow}
+                aria-expanded={showEngineering}
+                aria-controls="ascend-case-study"
+              >
+                Try the sample workflow →
+              </button>
+            </div>
+          ) : (
+            proj.repoUrl && (
+              <a href={proj.repoUrl} target="_blank" rel="noopener noreferrer" className="exh-repo-link">
+                <span className="exh-root-link-icon"><GitHubIcon /></span> View the source on GitHub →
+              </a>
+            )
           )}
+          {proj.snippet && <DetailPanel file={proj.snippet.file} code={proj.snippet.code} />}
+          {proj.id === 'ascend' && showEngineering && <AscendCaseStudy />}
         </ExhibitFrame>
       )
     }

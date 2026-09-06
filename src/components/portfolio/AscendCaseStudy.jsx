@@ -21,16 +21,22 @@ const DECISIONS = [
         Loading a tab fires one <code>Query</code> with{' '}
         <code>begins_with(SK, "TRACKER#{'{id}'}#ENTRY#")</code> — verified directly in{' '}
         <a href={`${REPO}/infra/lambda/entries-list.mjs`} target="_blank" rel="noopener noreferrer">entries-list.mjs</a>{' '}
-        — no scan, no join, no second round trip.
+        — no scan, no join, no second round trip. That query sorts by SK, and each entry's SK ends in a
+        random UUID rather than a sortable one, so the result isn't reliably ordered by creation date despite
+        the code's own "newest first" comment — genuine date ordering is what the index below actually gives.
       </>
     ),
     tradeoff: (
       <>
         Every write also stamps a <code>GSI1PK</code>/<code>GSI1SK</code> pair (see{' '}
         <a href={`${REPO}/infra/lambda/entries-create.mjs`} target="_blank" rel="noopener noreferrer">entries-create.mjs</a>
-        ), meant for an "entries in one tracker, ordered by date" index — but no Lambda currently queries{' '}
-        <code>GSI1</code>. It's either unused cost and complexity to remove, or the next access pattern
-        (see Limitations below).
+        ): <code>GSI1PK = USER#{'{sub}'}#TRACKER#{'{trackerId}'}</code>, <code>GSI1SK = createdAt</code>. That's
+        a <em>tracker-scoped</em>, date-ordered index — one tracker at a time, actually sorted by creation
+        date — not a cross-tracker one; the partition key still includes <code>trackerId</code>, so one query
+        against it can't return two trackers' entries together. No Lambda queries it yet (see Limitations). A
+        genuinely cross-tracker, date-ordered view (entries from any tracker, newest first) would need a
+        different index — dropping <code>trackerId</code> from the partition key — and that redesign doesn't
+        exist in this codebase; it'd be new work, not a flip of a switch.
       </>
     ),
   },
@@ -48,7 +54,7 @@ const DECISIONS = [
       </>
     ),
     tradeoff:
-      "It only ever serves one person's data. There's no per-visitor identity and no way to showcase a second user's trackers without a second Lambda and route — a deliberate single-tenant shortcut for a page that only ever needs to show one résumé.",
+      "It's single-tenant as configured today: OWNER_USER_ID is one fixed value baked into this Lambda's environment at deploy time, so this exact deployment only ever answers for one person's data. That's not the only conceivable way to support a second public profile — the same function could take an owner identifier from the route and look up the matching partition instead of a hardcoded one — but that redesign doesn't exist in this codebase. Today, one deployment shows one résumé.",
   },
   {
     title: 'Gmail → metadata → Claude → a review modal, in that order',
@@ -67,10 +73,14 @@ const DECISIONS = [
     ),
     tradeoff: (
       <>
-        The OAuth access token passes through <code>localStorage</code> for a few hundred milliseconds — the
-        only same-origin signal that crosses tabs without a service worker — before the receiving tab deletes
-        it. And the classification step is a prompt, not a guarantee: a differently-worded rejection email
-        could still be misread. The review step exists because neither of those is airtight alone.
+        This implementation hands the OAuth access token across tabs via <code>localStorage</code> plus the{' '}
+        <code>storage</code> event it fires — not because it's the only mechanism available, but because it
+        needs no extra library and no service worker. <code>BroadcastChannel</code> is a plausible alternative
+        for the same handoff, though that would need to be checked against how{' '}
+        <code>OAuthCallback.jsx</code> and <code>EmailScanner.jsx</code> actually coordinate before assuming
+        it's a drop-in swap. Separately, the classification step is a prompt, not a guarantee: a
+        differently-worded rejection email could still be misread. The review step exists because neither of
+        those is airtight alone.
       </>
     ),
   },
@@ -78,17 +88,16 @@ const DECISIONS = [
 
 export function AscendCaseStudy() {
   return (
-    <div className="exh-cs">
+    <div className="exh-cs" id="ascend-case-study">
       <section className="exh-cs-section">
         <h2 className="exh-cs-heading">The problem</h2>
         <p className="exh-cs-text">
-          I was tracking four different things by hand, in separate notes apps that never talked to each
-          other: LeetCode reps, day-to-day habits, job applications, and gaming sessions I was trying to cut
-          back on. Different data shapes, but the same underlying workflow — log that something happened,
-          see it over time, get a nudge to keep going. One tracker with pluggable tracker types instead of
-          four separate apps meant one auth flow, one API, and one data model to maintain, and it left room
+          Ascend brings LeetCode practice, daily activity, job applications, and gaming logs into one
+          application. The trackers have different fields but share a common workflow: record an entry and
+          review it over time. Building one tracker with pluggable tracker types — rather than a separate
+          app per tracker — means one auth flow, one API, and one data model to maintain, and it leaves room
           to automate data entry for one tracker specifically (job applications, via the Gmail scanner)
-          without rebuilding that four times over.
+          without rebuilding that per tracker.
         </p>
       </section>
 
@@ -190,15 +199,15 @@ export function AscendCaseStudy() {
       <section className="exh-cs-section">
         <h2 className="exh-cs-heading">Limitations and next steps</h2>
         <ul className="exh-cs-limitations">
-          <li>The public portfolio Lambda is single-tenant by design (Decision 2) — showing a second user's data isn't a config change.</li>
-          <li><code>GSI1</code> is written on every create but nothing queries it yet (Decision 1) — either wire up the cross-tracker-by-date pattern it was built for, or remove it.</li>
+          <li>The public portfolio Lambda answers for one fixed <code>OWNER_USER_ID</code> today (Decision 2) — showing a second person's data isn't a config change with the current code, though it wouldn't necessarily require a whole second Lambda either.</li>
+          <li><code>GSI1</code> (tracker-scoped, date-ordered — see Decision 1) is written on every create but nothing queries it yet — wiring it into <code>entries-list.mjs</code> would fix the base table's non-chronological ordering for a single tracker; it does not, as written, support a cross-tracker query.</li>
           <li>
             Backend test coverage is two Node test files (
             <a href={`${REPO}/infra/lambda/__tests__/validate.test.mjs`} target="_blank" rel="noopener noreferrer">validate.test.mjs</a>,{' '}
             <a href={`${REPO}/infra/lambda/__tests__/public-entries-list.test.mjs`} target="_blank" rel="noopener noreferrer">public-entries-list.test.mjs</a>
             ) — the authenticated CRUD Lambdas and the optimistic-rollback path in <code>useEntries.js</code> have no automated tests yet.
           </li>
-          <li>The Gmail OAuth handoff still touches <code>localStorage</code> for a moment (Decision 3) — a <code>BroadcastChannel</code> would remove that entirely.</li>
+          <li>The Gmail OAuth handoff uses <code>localStorage</code> plus a <code>storage</code> event (Decision 3) — worth checking whether <code>BroadcastChannel</code> could replace that without touching storage at all, rather than assuming it's a confirmed drop-in fix.</li>
           <li>Claude's follow-up classification is a single prompt with no eval set behind it — there's no measured accuracy number, just the conservative fallback described above.</li>
         </ul>
       </section>

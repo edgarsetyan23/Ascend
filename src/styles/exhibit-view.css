@@ -538,20 +538,25 @@
 /* Headline stat callouts — same numbers already in the highlight
    prose below, pulled out into a big-number row instead of staying
    buried mid-sentence. --exh-stat-accent (set inline per entry) lets
-   one entry break from the site's uniform sage accent. */
+   one entry break from the site's uniform sage accent.
+   A divided strip, not three more card boxes stacked next to the
+   featured cards and contact row — a vertical rule between entries
+   instead of a background/border per tile. */
 .exh-stat-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 28px;
   margin: 4px 0 28px;
 }
 .exh-stat {
   flex: 1;
   min-width: 130px;
-  padding: 14px 16px 12px;
-  border-radius: 10px;
-  background: var(--exh-sidebar-bg);
-  border-top: 3px solid var(--exh-stat-accent, var(--exh-accent));
+  padding-left: 20px;
+  border-left: 2px solid var(--exh-border);
+}
+.exh-stat:first-child {
+  padding-left: 0;
+  border-left: none;
 }
 .exh-stat-value {
   display: block;
@@ -572,8 +577,21 @@
   .exh-frame-emblem { width: 52px; height: 52px; padding: 9px; }
   .exh-frame-emblem--icon svg { width: 28px; height: 28px; }
   /* flex-wrap alone leaves an awkward "two then one stretched
-     alone" layout at this width — a clean single column instead. */
-  .exh-stat { min-width: 100%; }
+     alone" layout at this width — a clean single column instead.
+     The divider flips from a left rule to a top rule so it still
+     separates stacked entries instead of leaving a dangling border
+     down the left edge of a full-width row. */
+  .exh-stat {
+    min-width: 100%;
+    padding-left: 0;
+    padding-top: 14px;
+    border-left: none;
+    border-top: 2px solid var(--exh-border);
+  }
+  .exh-stat:first-child {
+    padding-top: 0;
+    border-top: none;
+  }
 }
 
 .exh-title {
@@ -858,7 +876,8 @@
 .exh-root-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  gap: 22px;
 }
 
 .exh-root-link {
@@ -891,6 +910,35 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 18px rgba(25, 26, 20, 0.12);
 }
+
+/* Where to find me vs. the one thing that actually does something:
+   GitHub/LinkedIn/email are just contact info, so they drop the
+   card chrome entirely — no border, no background, no badge circle
+   around the icon — and read as plain links. Only "Download résumé"
+   (the un-modified .exh-root-link--primary below) stays a real
+   button, since it's the one link here that triggers an action. */
+.exh-root-link--plain {
+  border-color: transparent;
+  background: none;
+  padding: 6px 4px;
+  color: var(--exh-ink-muted);
+}
+.exh-root-link--plain .exh-root-link-icon {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  color: currentColor;
+}
+.exh-root-link--plain:hover {
+  border-color: transparent;
+  color: var(--exh-accent);
+  background: var(--exh-accent-soft);
+  border-radius: 6px;
+  transform: none;
+  box-shadow: none;
+}
+
 .exh-root-link--primary {
   background: var(--exh-accent);
   color: var(--exh-bg-raised);
@@ -901,6 +949,7 @@
   color: var(--exh-bg-raised);
 }
 .exh-root-link--primary:hover {
+  color: var(--exh-bg-raised);
   opacity: 0.94;
   box-shadow: 0 8px 20px rgba(25, 26, 20, 0.22);
 }

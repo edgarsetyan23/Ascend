@@ -1094,14 +1094,19 @@ export function RecruiterView() {
 
             <StatRow stats={EXPERIENCE[0].stats} />
 
+            {/* Only "Download résumé" is a real button — it's the one
+                action here that actually does something (starts a
+                download). GitHub/LinkedIn/email are just where to find
+                me, so they read as plain links (exh-root-link--plain),
+                not three more boxes next to the stat row above. */}
             <div className={`exh-root-links ${tourFinale ? 'exh-root-links--spotlight' : ''}`}>
-              <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link">
+              <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link exh-root-link--plain">
                 <span className="exh-root-link-icon"><GitHubIcon /></span> GitHub
               </a>
-              <a href="https://www.linkedin.com/in/edgarsetyan/" target="_blank" rel="noopener noreferrer" className="exh-root-link">
+              <a href="https://www.linkedin.com/in/edgarsetyan/" target="_blank" rel="noopener noreferrer" className="exh-root-link exh-root-link--plain">
                 <span className="exh-root-link-icon"><LinkedInIcon /></span> LinkedIn
               </a>
-              <a href="mailto:edgar.setyan23@gmail.com" className="exh-root-link">
+              <a href="mailto:edgar.setyan23@gmail.com" className="exh-root-link exh-root-link--plain">
                 <span className="exh-root-link-icon"><EmailIcon /></span> edgar.setyan23@gmail.com
               </a>
               <a href="/Edgar_Resume.pdf" download="Edgar_Setyan_Resume.pdf" className="exh-root-link exh-root-link--primary">

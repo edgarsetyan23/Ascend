@@ -37,6 +37,8 @@ API Gateway (HTTP API v2)       Vercel Serverless Functions    Gmail API
 | `src/main.jsx` | React root. Wraps the tree: `BrowserRouter > ToastProvider > AuthProvider > App` |
 | `src/App.jsx` | Route guard. `/portfolio` and `/oauth-callback` are public; `/` requires auth via `AuthGate`; `*` renders `NotFound` |
 | `src/components/AppShell` | The authenticated app: sidebar, topbar, tracker table, modals |
+| `src/components/RecruiterView.jsx` | The public `/portfolio` page — résumé content, the tour guide, the Ascend exhibit's "Show me the engineering" toggle |
+| `src/components/portfolio/` | `AscendCaseStudy.jsx`, `AscendArchitectureDiagram.jsx` (inline SVG), `AscendDemo.jsx` (sample-data demo) — the case study revealed on the Ascend exhibit |
 | `src/hooks/useEntries.js` | All DynamoDB reads/writes live here. Optimistic updates with rollback |
 | `src/context/AuthContext.jsx` | Cognito session state — keeps its own React-state copy of the JWT; the underlying Cognito SDK session (which the token actually comes from) is localStorage-backed |
 | `src/context/ToastContext.jsx` | Global toast system. Any component calls `useToast().addToast()` |
@@ -158,11 +160,11 @@ CDK synthesizes a CloudFormation template and uploads Lambda bundles to S3. Clou
 | Layer | Tool | Command | What's covered |
 |---|---|---|---|
 | Lambda shared utils | Node `node:test` (built-in) | `cd infra && npm test` | `validateTrackerId`, `validateBody`, public tracker whitelist, `OWNER_USER_ID` guard |
-| React components | Vitest + Testing Library | `npm test` (root) | `StatsBar` rendering, null/empty states, inline color styles |
+| React components | Vitest + Testing Library | `npm test` (root) | `StatsBar` rendering, null/empty states, inline color styles; `AscendDemo` sample-data selection/import/reset; `AscendCaseStudy` renders every required section, the diagram's accessible title, and its source links |
 
 Lambda tests use Node's built-in test runner — no extra dependencies, runs natively with ESM on Node 22.
 
-Frontend tests use Vitest (same config as Vite, zero overhead) with jsdom for a browser-like environment.
+Frontend tests use Vitest (same config as Vite, zero overhead) with jsdom for a browser-like environment. `AscendCaseStudy`/`AscendDemo` are tested in isolation rather than through `RecruiterView` — the full page pulls in `pdfjs-dist` (via `ResumeReview.jsx`), which needs `DOMMatrix` and isn't available in jsdom.
 
 ---
 

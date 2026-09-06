@@ -9,6 +9,10 @@ A personal accountability tracker built with a production AWS stack. Tracks Leet
   <img src="docs/screenshot-exhibit.jpg" width="32%" alt="An exhibit plate on the public portfolio, framed like a museum display case" />
   <img src="docs/screenshot-resume-review.jpg" width="32%" alt="Resume Review — a live Claude-powered resume scorer on the public portfolio" />
 </p>
+<p>
+  <img src="docs/screenshot-case-study.jpg" width="32%" alt="The Ascend engineering case study — problem, system overview, and architecture diagram, revealed in place on the Ascend exhibit" />
+  <img src="docs/screenshot-demo.jpg" width="32%" alt="Interactive demo with sample data — the review-before-import step from the Gmail scanner, reproduced with fictional applications" />
+</p>
 
 ---
 
@@ -63,6 +67,8 @@ Browser (React + Vite)
 
 **Public portfolio page** — `/portfolio` is unauthenticated. A dedicated read-only Lambda hardcodes the owner's Cognito sub as the DynamoDB partition key — no user input touches the PK. Tracker whitelist returns 404 (not 403) for non-allowed trackers.
 
+**Engineering case study** — the Ascend exhibit on `/portfolio` has a "Show me the engineering" toggle that reveals a full case study in place: the problem, a system-overview architecture diagram (inline SVG, no generated image), three engineering decisions with their tradeoffs, a step-by-step trace of the Gmail-scan-to-DynamoDB-write workflow, known limitations, and an **interactive demo with clearly labeled sample data** — reproduces the scanner's review-before-import step with four fictional applications, entirely client-side, no network/auth/storage calls. `src/components/portfolio/`.
+
 ---
 
 ## Notable Design Decisions
@@ -86,9 +92,11 @@ Browser (React + Vite)
 ```
 ├── src/
 │   ├── components/       React components
+│   │   └── portfolio/    Ascend engineering case study, architecture diagram, sample-data demo
 │   ├── context/          AuthContext, ToastContext
 │   ├── hooks/            useEntries (DynamoDB CRUD), useTheme, useNotifications
 │   ├── lib/              Cognito SDK wrapper, API client
+│   ├── styles/           exhibit-view.css (portfolio page), ascend-case-study.css
 │   ├── trackers/         Per-tracker config (columns, badges, sort defaults)
 │   └── utils/            Stats, streaks, CSV export
 ├── api/                  Vercel serverless functions

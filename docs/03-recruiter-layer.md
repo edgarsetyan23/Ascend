@@ -14,6 +14,7 @@ The portfolio layer solves this: a public, read-only page at `edgarsetyan.com/po
 1. A real resume (experience, projects, skills, education)
 2. A live Claude AI resume scorer (try it with any PDF)
 3. Live tracker data pulled from DynamoDB right now — real data, not screenshots
+4. An engineering case study on the Ascend exhibit itself, for anyone who wants more than the résumé bullets — see "Engineering case study" below
 
 ---
 
@@ -97,7 +98,7 @@ Strip `USER#` prefix → that's the Cognito sub. It's saved in `infra/.env`. It'
 
 ### Dark mode
 
-`RecruiterView` calls `useTheme()` directly. This is the same hook used in `AppShell`. It reads the stored preference from `localStorage` on mount and sets `data-theme` on `document.documentElement`. The CSS vars (`--bg`, `--bg-surface`, `--accent`, etc.) then apply the correct theme everywhere on the page.
+`RecruiterView` calls `useTheme('light', 'portfolio-theme')` — the same hook `AppShell` uses, but with its own default (light, not the tracker app's dark default) and its own storage key, so toggling theme here doesn't affect Edgar's own tracker app and vice versa. It sets `data-theme` on `document.documentElement`; the page's own CSS vars (`--exh-bg`, `--exh-accent`, etc., defined under `.exh-page` in `exhibit-view.css`) then apply the correct theme.
 
 Without this call, the page would always render in light mode because `data-theme` would never be set.
 
@@ -121,6 +122,25 @@ No `Authorization` header. The browser calls the API Gateway public route direct
 
 `RecruiterView` renders `<LeetCodeProfile fixedUsername="user2986fQ" fixedDisplayName="Eddy-Setyan" />`. The `fixedUsername` prop bypasses the localStorage prompt flow entirely — the banner always shows Edgar's data, no edit controls, read-only. The component fetches from `/api/leetcode-stats?username=user2986fQ` (Vercel serverless proxy to LeetCode GraphQL, CDN-cached 5 min).
 
+### The Ascend exhibit's engineering case study
+
+The Ascend exhibit (`/portfolio/projects/ascend`) starts with the same short résumé-style summary every other exhibit uses. Below it, a "Show me the engineering →" button (`src/components/RecruiterView.jsx`, `showEngineering` state) reveals `<AscendCaseStudy />` in place — no navigation, no page load, just a state toggle. It resets when you leave the exhibit, so coming back later starts collapsed again.
+
+`src/components/portfolio/AscendCaseStudy.jsx` covers, in order:
+
+1. **The problem** — why one tracker with pluggable tracker types instead of four separate apps.
+2. **System overview** — a short request/data-flow explanation plus `AscendArchitectureDiagram.jsx`, a hand-built inline SVG (no generated image) styled with the same `--exh-*` CSS custom properties as the rest of the gallery, with an always-visible text-equivalent list underneath for accessibility and to survive a broken image / high zoom.
+3. **Engineering decisions** — three, each with the requirement, the actual implementation (with a source link), and a concrete tradeoff: the single-table DynamoDB access pattern (including that `GSI1` is written on every create but nothing queries it yet — a real gap, not glossed over), the separate public Lambda's single-tenant design, and the Gmail OAuth → Claude → review-modal flow's `localStorage` handoff and heuristic classification.
+4. **One workflow in detail** — a numbered trace of "click Scan Emails" through `EmailScanner.jsx` → Gmail API → `api/scan-emails.js` → Claude Haiku → the review modal → `useEntries.js` → `entries-create.mjs` → DynamoDB, ending in an expandable `<details>` showing the actual `PutCommand`.
+5. **Limitations and next steps** — specific, code-verified gaps (see point 3), not generic caveats.
+6. **Explore** — the interactive demo (below) plus direct GitHub links to the specific files referenced above.
+
+Every technical claim in this section was checked against the current code before being written, not carried over from an earlier design.
+
+### Interactive demo (sample data)
+
+`src/components/portfolio/AscendDemo.jsx`, embedded in the case study's Explore section. Reproduces the Gmail scanner's review-before-import step — four fictional applications (Nimbus Cloud Systems, Solstice Analytics, Riverbed Data Co., Fernwood Robotics), a checkbox per row, "Simulate import" shows exactly which rows would land in the Jobs tracker, "Reset demo" restores the initial state. All state is local `useState` — no `fetch`, no `localStorage`, no Cognito, no Gmail, no Claude call. Labeled "Interactive demo · Sample data" in the UI so it's never mistaken for a live backend operation.
+
 ### Resume analyzer
 
 `RecruiterView` imports `ScoreCircle`, `CatBar`, `DropZone`, `scoreResume`, and `extractTextFromPdf` from `ResumeReview.jsx` (these were given named exports in this session).
@@ -139,19 +159,19 @@ Nothing is saved. The recruiter page has no DynamoDB write path.
 
 ## Visual design
 
-The portfolio page uses a distinct visual layer (`rc-` CSS prefix throughout) that runs independently of the main app styles.
+The portfolio page runs its own visual layer (`exh-` CSS class prefix, `src/styles/exhibit-view.css` + `src/styles/ascend-case-study.css`) that's independent of the main app's styles — a museum/gallery concept ("The Exhibit"), not a typical dev-portfolio look.
 
-**Background:** Dot grid (28px, drifts diagonally on a 14s loop) layered with three ambient color blobs — purple top-left, gold top-right, teal bottom-center. Applied to both light and dark mode (dark at ~1.3× opacity). The blobs use `background-image` stacking so the drift animation only moves the dot grid layer.
+**Palette:** Warm paper background (`--exh-bg: #fffdf7` light / near-black `#14150f` dark) with a soft sage-green accent (`--exh-accent: #4f7a63` light / `#8fc2a6` dark) — no gradients, no glassmorphism, no ambient background animation.
 
-**Nav:** Glassmorphism — `rgba` semi-transparent background + `backdrop-filter: blur(18px)`. Content scrolls visibly behind a frosted bar.
+**Typography:** Source Serif 4 for headings and eyebrow labels (`--exh-font-display`), Inter for body copy (`--exh-font-body`), JetBrains Mono for code excerpts (`--exh-font-mono`).
 
-**Hero:** Name at `3.2rem` with a white→purple gradient in dark mode. Role as a pill badge. One-line description below the badge ("A full-stack productivity tracker I built on AWS — this is the live version") anchors the page for first-time visitors. Elements blur-dissolve in on load with staggered delays (0–320ms).
+**Layout:** A sidebar of numbered nav groups (Field Work, Studio Projects, Education, Toolkit, Live Demonstrations) next to a single centered "exhibit frame" per page — each experience/project/education entry is a numbered plate (`01`, `02`, ...) with display-case corner brackets, styled like a small museum's placards rather than a resume-shaped list.
 
-**Contact icons:** Inline SVG paths (GitHub octicon, LinkedIn logo) inside 26×26px icon boxes — no font/glyph dependency.
+**The guide:** A low-poly Three.js character standing in the corner of every exhibit (hidden on mobile and disabled under `prefers-reduced-motion`), with a per-exhibit speech-bubble caption. Clicking "Come on, I'll show you around" on the Introduction plate starts a click-driven guided tour through every exhibit in sidebar order; manual navigation, browser Back/Forward, or "Stop tour" all cancel it immediately rather than fighting a visitor who takes over.
 
-**Cards:** Left-border accent per category (amber = AWS experience, teal = Tangerine, purple = projects). Hover lifts 3px with a tier-colored glow ring. Scroll-triggered entrance: `translateY(28px) scale(0.97)` → natural with `cubic-bezier(0.16, 1, 0.3, 1)` spring easing.
+**Contact icons:** Inline SVG paths (GitHub octicon, LinkedIn logo, plain envelope/download glyphs) — no font/glyph dependency. Full labeled links live on the Introduction plate; compact icon-only versions of the résumé/email links stay in the topbar on every other exhibit.
 
-**GitHub CTA:** Centered outlined pill link ("View the code →") below the Live Tracker Data section, before the footer. Closes the loop for visitors who want to see the source.
+**Featured cards + case study:** The Introduction plate calls out AWS and Ascend with larger, left-accented cards above the category grid. The Ascend exhibit's case study (see above) reuses the same plate/card language — numbered decision cards, the same table styles as the live LeetCode data — rather than introducing a second visual system.
 
-**Light mode:** All effects mirrored at ~55% of dark-mode intensity (softer blobs, lighter glow).
+**Light/dark:** Both themes are first-class (`[data-theme="dark"] .exh-page` token overrides), not a dimmed copy of one primary theme.
 

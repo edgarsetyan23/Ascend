@@ -182,3 +182,9 @@ The app does **not** need to pass Google verification as long as you stay in Tes
 | Client ID leakage | Intentionally public; protected by allowed origins in Google Cloud Console |
 | Unauthorized domain use | Google rejects OAuth requests from origins not in the allow-list |
 | Incorrect status updates | Conservative Claude matching — unconfident follow-ups fall back to new_application |
+
+---
+
+## See also
+
+This exact end-to-end flow (minus the OAuth/Gmail/Claude calls) is traced step-by-step, with source links, in the "One workflow in detail" section of the Ascend exhibit's engineering case study on `/portfolio` (`src/components/portfolio/AscendCaseStudy.jsx`) — see `docs/03-recruiter-layer.md`. That same page also has an **interactive demo** (`AscendDemo.jsx`) that reproduces the review-before-import step with four fictional applications, for anyone who wants to try it without connecting Gmail.

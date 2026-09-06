@@ -1031,73 +1031,60 @@
   font-weight: 600;
 }
 
-/* ── Tour grid (Introduction plate) ── */
+/* ── Tour grid (Introduction plate) ──
+   Deliberately NOT a second row of cards. The featured row above
+   already gives Field Work and Studio Projects their full-weight
+   pitch (border, accent bar, "why this matters" prose) — stacking
+   five more bordered boxes right underneath just repeated the same
+   two topics in a heavier box a second time and added three more
+   boxes besides. This is an index instead: hairline rules, no
+   border/background/shadow per row, so it reads as "here's where
+   everything is" rather than another bank of cards competing with
+   the one above it for the same attention. */
 
 .exh-tour-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 12px;
-  margin-top: 36px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 32px;
+  border-top: 1px solid var(--exh-border);
 }
 
-/* A plaque, not a dashboard card — the same display-case corner
-   brackets and numbered plate mark used on every individual exhibit
-   page, just at card scale, so the overview grid reads as five more
-   pieces in the same collection instead of a different, generic UI
-   pattern bolted on for navigation. Square-ish corners (not the
-   rounded-10px "app card" radius) reinforce that it's a placard, not
-   a tile. */
 .exh-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
+  gap: 4px;
   text-align: left;
-  padding: 22px 18px 16px;
-  border: 1px solid var(--exh-border);
-  border-radius: 3px;
-  background: var(--exh-bg-raised);
+  padding: 14px 4px;
+  border: none;
+  border-bottom: 1px solid var(--exh-border);
+  border-radius: 0;
+  background: transparent;
   cursor: pointer;
   font-family: inherit;
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  transition: padding-left 0.15s ease, background 0.15s ease;
   /* Now a real <Link>, not a <button> — undo anchor defaults. */
   text-decoration: none;
   color: inherit;
 }
 .exh-card:hover {
-  border-color: var(--exh-accent);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(25, 26, 20, 0.1);
+  padding-left: 10px;
+  background: var(--exh-bg-raised);
+}
+.exh-card:hover .exh-card-label {
+  color: var(--exh-accent);
+}
+
+.exh-card-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
 }
 .exh-card-eyebrow {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.exh-card-logos {
-  display: flex;
-  gap: 6px;
-}
-.exh-card-logo-chip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 28px;
-  padding: 0 8px;
-  border-radius: 6px;
-  /* Logos assume a light background — always white, regardless of
-     theme, so the AWS/York wordmarks (unstyled black/charcoal paths)
-     stay legible in dark mode too. */
-  background: #ffffff;
-  border: 1px solid var(--exh-border);
-}
-.exh-card-logo-chip img {
-  height: 14px;
-  width: auto;
-  display: block;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .exh-card-label {
@@ -1105,21 +1092,23 @@
   font-weight: 600;
   font-size: 1.02rem;
   color: var(--exh-ink);
+  transition: color 0.15s ease;
 }
 .exh-card-teaser {
   /* Same treatment as .exh-note on the individual plates — italic
-     serif, accent-colored — so the card reads as a small version of
-     the same plaque, not a different UI vocabulary. */
+     serif, accent-colored — so the row still reads as part of the
+     same plaque language, just without a box around it. */
   font-family: var(--exh-font-display);
   font-style: italic;
   font-size: 0.85rem;
-  color: var(--exh-accent);
+  color: var(--exh-ink-muted);
   line-height: 1.5;
 }
 .exh-card-count {
-  margin-top: 4px;
+  flex: none;
   font-size: 0.82rem;
   color: var(--exh-accent);
+  white-space: nowrap;
 }
 
 /* ── Highlight list (replaces resume bullets with readable prose) ── */

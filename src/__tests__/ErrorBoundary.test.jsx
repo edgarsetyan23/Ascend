@@ -18,7 +18,7 @@ it.each([
   render(<div><p>Portfolio content</p><ErrorBoundary compact><Broken message={message} /></ErrorBoundary></div>)
   expect(screen.getByText('Portfolio content')).toBeInTheDocument()
   expect(screen.getByText('Mini Edgar is unavailable')).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Reload page' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Repair and reload' }))
   expect(reloadPage).toHaveBeenCalledOnce()
 })
 

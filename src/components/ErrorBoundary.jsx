@@ -4,7 +4,7 @@ import { isModuleLoadError, reloadPage } from '../utils/moduleLoadError.js'
 export class ErrorBoundary extends Component {
   constructor(props) {
     super(props)
-    this.state = { error: null }
+    this.state = { error: null, repairing: false }
   }
 
   static getDerivedStateFromError(error) {
@@ -20,13 +20,18 @@ export class ErrorBoundary extends Component {
             {this.props.compact ? 'Mini Edgar is unavailable' : moduleError ? 'This part of the page could not load' : 'Something went wrong'}
           </h2>
           <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-            {moduleError ? 'Check your connection, then reload the page to try again.' : this.state.error.message}
+            {moduleError ? 'Repair the cached app files and reload. Your saved data will be kept.' : this.state.error.message}
           </p>
+          {moduleError && <details style={{ fontSize: '0.75rem', overflowWrap: 'anywhere', marginBottom: '1rem' }}><summary>Error details</summary>{this.state.error.message}</details>}
           <button
-            onClick={() => moduleError ? reloadPage() : this.setState({ error: null })}
+            disabled={this.state.repairing}
+            onClick={() => {
+              if (moduleError) { this.setState({ repairing: true }); void reloadPage() }
+              else this.setState({ error: null })
+            }}
             style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}
           >
-            {moduleError ? 'Reload page' : 'Try again'}
+            {this.state.repairing ? 'Repairing…' : moduleError ? 'Repair and reload' : 'Try again'}
           </button>
         </div>
       )

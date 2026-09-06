@@ -1,0 +1,357 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   ASCEND CASE STUDY — the "Show me the engineering" reveal on the Ascend
+   exhibit, plus its architecture diagram and sample-data demo. Split out
+   of exhibit-view.css (rather than grown into it) so RecruiterView.jsx's
+   supporting styles don't all live in one ever-growing file. Reuses the
+   --exh-* tokens defined on .exh-page — this file is only ever loaded
+   while that ancestor is on screen, so the tokens are always present.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.exh-cs-toggle {
+  display: inline-block;
+  margin: 6px 0 4px;
+  padding: 10px 18px;
+  font-family: var(--exh-font-display);
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--exh-accent);
+  background: var(--exh-accent-soft);
+  border: 1px solid var(--exh-accent);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.exh-cs-toggle:hover { background: var(--exh-accent); color: var(--exh-bg-raised); }
+
+.exh-cs {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--exh-border);
+}
+
+.exh-cs-section { margin-bottom: 36px; }
+.exh-cs-section:last-child { margin-bottom: 0; }
+
+.exh-cs-heading {
+  font-family: var(--exh-font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.exh-cs-text {
+  font-size: 0.96rem;
+  line-height: 1.7;
+  color: var(--exh-ink-muted);
+  max-width: 68ch;
+}
+
+/* ── Engineering decisions ── */
+
+.exh-cs-decisions { display: flex; flex-direction: column; gap: 22px; }
+.exh-cs-decision {
+  padding: 16px 18px;
+  border: 1px solid var(--exh-border);
+  border-radius: 10px;
+  background: var(--exh-bg-raised);
+}
+.exh-cs-decision-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--exh-font-display);
+  font-size: 1.02rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.exh-cs-decision-n {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--exh-accent-soft);
+  color: var(--exh-accent);
+  font-family: var(--exh-font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.exh-cs-decision-grid {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 6px 16px;
+  margin: 0;
+}
+.exh-cs-decision-grid dt {
+  font-family: var(--exh-font-display);
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--exh-ink-subtle);
+  padding-top: 2px;
+}
+.exh-cs-decision-grid dd {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--exh-ink-muted);
+}
+.exh-cs-decision-grid code,
+.exh-cs-text code,
+.exh-cs-trace code,
+.exh-cs-limitations code {
+  font-family: var(--exh-font-mono);
+  font-size: 0.85em;
+  background: var(--exh-sidebar-bg);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.exh-cs-decision-grid a,
+.exh-cs-trace a,
+.exh-cs-limitations a {
+  color: var(--exh-accent);
+}
+
+/* ── Workflow trace ── */
+
+.exh-cs-trace {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 22px;
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--exh-ink-muted);
+}
+.exh-cs-trace li { padding-left: 4px; }
+
+/* ── Expandable extras (native <details> — free keyboard support) ── */
+
+.exh-cs-details {
+  margin-top: 14px;
+  border: 1px solid var(--exh-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.exh-cs-details summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--exh-accent);
+  background: var(--exh-sidebar-bg);
+  list-style: none;
+}
+.exh-cs-details summary::-webkit-details-marker { display: none; }
+.exh-cs-details summary::before { content: '▸ '; }
+.exh-cs-details[open] summary::before { content: '▾ '; }
+.exh-cs-code {
+  margin: 0;
+  padding: 14px 18px;
+  background: var(--exh-bg-raised);
+  overflow-x: auto;
+}
+.exh-cs-code code {
+  font-family: var(--exh-font-mono);
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--exh-ink-muted);
+  white-space: pre;
+}
+.exh-cs-file-links {
+  margin: 0;
+  padding: 12px 18px 14px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+.exh-cs-file-links a { color: var(--exh-accent); }
+.exh-cs-file-links code,
+.exh-cs-file-links a code {
+  font-family: var(--exh-font-mono);
+}
+
+/* ── Limitations ── */
+
+.exh-cs-limitations {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--exh-ink-muted);
+}
+
+.exh-cs-explore-links { margin-top: 20px; }
+
+/* ── Architecture diagram ── */
+
+.exh-diagram-figure { margin: 18px 0 0; }
+.exh-diagram-svg {
+  width: 100%;
+  max-width: 620px;
+  height: auto;
+  display: block;
+}
+.exh-diagram-box {
+  fill: var(--exh-bg-raised);
+  stroke: var(--exh-ink);
+  stroke-width: 1.4;
+}
+.exh-diagram-box--accent { stroke: var(--exh-accent); stroke-width: 1.8; }
+.exh-diagram-box--muted { stroke: var(--exh-border); stroke-dasharray: 4 3; }
+.exh-diagram-label {
+  font-family: var(--exh-font-body);
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--exh-ink);
+}
+.exh-diagram-sublabel {
+  font-family: var(--exh-font-body);
+  font-size: 10.5px;
+  fill: var(--exh-ink-subtle);
+}
+.exh-diagram-line { fill: none; stroke-width: 1.6; }
+.exh-diagram-line--auth { stroke: var(--exh-accent); }
+.exh-diagram-line--public { stroke: var(--exh-gray); }
+.exh-diagram-line--muted { stroke: var(--exh-border); stroke-dasharray: 3 3; }
+/* One marker per line color (see the diagram component for why) —
+   each arrowhead just matches the line it terminates. */
+.exh-diagram-arrowhead--auth { fill: var(--exh-accent); }
+.exh-diagram-arrowhead--public { fill: var(--exh-gray); }
+.exh-diagram-arrowhead--muted { fill: var(--exh-border); }
+
+.exh-diagram-caption {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--exh-sidebar-bg);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--exh-ink-muted);
+}
+.exh-diagram-caption-label {
+  display: block;
+  font-family: var(--exh-font-display);
+  font-style: italic;
+  color: var(--exh-ink-subtle);
+  margin-bottom: 6px;
+}
+.exh-diagram-caption ol {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Demo ── */
+
+.exh-demo {
+  margin: 16px 0 4px;
+  padding: 18px 20px;
+  border: 1px solid var(--exh-border);
+  border-radius: 10px;
+  background: var(--exh-bg-raised);
+}
+.exh-demo-label {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--exh-accent);
+  background: var(--exh-accent-soft);
+  padding: 3px 9px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+.exh-demo-note {
+  font-size: 0.87rem;
+  line-height: 1.6;
+  color: var(--exh-ink-muted);
+  margin: 0 0 14px;
+  max-width: 62ch;
+}
+.exh-demo-selectall {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--exh-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.exh-demo-import-btn,
+.exh-demo-reset-btn {
+  margin-top: 14px;
+  padding: 9px 18px;
+  font-family: var(--exh-font-body);
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.exh-demo-import-btn {
+  color: var(--exh-bg-raised);
+  background: var(--exh-accent);
+  border: 1px solid var(--exh-accent);
+}
+.exh-demo-import-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.exh-demo-import-btn:not(:disabled):hover { transform: translateY(-1px); opacity: 0.92; }
+.exh-demo-reset-btn {
+  color: var(--exh-ink-muted);
+  background: transparent;
+  border: 1px solid var(--exh-border);
+}
+.exh-demo-reset-btn:hover { color: var(--exh-ink); border-color: var(--exh-ink-muted); }
+
+.exh-demo-result-heading { font-size: 0.9rem; margin: 0 0 12px; }
+.exh-demo-result-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.exh-demo-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  background: var(--exh-sidebar-bg);
+  border-radius: 6px;
+  font-size: 0.88rem;
+}
+.exh-demo-result-main { color: var(--exh-ink); }
+
+/* ── Reduced motion ──
+   exhibit-view.css already strips all transitions/animations under
+   .exh-page when the OS asks for reduced motion; nothing here needs a
+   duplicate rule, but the hover transforms above are excluded from
+   that blanket rule only via `transition`, not `transform` itself, so
+   confirm explicitly rather than assume. */
+@media (prefers-reduced-motion: reduce) {
+  .exh-cs-toggle,
+  .exh-demo-import-btn,
+  .exh-demo-reset-btn,
+  .exh-featured-card,
+  .exh-repo-link { transition: none !important; }
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 640px) {
+  .exh-cs-decision-grid { grid-template-columns: 1fr; }
+  .exh-cs-decision-grid dt { padding-top: 8px; }
+  .exh-cs-decision-grid dt:first-child { padding-top: 0; }
+  .exh-demo-result-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+}

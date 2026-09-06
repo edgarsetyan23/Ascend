@@ -38,7 +38,7 @@ API Gateway (HTTP API v2)       Vercel Serverless Functions    Gmail API
 | `src/App.jsx` | Route guard. `/portfolio` and `/oauth-callback` are public; `/` requires auth via `AuthGate`; `*` renders `NotFound` |
 | `src/components/AppShell` | The authenticated app: sidebar, topbar, tracker table, modals |
 | `src/hooks/useEntries.js` | All DynamoDB reads/writes live here. Optimistic updates with rollback |
-| `src/context/AuthContext.jsx` | Cognito session state — JWT stored in memory only, never localStorage |
+| `src/context/AuthContext.jsx` | Cognito session state — keeps its own React-state copy of the JWT; the underlying Cognito SDK session (which the token actually comes from) is localStorage-backed |
 | `src/context/ToastContext.jsx` | Global toast system. Any component calls `useToast().addToast()` |
 | `src/trackers/` | Config files for each tracker (columns, badges, sort defaults) |
 
@@ -85,17 +85,17 @@ Why single-table:
    - IdToken (JWT, 1hr TTL) — sent in Authorization header
    - AccessToken — not used
    - RefreshToken (30 days) — used to silently renew the IdToken
-3. IdToken is stored in React state (memory only)
-4. Every API call: Authorization: Bearer <IdToken>
+3. IdToken is also mirrored into React state (AuthContext); the session it comes from is persisted by the Cognito SDK itself, in localStorage — that's what lets step 6 below restore a session after a refresh without re-entering a password
+4. Every API call: `apiFetch` re-fetches the current token from the Cognito SDK session and sends Authorization: Bearer <IdToken>
 5. API Gateway JWT Authorizer validates signature, audience, expiry
 6. Lambda receives event.requestContext.authorizer.jwt.claims.sub (= Cognito sub)
 7. sub is used as the DynamoDB PK: USER#{sub}
 ```
 
 Security properties:
-- Token never touches disk — cleared on tab close
 - JWT Authorizer runs at the API Gateway layer — Lambda can't even be invoked without a valid token
 - Each user can only read/write their own PK — no user ID in the request body, only from the verified JWT
+- The token itself sits in the Cognito SDK's localStorage-backed session (standard for this SDK, and needed so a refresh doesn't force re-login) — this is the same tradeoff most SPA auth setups make, not a claim that the token is somehow unreachable from client-side script
 
 ---
 
@@ -173,7 +173,7 @@ Frontend tests use Vitest (same config as Vite, zero overhead) with jsdom for a 
 | HTTP API v2 (not REST API) | 30–60% cheaper, lower latency, built-in JWT authorizer |
 | ARM_64 Lambda | ~20% cheaper than x86 at identical performance |
 | Single DynamoDB table | One query per page load, simpler IAM, no joins |
-| Tokens in memory | Eliminates XSS token theft — attacker can read DOM but not a JS variable in a different scope |
+| Fresh token per request | `apiFetch` re-reads the token from the Cognito SDK's session on every call instead of caching it long-lived in one place |
 | Optimistic UI updates | Instant perceived performance — UI reflects changes before the API responds |
 | Separate public Lambda | Zero code path overlap with authenticated handler — can't accidentally skip auth |
 | Gmail redirect-to-new-tab OAuth | Avoids Cross-Origin-Opener-Policy restrictions that silently break popup-based OAuth flows; token passed via localStorage storage event and deleted immediately |

@@ -176,7 +176,7 @@ The app does **not** need to pass Google verification as long as you stay in Tes
 | Concern | Mitigation |
 |---|---|
 | Scope creep | `gmail.readonly` only — no send, modify, delete |
-| Token persistence | React state only — cleared on tab close |
+| Token persistence | Touches `localStorage` briefly for the cross-tab handoff described above (removed the instant it's read); held in component state after that, never written back to storage |
 | Email body exposure | `format=metadata` — body never fetched |
 | Server-side storage | None — `api/scan-emails.js` is stateless |
 | Client ID leakage | Intentionally public; protected by allowed origins in Google Cloud Console |

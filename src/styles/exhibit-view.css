@@ -177,6 +177,21 @@
 .exh-tour-next-btn:hover { opacity: 0.88; }
 .exh-back-link:hover { color: var(--exh-ink); }
 
+/* Compact résumé/email access on deep exhibits — icon-only so it
+   doesn't compete for space with the tour controls or crowd the bar
+   at mobile widths, where the crumb has already dropped out. */
+.exh-topbar-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  color: var(--exh-ink-muted);
+  text-decoration: none;
+}
+.exh-topbar-icon-link:hover { color: var(--exh-accent); background: var(--exh-accent-soft); }
+
 /* ── Shell layout ── */
 
 .exh-shell {
@@ -576,6 +591,17 @@
   color: var(--exh-ink-muted);
   line-height: 1.65;
   margin-bottom: 24px;
+  max-width: 68ch;
+}
+
+/* A quiet statement of direction right under the intro paragraph —
+   deliberately smaller/muted than .exh-intro-text so it reads as a
+   footnote to the pitch above, not a second headline competing with
+   it or a banner demanding attention. */
+.exh-availability-note {
+  font-size: 0.88rem;
+  color: var(--exh-ink-subtle);
+  margin: -14px 0 24px;
   max-width: 68ch;
 }
 

@@ -16,7 +16,7 @@ A personal accountability tracker built with a production AWS stack. Tracks Leet
 
 Five things worth knowing about this project:
 
-- **Auth flow** — Cognito issues a JWT (IdToken); it lives in React state only, never localStorage. Every API call sends `Authorization: Bearer <token>`. The API Gateway JWT Authorizer validates signature, audience, and expiry before Lambda even executes — an unauthenticated request never reaches application code.
+- **Auth flow** — Cognito issues a JWT (IdToken); the Cognito SDK persists the session (including the token) in its own localStorage-backed storage so a refresh doesn't force a re-login, and every API call re-reads a fresh token and sends `Authorization: Bearer <token>`. The API Gateway JWT Authorizer validates signature, audience, and expiry before Lambda even executes — an unauthenticated request never reaches application code.
 - **Data model** — Single-table DynamoDB. `PK = USER#{sub}`, `SK = TRACKER#{trackerId}#ENTRY#{uuid}`. Loading a tracker tab fires one `Query` with `begins_with(SK, "TRACKER#leetcode#ENTRY#")` — no scans, no joins.
 - **Validation and logging** — `validateTrackerId` and `validateBody` (10 KB limit) return structured 400s before any DynamoDB work. Lambda emits JSON log lines (`requestId`, `trackerId`, `latencyMs`) compatible with CloudWatch Logs Insights.
 - **Deployment** — CDK synthesizes a CloudFormation template and uploads Lambda bundles to S3; one command provisions the entire backend. `infra/.env` is auto-loaded via dotenv so `OWNER_USER_ID` is never accidentally wiped. Frontend auto-deploys from GitHub via Vercel.
@@ -73,7 +73,7 @@ Browser (React + Vite)
 | HTTP API v2 over REST API | 30–60% cheaper, lower latency, native JWT authorizer |
 | ARM64 Lambda | ~20% cheaper than x86 at identical performance |
 | DynamoDB single-table | One `Query` per tab load — `begins_with(SK, "TRACKER#{id}#ENTRY#")` |
-| JWT in memory only | Cleared on tab close — eliminates XSS token theft vector |
+| Fresh token read per request | `apiFetch` re-reads the token from the Cognito SDK's session before every call rather than caching it long-lived in a variable |
 | Optimistic UI updates | Changes reflect instantly; rolls back if the API call fails |
 | Separate public Lambda | Zero code path overlap with authenticated handler |
 | Gmail new-tab OAuth | Avoids Cross-Origin-Opener-Policy restrictions on popup-based flows |

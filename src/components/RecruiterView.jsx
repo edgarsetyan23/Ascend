@@ -13,6 +13,7 @@ import {
   scoreResume,
   extractTextFromPdf,
 } from './ResumeReview.jsx'
+import { AscendCaseStudy } from './portfolio/AscendCaseStudy.jsx'
 import '../styles/exhibit-view.css'
 
 // Three.js is real weight — split it into its own chunk so it only
@@ -49,33 +50,36 @@ const EXPERIENCE = [
     // résumé) visually pops against the site's uniform sage green
     // rather than blending in with every other plate.
     flashAccent: '#FF9900',
-    // Same three numbers already sitting in the highlight sentences
-    // below — pulled out, not invented, and given a big-number
-    // callout treatment instead of staying buried mid-paragraph.
-    // Labels are deliberately specific about what each number
-    // measures — "sustained TPS" alone reads as production traffic,
-    // which this wasn't; "60+" counts AWS accounts, not deployments,
-    // so the unit has to stay attached to the number and the action
-    // (remediating stale deployments) is what the caption adds.
+    // Same numbers already sitting in the highlight sentences below —
+    // pulled out, not invented, given a big-number callout instead of
+    // staying buried mid-paragraph. Verified production work leads;
+    // the load-test number is a design target, not a measured result,
+    // so it's labeled as one and kept last rather than leading with an
+    // unqualified "10,000+" that would read as achieved throughput.
+    // The target stays fused to its qualifier in the VALUE itself
+    // ("10,000+ TPS target") rather than relying on a small caption
+    // underneath to carry that distinction.
     stats: [
-      { value: '10,000+', label: 'load-test TPS' },
-      { value: '60+', label: 'AWS accounts · stale deployments remediated' },
       { value: '25+', label: 'on-call incidents resolved' },
+      { value: '60+', label: 'AWS accounts · stale deployments remediated' },
+      { value: '10,000+ TPS target', label: 'local load-test prototype, not measured production traffic' },
     ],
-    // A prose lede synthesized from the highlights below — same
-    // facts (RDS team, Toronto, the load-testing framework, the
-    // config API, on-call, the account cleanup), just woven into a
-    // paragraph instead of only existing as bullet fragments. No new
-    // claims added.
-    intro: "A year on RDS's engineering team in Toronto, split roughly in half between building and keeping things running. On the building side: a load-testing framework and an instance configuration API, both shipped end-to-end. On the running side: the on-call rotation — 25+ incidents deep — plus a sweep across 60+ AWS accounts to clean up infrastructure that had gone stale.",
+    // A prose lede synthesized from the highlights below — same facts,
+    // woven into a paragraph instead of only existing as bullet
+    // fragments. Precise about status: the config API and the
+    // load-test framework were both real implementation work, but
+    // neither shipped — the API's logic was approved on its own
+    // branch, and the load-test framework never left prototype form.
+    // No new claims added beyond what the highlights below state.
+    intro: "A year on RDS's engineering team in Toronto, split between building and keeping things running. On the building side: core business logic for an instance-configuration API — approved, but never finalized or merged — and a local load-testing prototype built toward a 10,000+ TPS design target. On the running side: the on-call rotation — 25+ incidents deep — plus a sweep across 60+ AWS accounts to clean up infrastructure that had gone stale.",
     data: {
       company: 'Amazon Web Services (AWS)',
       role: 'Software Development Engineer I, RDS Team',
       location: 'Toronto, ON',
       period: 'Jan 2025 – Jan 2026',
       highlights: [
-        'Built a load-testing framework for a distributed telemetry service, generating sustained 10,000+ TPS and monitoring ECS task health and CPU utilization to validate capacity and surface bottlenecks pre-launch.',
-        'Developed a synchronous instance configuration API end-to-end, persisting state in DynamoDB and instrumenting metrics/alarms in CloudWatch to manage RDS infrastructure.',
+        'Implemented core business logic for a synchronous RDS instance-configuration API on a separate branch, including DynamoDB persistence and CloudWatch instrumentation; the implementation was approved but never finalized or merged.',
+        'Developed a local load-testing prototype for a distributed telemetry service with a 10,000+ TPS design target, adding ECS task-health and CPU monitoring to investigate capacity and surface bottlenecks; a prototype, not merged into production.',
         'Supported on-call for a metrics ingestion service; triaged and resolved 25+ production incidents, executed mitigations via runbooks, and delivered follow-up fixes to prevent recurrence.',
         'Remediated stale CloudFormation deployments across 60+ AWS accounts by auditing stacks, removing failed/obsolete resources, and safely re-deploying to restore consistent infrastructure.',
         'Refactored CloudWatch dashboards to stay within service limits and automated KPI extraction for Monthly Business Reviews, reducing manual reporting overhead.',
@@ -139,7 +143,7 @@ const PROJECTS = [
       // dump — each one is something you'd actually get asked to
       // defend in an interview, not just a checklist of technologies.
       highlights: [
-        'Auth: Cognito JWTs live in React state only, never localStorage. API Gateway’s JWT authorizer validates every request before it reaches Lambda — an unauthenticated call never touches application code.',
+        'Auth: the Cognito SDK persists the session (including the JWT) in its own localStorage-backed storage so a page refresh doesn’t force a re-login; every request re-reads a fresh token before calling the API. API Gateway’s JWT authorizer validates it before Lambda ever runs — an unauthenticated call never touches application code.',
         'Data model: single-table DynamoDB — PK = USER#{sub}, SK = TRACKER#{id}#ENTRY#{uuid}, plus a GSI for entries ordered by creation time. Loading a tab is one Query. No scans, no joins.',
         'This page is the proof: /portfolio runs on its own unauthenticated Lambda with the owner’s Cognito sub baked in at deploy time. No user input ever touches the partition key, and a non-whitelisted tracker 404s instead of 403s.',
         'Also built: a Gmail scanner (new-tab OAuth to dodge Cross-Origin-Opener-Policy, metadata-only fetch, Claude Haiku extraction) and a live LeetCode profile banner (cached GraphQL proxy).',
@@ -260,7 +264,7 @@ function sectionIdFromPathname(pathname) {
 // section, since a card stands for the whole group (all 3 Field Work
 // entries, both projects), not any one exhibit inside it.
 const GUIDE_LINES = {
-  'Introduction': "You're just in time — the doors are still open. I'm Edgar, come on in.",
+  'Introduction': "You're just in time — the doors are still open. I'm Edgar; take a look at the AWS work, this app itself, or just poke around.",
   'Field Work': 'Two internships and the job that came after graduating.',
   'Studio Projects': "Stuff I built because I wanted to, not because someone assigned it.",
   'Education': 'Where it started, for what it’s worth.',
@@ -275,12 +279,12 @@ const GUIDE_LINES = {
 // the three Field Work pages used to share the exact same caption;
 // now each gets its own, tied to what's actually on that page.
 const EXHIBIT_LINES = {
-  aws: 'Ten thousand requests a second, and I still answered the pager.',
+  aws: "The 10,000+ number was a target I built a load-test prototype toward — the on-call pager was the part that was actually live.",
   'tangerine-2021': 'Second summer, same bank — this time I was in the deploy pipeline.',
   'tangerine-2020': 'The first one — cut build errors in half with Maven before anything else.',
-  ascend: "Meta moment: you're looking at the project I'm describing right now.",
-  oncall: "Three days, one team, first place — still the fastest I've ever shipped something.",
-  york: 'Everything above traces back here, four years earlier.',
+  ascend: "Meta moment: you're on the project I'm describing. The trickiest call was keeping this page's read access completely separate from mine — different Lambda, different IAM role, no shared code path.",
+  oncall: 'Three days, one team — we turned a ticket ID into a guided troubleshooting checklist so on-call didn’t rely on memory at 3 a.m.',
+  york: 'Everything above traces back here — the CS fundamentals that made the AWS and Ascend work possible.',
   leetcode: 'Live-pulled from LeetCode — refresh and the numbers actually move.',
   activity: 'Every entry here is one I actually logged.',
   analyzer: "Drop your résumé in — I'm curious what it says about you.",
@@ -752,6 +756,16 @@ export function RecruiterView() {
     if (activeId !== 'root') setTourStarted(false)
   }, [activeId])
 
+  // The case-study reveal on the Ascend exhibit — collapsed by
+  // default so the exhibit stays scannable, expanded on demand via
+  // "Show me the engineering". Resets on leaving the exhibit, same
+  // reasoning as tourStarted above: coming back later should start
+  // collapsed again, not stay expanded from a previous visit.
+  const [showEngineering, setShowEngineering] = useState(false)
+  useEffect(() => {
+    if (activeId !== 'ascend') setShowEngineering(false)
+  }, [activeId])
+
   // The guided tour: once started, steps through TOUR_SEQUENCE in
   // order. Stop 1 happens on its own, right after the "Start the
   // tour" celebration beat (see the auto-advance effect below) —
@@ -1016,6 +1030,12 @@ export function RecruiterView() {
               Software engineer with experience on AWS RDS, building backend
               services and tools for operating production systems.
             </p>
+            {/* Short, unobtrusive — a statement of direction, not a
+                banner. No claims about remote/relocation/seniority
+                preferences that aren't actually decided. */}
+            <p className="exh-availability-note">
+              Currently looking for backend/cloud software engineering roles.
+            </p>
 
             {/* The guide is a real part of the desktop experience, not
                 an afterthought below the fold — his invitation sits
@@ -1135,6 +1155,19 @@ export function RecruiterView() {
             </a>
           )}
           {proj.snippet && <DetailPanel file={proj.snippet.file} code={proj.snippet.code} />}
+          {proj.id === 'ascend' && (
+            <>
+              <button
+                type="button"
+                className="exh-cs-toggle"
+                onClick={() => setShowEngineering((s) => !s)}
+                aria-expanded={showEngineering}
+              >
+                {showEngineering ? 'Hide the engineering ↑' : 'Show me the engineering →'}
+              </button>
+              {showEngineering && <AscendCaseStudy />}
+            </>
+          )}
         </ExhibitFrame>
       )
     }
@@ -1260,6 +1293,22 @@ export function RecruiterView() {
               <button className="exh-tour-stop-btn" onClick={cancelAutoTour}>
                 ⏸ Stop tour
               </button>
+            </>
+          )}
+          {/* Résumé + contact stay reachable from every deep exhibit,
+              not just the Introduction plate — compact icon links
+              here rather than a second full row, since the intro
+              already has the descriptive version of both. Root-only
+              hidden to avoid showing the same two links twice on the
+              one page that already has them spelled out. */}
+          {activeId !== 'root' && (
+            <>
+              <a href="mailto:edgar.setyan23@gmail.com" className="exh-topbar-icon-link" aria-label="Email edgar.setyan23@gmail.com" title="Email">
+                <EmailIcon />
+              </a>
+              <a href="/Edgar_Resume.pdf" download="Edgar_Setyan_Resume.pdf" className="exh-topbar-icon-link" aria-label="Download résumé" title="Download résumé">
+                <DownloadIcon />
+              </a>
             </>
           )}
           <ThemeToggle theme={theme} onToggle={toggleTheme} />

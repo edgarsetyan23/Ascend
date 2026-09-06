@@ -758,6 +758,24 @@ export function RecruiterView() {
     if (activeId !== 'ascend') setShowEngineering(false)
   }, [activeId])
 
+  // Plain "Show me the engineering" click: reveal it AND jump straight
+  // to it, the same way "Try the sample workflow" already does for the
+  // demo below. Without this, the only feedback from clicking is the
+  // button's own label flipping to "Hide the engineering" — easy to
+  // miss, since the section that just appeared renders well below the
+  // fold. Skipped whenever pendingDemoFocus is already in flight (the
+  // "Try the sample workflow" click below sets both flags at once and
+  // wants the more specific demo-heading target, not the top of the
+  // whole case study).
+  useEffect(() => {
+    if (!showEngineering || pendingDemoFocus) return
+    const el = document.getElementById('ascend-case-study')
+    if (!el) return
+    el.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
+    el.focus({ preventScroll: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showEngineering])
+
   // "Try the sample workflow" — opens the case study (if collapsed)
   // and takes the visitor straight to the demo inside it, rather than
   // making them read down to the Explore section. Setting this flag

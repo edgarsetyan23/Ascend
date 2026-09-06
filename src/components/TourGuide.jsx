@@ -175,13 +175,23 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
     }
     headGeo.setAttribute('uv', new THREE.BufferAttribute(headUVs, 2))
 
-    // The texture itself: skin everywhere, with the beard drawn as one
-    // continuous filled region (sideburn → cheek → jaw → chin, all one
-    // path) plus a mustache shaped to taper down into that region at
-    // both ends instead of floating above it as a separate bar — shape
-    // modeled after a reference beard illustration (connected coverage
-    // framing a clearly visible mouth, thin flat-colored mustache, no
-    // per-hair detail — this whole thing is 2 flat fills).
+    // The texture itself: skin everywhere, with light stubble blended
+    // in via translucent, blurred fills rather than an opaque shape —
+    // a reference photo of actual short stubble (not a full beard)
+    // called for this instead of a solid hair-colored region: real
+    // stubble is skin showing through short hair, not a hair-colored
+    // mask, and reads as see-through/soft-edged even close up.
+    //
+    // A diagnostic version of an earlier iteration of this texture
+    // (bold solid-color rows and partial-opacity left/right tints, no
+    // beard shape) was rendered onto the actual head to verify this UV
+    // mapping empirically before trusting it — it caught a real bug:
+    // colors meant for the top of the canvas were landing at the
+    // bottom of the face. That was CanvasTexture's default
+    // flipY=true fighting the V formula above; the fix is
+    // `headTexture.flipY = false` below, not a change to this drawing
+    // or to the UV math. That mapping is unchanged here — only what's
+    // drawn onto the canvas is different.
     const texSize = 256
     const canvas = document.createElement('canvas')
     canvas.width = texSize
@@ -189,51 +199,71 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
     const tctx = canvas.getContext('2d')
     const px = (frac) => frac * texSize
 
-    // A diagnostic version of this texture (bold solid-color rows and
-    // partial-opacity left/right tints, no beard shape) was rendered
-    // onto the actual head first to verify this mapping empirically —
-    // it caught a real bug: colors meant for the top of the canvas
-    // were landing at the bottom of the face. That was CanvasTexture's
-    // default flipY=true fighting the V formula above; the fix is
-    // `headTexture.flipY = false` below, not a change to this drawing
-    // or to the UV math. Confirmed correct on both axes before this
-    // real texture replaced the diagnostic one.
     tctx.fillStyle = '#d9a06e' // matches skinMat
     tctx.fillRect(0, 0, texSize, texSize)
-    tctx.fillStyle = '#4a3323' // matches hairMat — one hair color, not a separate tone
 
-    // Sideburn/cheek/jaw/chin — a single smooth curve for the top
-    // edge, lowest at the center (so the mouth's whole neighborhood
-    // at x≈0 stays clear) and rising toward both sides (sideburns),
-    // filled down to the bottom of the texture.
+    // Same overall coverage area as before (sideburn → cheek → jaw →
+    // chin, one curve, lowest at center so the mouth's neighborhood
+    // stays clear) — only the fill itself changed, from opaque
+    // hair-brown to a low-opacity, blurred wash so skin shows through.
+    function stubbleRegionPath() {
+      tctx.beginPath()
+      tctx.moveTo(0, px(sideTop))
+      for (let i = 0; i <= 48; i++) {
+        const u = i / 48
+        const d = Math.abs(u - 0.5) * 2
+        const row = centerTop + (sideTop - centerTop) * Math.pow(d, 1.3)
+        tctx.lineTo(px(u), px(row))
+      }
+      tctx.lineTo(texSize, texSize)
+      tctx.lineTo(0, texSize)
+      tctx.closePath()
+    }
     const centerTop = 0.71
     const sideTop = 0.54
+
+    // Base wash — the whole region (cheeks included), but faint enough
+    // now to read as ambient shading rather than visible hair; the
+    // jaw/chin/upper-lip passes below are what carry the actual
+    // "this is short facial hair" definition.
+    tctx.save()
+    tctx.filter = 'blur(7px)'
+    tctx.globalAlpha = 0.2
+    tctx.fillStyle = '#8a5a3f' // between skinMat (d9a06e) and hairMat (4a3323)
+    stubbleRegionPath()
+    tctx.fill()
+    tctx.restore()
+
+    // A second pass restricted to the jaw/chin (the lower portion of
+    // the same region) stacks on top of the base wash — raised from
+    // the first version and with less blur, so this specific area
+    // holds enough definition to read as stubble rather than lighting,
+    // while the cheeks above stay in the faint base wash alone.
+    tctx.save()
+    tctx.filter = 'blur(4px)'
+    tctx.globalAlpha = 0.56
+    tctx.fillStyle = '#8a5a3f'
     tctx.beginPath()
-    tctx.moveTo(0, px(sideTop))
-    for (let i = 0; i <= 48; i++) {
-      const u = i / 48
-      const d = Math.abs(u - 0.5) * 2
-      const row = centerTop + (sideTop - centerTop) * Math.pow(d, 1.3)
-      tctx.lineTo(px(u), px(row))
-    }
+    tctx.moveTo(px(0.08), px(0.86))
+    tctx.quadraticCurveTo(px(0.5), px(1.02), px(0.92), px(0.86))
     tctx.lineTo(texSize, texSize)
     tctx.lineTo(0, texSize)
     tctx.closePath()
     tctx.fill()
+    tctx.restore()
 
-    // Mustache — flat on top, tapering down at both ends until it
-    // meets the cheek curve above (at u=0.36/0.64), so it reads as
-    // connected rather than a separate floating bar. Its lowest
-    // point (row 0.635, at center) stays above the mouth mesh's own
-    // top edge (world Y 0.284 → this texture's row ≈0.665), leaving
-    // the mouth clearly exposed.
+    // Mustache/upper lip — same treatment, also raised and slightly
+    // less blurred than the base wash so it holds as a visible line of
+    // stubble rather than fading into ambient shading, while staying a
+    // soft-edged strip rather than a hard rectangle.
+    tctx.save()
+    tctx.filter = 'blur(4px)'
+    tctx.globalAlpha = 0.6
+    tctx.fillStyle = '#8a5a3f'
     tctx.beginPath()
-    tctx.moveTo(px(0.34), px(0.60))
-    tctx.lineTo(px(0.66), px(0.60))
-    tctx.lineTo(px(0.64), px(0.675))
-    tctx.quadraticCurveTo(px(0.5), px(0.635), px(0.36), px(0.675))
-    tctx.closePath()
+    tctx.ellipse(px(0.5), px(0.615), px(0.16), px(0.028), 0, 0, Math.PI * 2)
     tctx.fill()
+    tctx.restore()
 
     const headTexture = new THREE.CanvasTexture(canvas)
     headTexture.colorSpace = THREE.SRGBColorSpace
@@ -314,19 +344,27 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
     nose.rotation.x = Math.PI / 2.3
     guide.add(nose)
 
-    // A single flat bar, not the two-segment curve the previous pass
-    // used — that version's rotation signs were backwards (each
-    // segment's inner end went up, outer end down, which is a frown
-    // silhouette, not a smile) and, combined with the beard sitting
-    // close around it, read as an ambiguous dark, downturned shape.
-    // A plain neutral bar, sized to actually stand out against the
-    // now-smaller/closer-fitting beard around it, is the "clearly
-    // visible neutral mouth" instead.
-    const mouthGeo = track(new THREE.BoxGeometry(0.078, 0.024, 0.02))
+    // Two segments angled up at the OUTER ends for a slight closed-
+    // mouth smile. An earlier attempt at this got the rotation signs
+    // backwards — each segment's OUTER end (away from center) needs a
+    // positive Y-offset for a smile; a segment at negative x needs a
+    // NEGATIVE rotation.z to lift its outer (further-negative) end,
+    // and a segment at positive x needs POSITIVE rotation.z for the
+    // same reason (mirror image). Getting this backwards is exactly
+    // what makes a smile render as a frown, so this time it's a
+    // small, deliberately restrained angle (~9°) verified on the
+    // actual character before treating it as done, not just reasoned
+    // through on paper again.
+    const mouthGeo = track(new THREE.BoxGeometry(0.044, 0.02, 0.02))
     const mouthMat = track(new THREE.MeshStandardMaterial({ color: 0x6b4632, roughness: 0.6, flatShading: true }))
-    const mouth = new THREE.Mesh(mouthGeo, mouthMat)
-    mouth.position.set(0, 0.272, 0.345)
-    guide.add(mouth)
+    const mouthL = new THREE.Mesh(mouthGeo, mouthMat)
+    mouthL.position.set(-0.021, 0.274, 0.345)
+    mouthL.rotation.z = -0.16
+    guide.add(mouthL)
+    const mouthR = new THREE.Mesh(mouthGeo, mouthMat)
+    mouthR.position.set(0.021, 0.274, 0.345)
+    mouthR.rotation.z = 0.16
+    guide.add(mouthR)
 
     // Hair — two layers, not one. Last round's "shorter cut" shrank
     // and spread out the individual angular chunks to pull the

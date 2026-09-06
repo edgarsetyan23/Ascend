@@ -54,10 +54,12 @@ const EXPERIENCE = [
     // callout treatment instead of staying buried mid-paragraph.
     // Labels are deliberately specific about what each number
     // measures — "sustained TPS" alone reads as production traffic,
-    // which this wasn't.
+    // which this wasn't; "60+" counts AWS accounts, not deployments,
+    // so the unit has to stay attached to the number and the action
+    // (remediating stale deployments) is what the caption adds.
     stats: [
       { value: '10,000+', label: 'load-test TPS' },
-      { value: '60+', label: 'stale deployments fixed' },
+      { value: '60+', label: 'AWS accounts · stale deployments remediated' },
       { value: '25+', label: 'on-call incidents resolved' },
     ],
     // A prose lede synthesized from the highlights below — same

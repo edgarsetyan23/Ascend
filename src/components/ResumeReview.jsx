@@ -19,11 +19,16 @@ const BLUEPRINT = [
   { id: 'no-filler',  text: 'No filler words',                   tip: 'Cut "passionate", "hardworking", "team player"' },
 ]
 
+// CSS custom properties resolve fine as SVG stroke/fill values (used
+// that way elsewhere in this file already, e.g. stroke="var(--border)")
+// and in inline style props — so this reads the shared theme tokens
+// instead of a hardcoded Tailwind-style traffic-light gradient that
+// had nothing to do with the rest of the app's palette.
 function scoreColor(score) {
-  if (score >= 80) return '#10b981'
-  if (score >= 60) return '#0ea5e9'
-  if (score >= 40) return '#f59e0b'
-  return '#ef4444'
+  if (score >= 80) return 'var(--accent)'
+  if (score >= 60) return 'var(--gold)'
+  if (score >= 40) return 'var(--warning)'
+  return 'var(--danger)'
 }
 
 // ─── PDF text extraction ──────────────────────────────────────────────────

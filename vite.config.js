@@ -3,6 +3,11 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: { main: 'index.html', studio: 'mini-edgar-studio.html' },
+    },
+  },
   plugins: [
     react(),
     VitePWA({

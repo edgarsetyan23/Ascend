@@ -1118,7 +1118,7 @@ export function RecruiterView() {
                 <span className="exh-featured-card-eyebrow">Field Work</span>
                 <span className="exh-featured-card-title">Amazon Web Services</span>
                 <span className="exh-featured-card-why">
-                  A year on RDS's engineering team — the load-testing framework, the on-call rotation, the account cleanup.
+                  The year right after graduating — a load-testing prototype, real on-call pages, and a long AWS account cleanup.
                 </span>
                 <span className="exh-featured-card-arrow">Read the story →</span>
               </Link>
@@ -1126,7 +1126,7 @@ export function RecruiterView() {
                 <span className="exh-featured-card-eyebrow">Studio Projects</span>
                 <span className="exh-featured-card-title">Ascend</span>
                 <span className="exh-featured-card-why">
-                  The AWS app you're using right now — JWT auth, single-table DynamoDB, its own public API.
+                  The app running this very page, built the way I'd actually want to defend it in an interview.
                 </span>
                 <span className="exh-featured-card-arrow">Explore the engineering →</span>
               </Link>

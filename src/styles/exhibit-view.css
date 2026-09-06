@@ -1302,6 +1302,11 @@
 }
 .exh-cat-bars { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .exh-detected-groups { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+/* Extra breathing room where this reused component follows a
+   highlight list on an exhibit plate, rather than the résumé
+   analyzer's own category bars — .exh-detected-groups' own
+   margin-bottom is fine there and stays untouched. */
+.exh-tech-tags { margin-top: 22px; }
 .exh-detected-group-label {
   font-family: var(--exh-font-display);
   font-style: italic;

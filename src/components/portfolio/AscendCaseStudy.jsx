@@ -86,9 +86,14 @@ const DECISIONS = [
   },
 ]
 
+// tabIndex=-1 on the root: not part of the normal Tab order, but a
+// valid programmatic focus target — RecruiterView moves focus/scroll
+// here the moment "Show me the engineering" reveals this section, so
+// the click has a visible, unmistakable result instead of just
+// flipping a button label somewhere off in the corner.
 export function AscendCaseStudy() {
   return (
-    <div className="exh-cs" id="ascend-case-study">
+    <div className="exh-cs" id="ascend-case-study" tabIndex={-1}>
       <section className="exh-cs-section">
         <h2 className="exh-cs-heading">The problem</h2>
         <p className="exh-cs-text">

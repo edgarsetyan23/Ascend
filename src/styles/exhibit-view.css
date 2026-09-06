@@ -15,7 +15,10 @@
   --exh-sidebar-bg: #f7f5ea;
   --exh-ink: #191a14;
   --exh-ink-muted: #5c5f4f;
-  --exh-ink-subtle: #8a8d78;
+  /* Was #8a8d78 — 3.34:1 against --exh-bg, below WCAG AA's 4.5:1 for
+     normal text. This is used for sidebar metadata and eyebrow labels,
+     not just decoration, so it needs to actually pass. */
+  --exh-ink-subtle: #6b6e5c;
   --exh-border: rgba(25, 26, 20, 0.12);
   --exh-accent: #4f7a63;
   --exh-accent-soft: rgba(79, 122, 99, 0.10);
@@ -40,7 +43,10 @@
   --exh-sidebar-bg: #17180f;
   --exh-ink: #e9ebe0;
   --exh-ink-muted: #a3a690;
-  --exh-ink-subtle: #6b6e5c;
+  /* Was #6b6e5c — 3.51:1 against this theme's --exh-bg, same AA
+     failure as light mode but in the opposite direction (too dark
+     here instead of too light). */
+  --exh-ink-subtle: #8b8e7c;
   --exh-border: rgba(233, 235, 224, 0.12);
   --exh-accent: #8fc2a6;
   --exh-accent-soft: rgba(143, 194, 166, 0.12);
@@ -200,7 +206,7 @@
 .exh-nav-group-label {
   font-family: var(--exh-font-display);
   font-style: italic;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   letter-spacing: 0.03em;
   color: var(--exh-ink-subtle);
   padding: 0 10px 7px;
@@ -218,6 +224,10 @@
   text-align: left;
   cursor: pointer;
   transition: background 0.12s ease, transform 0.12s ease;
+  /* Now a real <Link>, not a <button> — undo anchor defaults so it
+     still reads as a nav item, not a web link. */
+  text-decoration: none;
+  color: inherit;
 }
 .exh-nav-item:hover { background: var(--exh-accent-soft); transform: translateX(2px); }
 .exh-nav-item--active { background: var(--exh-accent-soft); }
@@ -229,14 +239,14 @@
   min-width: 0;
 }
 .exh-nav-item-title {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--exh-ink-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .exh-nav-item-sub {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: var(--exh-ink-subtle);
   white-space: nowrap;
   overflow: hidden;
@@ -257,6 +267,13 @@
 .exh-main {
   flex: 1;
   min-width: 0;
+  /* Uncapped, this stretches to fill however much is left of the
+     viewport, then centers the (much narrower) .exh-frame inside
+     that — on a wide monitor that put a huge dead gap between the
+     sidebar and the actual content instead of the two reading as one
+     connected block. Capping .exh-main keeps it hugging the sidebar;
+     any real excess becomes an outer page margin instead. */
+  max-width: 900px;
   padding: 48px 56px;
   /* The guide is fixed to the bottom-right corner, sitting on TOP of
      the page rather than pushing content up — fine when there's a
@@ -272,7 +289,7 @@
 
 .exh-plate {
   font-family: var(--exh-font-display);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--exh-accent);
   border: 1px solid var(--exh-border);
   border-radius: 4px;
@@ -513,7 +530,7 @@
 }
 .exh-stat-label {
   display: block;
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   color: var(--exh-ink-muted);
   margin-top: 3px;
 }
@@ -552,11 +569,14 @@
 }
 
 .exh-intro-text {
-  font-size: 1rem;
+  /* 1rem at this page's 15px root was 15px actual — under the 16-18px
+     target for body copy. 68ch replaces a 52ch measure that was
+     narrower than the 60-75ch target, not wider. */
+  font-size: 1.13rem;
   color: var(--exh-ink-muted);
-  line-height: 1.7;
+  line-height: 1.65;
   margin-bottom: 24px;
-  max-width: 52ch;
+  max-width: 68ch;
 }
 
 /* ── Persistent tour guide (fixed corner companion) ── */
@@ -841,6 +861,31 @@
   box-shadow: 0 8px 20px rgba(25, 26, 20, 0.22);
 }
 
+/* The repo link on an individual project plate — same shape as the
+   contact-row links above, but standalone rather than in a row, so
+   it doesn't disappear into the sidebar's much smaller, easy-to-miss
+   "View the code" link at the bottom of the nav. */
+.exh-repo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--exh-ink);
+  text-decoration: none;
+  border: 1px solid var(--exh-border);
+  border-radius: 10px;
+  padding: 8px 16px 8px 8px;
+  background: var(--exh-bg-raised);
+  margin: 4px 0 20px;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.exh-repo-link:hover {
+  border-color: var(--exh-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(25, 26, 20, 0.12);
+}
+
 /* Finale spotlight — once the guided tour finishes on its own (back
    at the Introduction plate), a soft pulsing ring nudges attention
    toward actually connecting instead of just letting the page go
@@ -859,6 +904,12 @@
 .exh-root-links--spotlight .exh-root-link:nth-child(3) { animation-delay: 0.3s; }
 .exh-root-links--spotlight .exh-root-link:nth-child(4) { animation-delay: 0.45s; }
 
+.exh-more-hint {
+  font-size: 0.85rem;
+  color: var(--exh-ink-subtle);
+  margin: 22px 0 0;
+}
+
 .exh-start-tour {
   display: inline-block;
   margin-top: 24px;
@@ -874,6 +925,64 @@
   transition: background 0.15s ease, transform 0.15s ease;
 }
 .exh-start-tour:hover { background: var(--exh-accent); color: var(--exh-bg-raised); transform: translateY(-1px); }
+
+/* ── Featured evidence (Introduction plate) ──
+   Two direct links — AWS and Ascend — given more visual weight than
+   the five category cards below: a left accent bar, a bigger title,
+   and a one-line "why this is worth opening" instead of the category
+   grid's generic group teaser. Deliberately not styled as its own
+   new pattern — same card/plate language as .exh-card, just wider
+   and with a stronger accent, so it reads as "the two most important
+   pieces" rather than a different UI bolted onto the same page. */
+.exh-featured-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin: 20px 0 8px;
+}
+.exh-featured-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 18px 20px;
+  border: 1px solid var(--exh-border);
+  border-left: 3px solid var(--exh-accent);
+  border-radius: 4px;
+  background: var(--exh-bg-raised);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.exh-featured-card:hover {
+  border-color: var(--exh-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(25, 26, 20, 0.1);
+}
+.exh-featured-card-eyebrow {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--exh-accent);
+}
+.exh-featured-card-title {
+  font-family: var(--exh-font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--exh-ink);
+}
+.exh-featured-card-why {
+  font-size: 0.95rem;
+  color: var(--exh-ink-muted);
+  line-height: 1.5;
+}
+.exh-featured-card-arrow {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: var(--exh-accent);
+  font-weight: 600;
+}
 
 /* ── Tour grid (Introduction plate) ── */
 
@@ -905,6 +1014,9 @@
   cursor: pointer;
   font-family: inherit;
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  /* Now a real <Link>, not a <button> — undo anchor defaults. */
+  text-decoration: none;
+  color: inherit;
 }
 .exh-card:hover {
   border-color: var(--exh-accent);
@@ -959,7 +1071,7 @@
 }
 .exh-card-count {
   margin-top: 4px;
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   color: var(--exh-accent);
 }
 

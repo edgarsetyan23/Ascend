@@ -21,6 +21,14 @@ import '../styles/exhibit-view.css'
 const TourGuide = lazy(() => import('./TourGuide.jsx').then((m) => ({ default: m.TourGuide })))
 const ACCENT = { light: '#4f7a63', dark: '#8fc2a6' }
 
+// Read fresh each call rather than cached once — a visitor can toggle
+// the OS setting mid-session, and this is cheap enough that there's
+// no reason to miss that. Same query TourGuide.jsx uses internally
+// for its own animation loop.
+function prefersReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
 // ── Resume data ─────────────────────────────────────────────────────────────
 // "The Exhibit" — every entry is a numbered plate in a small collection,
 // the way a gallery guide numbers its pieces. No invented content: every
@@ -37,17 +45,20 @@ const EXPERIENCE = [
     note: 'My first job after graduating.',
     logo: '/logos/aws.svg',
     // Real AWS brand orange — used only here, as a deliberate one-off
-    // accent so this entry (current job, most weight on the résumé)
-    // visually pops against the site's uniform sage green rather than
-    // blending in with every other plate.
+    // accent so this entry (most recent job, most weight on the
+    // résumé) visually pops against the site's uniform sage green
+    // rather than blending in with every other plate.
     flashAccent: '#FF9900',
     // Same three numbers already sitting in the highlight sentences
     // below — pulled out, not invented, and given a big-number
     // callout treatment instead of staying buried mid-paragraph.
+    // Labels are deliberately specific about what each number
+    // measures — "sustained TPS" alone reads as production traffic,
+    // which this wasn't.
     stats: [
-      { value: '10,000+', label: 'sustained TPS' },
-      { value: '60+', label: 'AWS accounts remediated' },
-      { value: '25+', label: 'incidents resolved' },
+      { value: '10,000+', label: 'load-test TPS' },
+      { value: '60+', label: 'stale deployments fixed' },
+      { value: '25+', label: 'on-call incidents resolved' },
     ],
     // A prose lede synthesized from the highlights below — same
     // facts (RDS team, Toronto, the load-testing framework, the
@@ -118,6 +129,7 @@ const PROJECTS = [
     navTitle: 'Ascend',
     navSub: 'Accountability Tracker',
     note: "The project this whole page you're looking at is built on.",
+    repoUrl: 'https://github.com/edgarsetyan23/Ascend',
     data: {
       name: 'Ascend — Personal Accountability Platform',
       stack: 'React 18, Vite, AWS Lambda, DynamoDB, API Gateway, Cognito, CDK, Node 22, Vercel',
@@ -784,11 +796,23 @@ export function RecruiterView() {
   const autoTourActiveRef = useRef(false)
   useEffect(() => { autoTourActiveRef.current = autoTourActive }, [autoTourActive])
 
+  // The URL the tour ITSELF most recently navigated to — set at the
+  // same moment as every navigate() call the tour makes, below. Lets
+  // the effect further down tell "the tour just moved us here" apart
+  // from "the visitor moved us here" (browser back/forward, editing
+  // the URL, a bookmark) and cancel the tour only for the latter,
+  // rather than an in-flight tour redirect silently overriding a
+  // manual Back press a moment later.
+  const tourNavPathRef = useRef(null)
+
   // "Start the tour" takes him to stop 1 on his own, right after his
   // hop-in celebration on the Introduction plate — only stop 2 onward
   // wait for an explicit "Next stop" click. The delay just clears
   // that celebration beat (the flash/spotlight/burst below run ~1.6s)
-  // rather than needing to be frame-perfect against it. Keyed to
+  // rather than needing to be frame-perfect against it — except for a
+  // reduced-motion visitor, who gets none of that beat (it's all CSS
+  // animation, stripped globally), so waiting 1.7s anyway would just
+  // be a dead pause with nothing happening on screen. Keyed to
   // celebrateTick alone so it only ever fires from a fresh "Start the
   // tour" click, never from unrelated state changes mid-tour.
   useEffect(() => {
@@ -796,12 +820,27 @@ export function RecruiterView() {
     const timer = setTimeout(() => {
       if (!autoTourActiveRef.current) return
       const path = TOUR_SEQUENCE[0]
-      navigate(path === '/' ? '/portfolio' : `/portfolio${path}`)
+      const to = path === '/' ? '/portfolio' : `/portfolio${path}`
+      tourNavPathRef.current = to
+      navigate(to)
       setAutoTourStep(1)
-    }, 1700)
+    }, prefersReducedMotion() ? 0 : 1700)
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [celebrateTick])
+
+  // Any location change that the tour itself didn't just cause —
+  // browser back/forward, editing the URL, a bookmark — cancels it.
+  // Without this, pressing Back mid-tour could still get silently
+  // overridden a moment later by an in-flight tour redirect (the
+  // auto-advance-to-stop-1 timer above, or a "Next stop" click that
+  // landed right before Back was pressed).
+  useEffect(() => {
+    if (autoTourActive && location.pathname !== tourNavPathRef.current) {
+      cancelAutoTour()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
   // Called only by the "Next stop" click — takes the guide to the
   // current step's page. On the last stop (always back home), it
@@ -810,7 +849,9 @@ export function RecruiterView() {
   function advanceTour() {
     const path = TOUR_SEQUENCE[autoTourStep]
     const isLastStop = autoTourStep === TOUR_SEQUENCE.length - 1
-    navigate(path === '/' ? '/portfolio' : `/portfolio${path}`)
+    const to = path === '/' ? '/portfolio' : `/portfolio${path}`
+    tourNavPathRef.current = to
+    navigate(to)
     if (isLastStop) {
       setAutoTourActive(false)
       setTourFinale(true)
@@ -824,27 +865,39 @@ export function RecruiterView() {
   const [introWrapEl, setIntroWrapEl] = useState(null)
   const cardRefs = useRef({})
 
-  // Clicking an exhibit card sends the guide walking to that exact
-  // card first, then opens the page a beat later — instead of
-  // teleporting straight there. { right, bottom } are computed from
-  // the clicked card's own on-screen position, in the same units the
-  // corner/hero CSS already uses, so the position transition can
-  // animate to literally anywhere, not just the two fixed spots.
+  // Exhibit cards are real <Link>s now — navigation is immediate and
+  // native (open-in-new-tab, modifier-click, middle-click all just
+  // work, for free, because it's an actual anchor). This handler is
+  // purely cosmetic on top of that: it sends the guide walking toward
+  // whichever card you clicked, then resets him a beat later. It
+  // never gates or delays the navigation itself — { right, bottom }
+  // are computed from the clicked card's own on-screen position, in
+  // the same units the corner/hero CSS already uses.
   const [guideTargetRect, setGuideTargetRect] = useState(null)
   const [walkTick, setWalkTick] = useState(0)
+  // Tracks the pending "walk's over, go back to resting" reset so a
+  // second card click (or leaving the page) can clear a stale one
+  // instead of it firing later and resetting state that's already
+  // moved on.
+  const cardWalkResetRef = useRef(null)
+  useEffect(() => () => clearTimeout(cardWalkResetRef.current), [])
 
-  function handleCardClick(e, path) {
+  function handleCardClick(e) {
     cancelAutoTour()
+    // No guide on mobile (isMobile) and no unsolicited motion for a
+    // reduced-motion visitor — bail before touching any guide state.
+    // A modifier/middle click opens the destination in a new tab or
+    // window, where a walk animation playing in THIS tab toward a
+    // page that just opened elsewhere would just be confusing.
+    if (isMobile || prefersReducedMotion() || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
     const rect = e.currentTarget.getBoundingClientRect()
     setGuideTargetRect({
       right: window.innerWidth - (rect.left + rect.width / 2),
       bottom: window.innerHeight - (rect.top + rect.height / 2),
     })
     setWalkTick((n) => n + 1)
-    window.setTimeout(() => {
-      navigate(`/portfolio${path}`)
-      setGuideTargetRect(null)
-    }, 750)
+    clearTimeout(cardWalkResetRef.current)
+    cardWalkResetRef.current = window.setTimeout(() => setGuideTargetRect(null), 750)
   }
 
   useEffect(() => {
@@ -954,11 +1007,16 @@ export function RecruiterView() {
             byline="SDE I, AWS RDS · Toronto, ON"
             noBrackets
           >
+            {/* Leads with what I've built, not how to browse the site —
+                a visitor should have the professional picture and the
+                strongest evidence before ever being told to explore. */}
             <p className="exh-intro-text">
-              {isMobile
-                ? "A small collection of the work behind my résumé — laid out the way I'd want to browse someone else's. Pick a piece below to dig in."
-                : "A small collection of the work behind my résumé — laid out the way I'd want to browse someone else's. Pick a piece from the list on the left, or start the tour below."}
+              Software engineer with experience on AWS RDS, building backend
+              services and tools for operating production systems.
             </p>
+
+            <StatRow stats={EXPERIENCE[0].stats} />
+
             <div className={`exh-root-links ${tourFinale ? 'exh-root-links--spotlight' : ''}`}>
               <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link">
                 <span className="exh-root-link-icon"><GitHubIcon /></span> GitHub
@@ -974,6 +1032,33 @@ export function RecruiterView() {
               </a>
             </div>
 
+            {/* The two pieces most worth opening, called out directly
+                instead of leaving them to blend into the five-card
+                category grid below. Real links (not choreographed
+                cards) — this is ordinary navigation, not the tour. */}
+            <div className="exh-featured-row">
+              <Link to={`/portfolio${EXPERIENCE[0].path}`} className="exh-featured-card">
+                <span className="exh-featured-card-eyebrow">Field Work</span>
+                <span className="exh-featured-card-title">Amazon Web Services</span>
+                <span className="exh-featured-card-why">
+                  A year on RDS's engineering team — the load-testing framework, the on-call rotation, the account cleanup.
+                </span>
+                <span className="exh-featured-card-arrow">Read the story →</span>
+              </Link>
+              <Link to={`/portfolio${PROJECTS[0].path}`} className="exh-featured-card">
+                <span className="exh-featured-card-eyebrow">Studio Projects</span>
+                <span className="exh-featured-card-title">Ascend</span>
+                <span className="exh-featured-card-why">
+                  The AWS app you're using right now — JWT auth, single-table DynamoDB, its own public API.
+                </span>
+                <span className="exh-featured-card-arrow">See the architecture →</span>
+              </Link>
+            </div>
+
+            <p className="exh-more-hint">
+              {isMobile ? 'More below.' : "More below — or let me walk you through it."}
+            </p>
+
             {!isMobile && (
               <button
                 className="exh-start-tour"
@@ -985,12 +1070,13 @@ export function RecruiterView() {
 
             <div className="exh-tour-grid">
               {NAV_GROUPS.filter((g) => g.label !== 'Introduction').map((group, i) => (
-                <button
+                <Link
                   key={group.label}
+                  to={`/portfolio${group.items[0].path}`}
                   ref={(el) => { cardRefs.current[group.label] = el }}
                   className="exh-card exh-fade-in"
                   style={{ animationDelay: `${200 + i * 90}ms` }}
-                  onClick={(e) => handleCardClick(e, group.items[0].path)}
+                  onClick={handleCardClick}
                 >
                   <div className="exh-card-eyebrow">
                     <PlateMark n={String(i + 1).padStart(2, '0')} />
@@ -1009,7 +1095,7 @@ export function RecruiterView() {
                   <span className="exh-card-count">
                     {group.items.length} {group.items.length === 1 ? 'entry' : 'entries'} →
                   </span>
-                </button>
+                </Link>
               ))}
             </div>
           </ExhibitFrame>
@@ -1038,6 +1124,11 @@ export function RecruiterView() {
           title={proj.data.name} byline={proj.data.stack}
           emblem={proj.id === 'ascend' ? <AscendIcon /> : <OnCallIcon />} emblemVariant="icon">
           <HighlightList items={proj.data.highlights} />
+          {proj.repoUrl && (
+            <a href={proj.repoUrl} target="_blank" rel="noopener noreferrer" className="exh-repo-link">
+              <span className="exh-root-link-icon"><GitHubIcon /></span> View the source on GitHub →
+            </a>
+          )}
           {proj.snippet && <DetailPanel file={proj.snippet.file} code={proj.snippet.code} />}
         </ExhibitFrame>
       )
@@ -1192,17 +1283,18 @@ export function RecruiterView() {
             <div key={group.label} className="exh-nav-group">
               <div className="exh-nav-group-label">{group.label}</div>
               {group.items.map((item) => (
-                <button
+                <Link
                   key={item.id}
+                  to={item.path === '/' ? '/portfolio' : `/portfolio${item.path}`}
                   className={`exh-nav-item ${activeId === item.id ? 'exh-nav-item--active' : ''}`}
-                  onClick={() => { cancelAutoTour(); navigate(item.path === '/' ? '/portfolio' : `/portfolio${item.path}`) }}
+                  onClick={cancelAutoTour}
                 >
                   {item.plate && <PlateMark n={item.plate} />}
                   <span className="exh-nav-item-text">
                     <span className="exh-nav-item-title">{item.navTitle}</span>
                     {item.navSub && <span className="exh-nav-item-sub">{item.navSub}</span>}
                   </span>
-                </button>
+                </Link>
               ))}
             </div>
           ))}

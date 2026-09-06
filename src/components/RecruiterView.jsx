@@ -1182,7 +1182,7 @@ export function RecruiterView() {
                 <span className="exh-featured-card-eyebrow">Behind This Page</span>
                 <span className="exh-featured-card-title">Ascend</span>
                 <span className="exh-featured-card-why">
-                  The app running this very page, built the way I'd actually want to defend it in an interview.
+                  Explore the authentication, data model, and API behind this site.
                 </span>
                 <span className="exh-featured-card-arrow">Explore the engineering →</span>
               </Link>

@@ -1,3 +1,4 @@
+import { ErrorBoundary } from './ErrorBoundary.jsx'
 import { useEffect, useLayoutEffect, useRef, useState, lazy, Suspense } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { listPublicEntries } from '../lib/publicApi.js'
@@ -1513,14 +1514,14 @@ export function RecruiterView() {
               aria-hidden="true"
             />
           </div>
-          <Suspense fallback={<div className="exh-guide-canvas" style={{ width: guideSize, height: guideSize }} />}>
+          <ErrorBoundary compact><Suspense fallback={<div className="exh-guide-canvas" style={{ width: guideSize, height: guideSize }} />}>
             <TourGuide
               accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light}
               size={guideSize}
               walkKey={`${activeId}-${tourStarted}-${walkTick}`}
               celebrateKey={celebrateTick}
             />
-          </Suspense>
+          </Suspense></ErrorBoundary>
         </div>
       )}
       {/* Three layers for the "Start the tour" moment, all keyed to

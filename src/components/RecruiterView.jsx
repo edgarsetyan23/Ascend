@@ -1006,7 +1006,7 @@ export function RecruiterView() {
           <ExhibitFrame
             section="Introduction"
             title="Edgar Setyan"
-            byline="SDE I, AWS RDS · Toronto, ON"
+            byline="Software Engineer · Previously AWS RDS · Toronto, ON"
             noBrackets
           >
             {/* Leads with what I've built, not how to browse the site —
@@ -1016,6 +1016,22 @@ export function RecruiterView() {
               Software engineer with experience on AWS RDS, building backend
               services and tools for operating production systems.
             </p>
+
+            {/* The guide is a real part of the desktop experience, not
+                an afterthought below the fold — his invitation sits
+                right after the intro, before any of the evidence, so
+                it reads as a primary way to explore rather than a
+                footnote once you've already scrolled past everything
+                else. Same button, same Start/Stop state, just moved —
+                still absent on mobile, where he never renders at all. */}
+            {!isMobile && (
+              <button
+                className="exh-start-tour"
+                onClick={autoTourActive ? cancelAutoTour : startAutoTour}
+              >
+                {autoTourActive ? 'Stop the tour ✕' : tourStarted ? 'Pick a stop below ↓' : "Come on, I'll show you around →"}
+              </button>
+            )}
 
             <StatRow stats={EXPERIENCE[0].stats} />
 
@@ -1053,22 +1069,9 @@ export function RecruiterView() {
                 <span className="exh-featured-card-why">
                   The AWS app you're using right now — JWT auth, single-table DynamoDB, its own public API.
                 </span>
-                <span className="exh-featured-card-arrow">See the architecture →</span>
+                <span className="exh-featured-card-arrow">Explore the engineering →</span>
               </Link>
             </div>
-
-            <p className="exh-more-hint">
-              {isMobile ? 'More below.' : "More below — or let me walk you through it."}
-            </p>
-
-            {!isMobile && (
-              <button
-                className="exh-start-tour"
-                onClick={autoTourActive ? cancelAutoTour : startAutoTour}
-              >
-                {autoTourActive ? 'Stop the tour ✕' : tourStarted ? 'Pick a stop below ↓' : "Come on, I'll show you around →"}
-              </button>
-            )}
 
             <div className="exh-tour-grid">
               {NAV_GROUPS.filter((g) => g.label !== 'Introduction').map((group, i) => (

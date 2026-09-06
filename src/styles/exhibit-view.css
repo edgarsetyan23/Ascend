@@ -904,27 +904,30 @@
 .exh-root-links--spotlight .exh-root-link:nth-child(3) { animation-delay: 0.3s; }
 .exh-root-links--spotlight .exh-root-link:nth-child(4) { animation-delay: 0.45s; }
 
-.exh-more-hint {
-  font-size: 0.85rem;
-  color: var(--exh-ink-subtle);
-  margin: 22px 0 0;
-}
-
+/* Filled, not outlined — the same weight as .exh-root-link--primary
+   (Download résumé), the site's other "this is the main action"
+   button. Sitting right after the intro paragraph now, before any of
+   the evidence below it, it needs to read as a primary way to
+   explore the portfolio, not a secondary option easy to skip past. */
 .exh-start-tour {
   display: inline-block;
-  margin-top: 24px;
-  padding: 10px 18px;
+  margin: 18px 0 28px;
+  padding: 13px 24px;
   font-family: var(--exh-font-display);
   font-weight: 600;
-  font-size: 0.92rem;
-  color: var(--exh-accent);
-  background: var(--exh-accent-soft);
+  font-size: 1.02rem;
+  color: var(--exh-bg-raised);
+  background: var(--exh-accent);
   border: 1px solid var(--exh-accent);
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
 }
-.exh-start-tour:hover { background: var(--exh-accent); color: var(--exh-bg-raised); transform: translateY(-1px); }
+.exh-start-tour:hover {
+  box-shadow: 0 8px 20px rgba(25, 26, 20, 0.22);
+  transform: translateY(-1px);
+  opacity: 0.94;
+}
 
 /* ── Featured evidence (Introduction plate) ──
    Two direct links — AWS and Ascend — given more visual weight than

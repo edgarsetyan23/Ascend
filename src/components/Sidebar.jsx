@@ -5,7 +5,7 @@ export function Sidebar({ activeId, onSelect, entryCounts }) {
   return (
     <nav className="sidebar">
       <div className="sidebar-header">
-        <span className="sidebar-logo">🔱</span>
+        <span className="sidebar-logo">🏔️</span>
         <span className="sidebar-title">Ascend</span>
       </div>
       <ul className="sidebar-list">

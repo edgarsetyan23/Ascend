@@ -4,7 +4,7 @@ export function NotFound() {
   return (
     <div className="nf-gate">
       <div className="nf-card">
-        <div className="nf-glyph">🔱</div>
+        <div className="nf-glyph">🏔️</div>
         <p className="nf-code">404</p>
         <h1 className="nf-title">Lost in the Ether</h1>
         <p className="nf-body">

@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 
+function IconInput({ icon, ...inputProps }) {
+  return (
+    <div className="auth-input-wrap">
+      <span className="auth-input-icon" aria-hidden="true">{icon}</span>
+      <input className="auth-input" {...inputProps} />
+    </div>
+  );
+}
+
 export function AuthGate({ children }) {
   const { user, loading, login, register, confirm, resendCode, resetPassword, confirmReset } = useAuth();
   const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'confirm' | 'forgot' | 'reset'
@@ -119,20 +128,17 @@ export function AuthGate({ children }) {
           {mode !== 'confirm' && (
             <label className="auth-label">
               Email
-              <div className="auth-input-wrap">
-                <span className="auth-input-icon" aria-hidden="true">✉</span>
-                <input
-                  type="email"
-                  className="auth-input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoFocus={mode !== 'reset'}
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  readOnly={mode === 'reset'}
-                />
-              </div>
+              <IconInput
+                icon="✉"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoFocus={mode !== 'reset'}
+                autoComplete="email"
+                placeholder="you@example.com"
+                readOnly={mode === 'reset'}
+              />
             </label>
           )}
 
@@ -140,19 +146,16 @@ export function AuthGate({ children }) {
           {(mode === 'login' || mode === 'signup') && (
             <label className="auth-label">
               Password
-              <div className="auth-input-wrap">
-                <span className="auth-input-icon" aria-hidden="true">🔒</span>
-                <input
-                  type="password"
-                  className="auth-input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                  placeholder={mode === 'signup' ? 'Min 8 characters' : '••••••••'}
-                />
-              </div>
+              <IconInput
+                icon="🔒"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={8}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                placeholder={mode === 'signup' ? 'Min 8 characters' : '••••••••'}
+              />
             </label>
           )}
 
@@ -189,11 +192,9 @@ export function AuthGate({ children }) {
           {mode === 'reset' && (
             <label className="auth-label">
               New Password
-              <div className="auth-input-wrap">
-              <span className="auth-input-icon" aria-hidden="true">🔒</span>
-              <input
+              <IconInput
+                icon="🔒"
                 type="password"
-                className="auth-input"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
@@ -201,7 +202,6 @@ export function AuthGate({ children }) {
                 autoComplete="new-password"
                 placeholder="Min 8 characters"
               />
-              </div>
             </label>
           )}
 

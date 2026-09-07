@@ -17,7 +17,7 @@ export class ErrorBoundary extends Component {
       return (
         <div style={{ padding: this.props.compact ? '1rem' : '2rem', maxWidth: this.props.compact ? 260 : undefined, pointerEvents: 'auto', textAlign: 'center', color: 'var(--text-secondary)' }}>
           <h2 style={{ marginBottom: '0.5rem', fontSize: this.props.compact ? '1rem' : undefined }}>
-            {this.props.compact ? 'Mini Edgar is unavailable' : moduleError ? 'This part of the page could not load' : 'Something went wrong'}
+            {this.props.compact ? this.props.compactTitle ?? 'This part of the page is unavailable' : moduleError ? 'This part of the page could not load' : 'Something went wrong'}
           </h2>
           <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
             {moduleError ? 'Repair the cached app files and reload. Your saved data will be kept.' : this.state.error.message}

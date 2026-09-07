@@ -15,7 +15,7 @@ it.each([
   'error loading dynamically imported module',
 ])('reloads after a cached module rejection: %s', message => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
-  render(<div><p>Portfolio content</p><ErrorBoundary compact><Broken message={message} /></ErrorBoundary></div>)
+  render(<div><p>Portfolio content</p><ErrorBoundary compact compactTitle="Mini Edgar is unavailable"><Broken message={message} /></ErrorBoundary></div>)
   expect(screen.getByText('Portfolio content')).toBeInTheDocument()
   expect(screen.getByText('Mini Edgar is unavailable')).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Repair and reload' }))

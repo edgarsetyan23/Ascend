@@ -15,6 +15,7 @@ import {
   extractTextFromPdf,
 } from './ResumeReview.jsx'
 import { AscendCaseStudy } from './portfolio/AscendCaseStudy.jsx'
+import { prefersReducedMotion } from '../utils/motion.js'
 import '../styles/exhibit-view.css'
 
 // Three.js is real weight — split it into its own chunk so it only
@@ -22,14 +23,6 @@ import '../styles/exhibit-view.css'
 // the base app bundle.
 const TourGuide = lazy(() => import('./TourGuide.jsx').then((m) => ({ default: m.TourGuide })))
 const ACCENT = { light: '#4f7a63', dark: '#8fc2a6' }
-
-// Read fresh each call rather than cached once — a visitor can toggle
-// the OS setting mid-session, and this is cheap enough that there's
-// no reason to miss that. Same query TourGuide.jsx uses internally
-// for its own animation loop.
-function prefersReducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
 
 // ── Resume data ─────────────────────────────────────────────────────────────
 // "The Exhibit" — every entry is a numbered plate in a small collection,
@@ -817,14 +810,29 @@ export function RecruiterView() {
   // React has committed the case study (and the demo inside it) to
   // the DOM — never racing the render that adds them.
   const [pendingDemoFocus, setPendingDemoFocus] = useState(false)
+  // Which plate this focus request was armed for — if the visitor
+  // navigates away before the demo heading ever mounts there, the
+  // request is stale and must be dropped (see below).
+  const pendingDemoFocusIdRef = useRef(null)
 
   function goToSampleWorkflow() {
     setShowEngineering(true)
     setPendingDemoFocus(true)
+    pendingDemoFocusIdRef.current = activeId
   }
 
   useEffect(() => {
     if (!pendingDemoFocus) return
+    // Left the plate this was armed for before the heading showed up —
+    // give up instead of leaving pendingDemoFocus stuck true forever.
+    // Otherwise every later activeId change re-attaches a fresh
+    // MutationObserver on .exh-main, and if the visitor ever comes back
+    // to a plate where #ascend-demo-heading exists, this stale request
+    // hijacks their scroll/focus out of nowhere.
+    if (activeId !== pendingDemoFocusIdRef.current) {
+      setPendingDemoFocus(false)
+      return
+    }
 
     function focusDemo() {
       const heading = document.getElementById('ascend-demo-heading')
@@ -987,6 +995,14 @@ export function RecruiterView() {
   // moved on.
   const cardWalkResetRef = useRef(null)
   useEffect(() => () => clearTimeout(cardWalkResetRef.current), [])
+  // The plate we were on when the walk was armed. These cards are real
+  // Links, so navigation to the destination plate happens immediately —
+  // well before the 750ms timer above ever fires. Once activeId has
+  // actually moved on, the clicked card's rect is a stale screen
+  // position floating over whatever the new plate rendered there, so
+  // the effect below drops it right away instead of riding out the rest
+  // of a timer tuned for "still on the same page."
+  const walkOriginIdRef = useRef(null)
 
   function handleCardClick(e) {
     cancelAutoTour()
@@ -996,6 +1012,7 @@ export function RecruiterView() {
     // window, where a walk animation playing in THIS tab toward a
     // page that just opened elsewhere would just be confusing.
     if (isMobile || prefersReducedMotion() || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+    walkOriginIdRef.current = activeId
     const rect = e.currentTarget.getBoundingClientRect()
     setGuideTargetRect({
       right: window.innerWidth - (rect.left + rect.width / 2),
@@ -1005,6 +1022,14 @@ export function RecruiterView() {
     clearTimeout(cardWalkResetRef.current)
     cardWalkResetRef.current = window.setTimeout(() => setGuideTargetRect(null), 750)
   }
+
+  useEffect(() => {
+    if (activeId !== walkOriginIdRef.current) {
+      clearTimeout(cardWalkResetRef.current)
+      setGuideTargetRect(null)
+      walkOriginIdRef.current = activeId
+    }
+  }, [activeId])
 
   useEffect(() => {
     Promise.allSettled([listPublicEntries('leetcode'), listPublicEntries('activity')])
@@ -1514,7 +1539,7 @@ export function RecruiterView() {
               aria-hidden="true"
             />
           </div>
-          <ErrorBoundary compact><Suspense fallback={<div className="exh-guide-canvas" style={{ width: guideSize, height: guideSize }} />}>
+          <ErrorBoundary compact compactTitle="Mini Edgar is unavailable"><Suspense fallback={<div className="exh-guide-canvas" style={{ width: guideSize, height: guideSize }} />}>
             <TourGuide
               accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light}
               size={guideSize}

@@ -94,46 +94,48 @@ export function useEntries(trackerId) {
 
   // ── updateEntry ────────────────────────────────────────────────────────────
   const updateEntry_ = useCallback(async (id, data) => {
-    // 1. Save old state for rollback
+    // 1. Save old state for rollback (reading previous state is fine inside
+    //    an updater; the network call and setError below happen outside it)
+    let previous;
     setEntries((prev) => {
-      const previous = prev;
-      const optimistic = prev.map((e) =>
+      previous = prev;
+      return prev.map((e) =>
         e.id === id ? { ...e, ...data, updatedAt: Date.now() } : e
       );
-
-      // 2. Fire API in parallel (we're inside setState so we schedule it)
-      updateEntry(trackerId, id, data)
-        .then((updated) => {
-          setEntries((cur) =>
-            cur.map((e) => (e.id === id ? updated : e))
-          );
-        })
-        .catch((e) => {
-          // Roll back to the state we captured above
-          setEntries(previous);
-          setError(e.message);
-        });
-
-      return optimistic;
     });
+
+    try {
+      // 2. Await the real request so callers can rely on this promise
+      //    settling only once the server has actually confirmed the update.
+      const updated = await updateEntry(trackerId, id, data);
+      setEntries((cur) => cur.map((e) => (e.id === id ? updated : e)));
+      return updated;
+    } catch (e) {
+      // 3. Roll back to the state we captured above
+      setEntries(previous);
+      setError(e.message);
+      throw e; // let the caller know it failed
+    }
   }, [trackerId]);
 
   // ── deleteEntry ────────────────────────────────────────────────────────────
   const deleteEntry_ = useCallback(async (id) => {
     // 1. Remove from UI immediately
+    let removed;
     setEntries((prev) => {
-      const removed = prev;
-      const next = prev.filter((e) => e.id !== id);
-
-      // 2. Fire API
-      deleteEntry(trackerId, id).catch((e) => {
-        // Roll back
-        setEntries(removed);
-        setError(e.message);
-      });
-
-      return next;
+      removed = prev;
+      return prev.filter((e) => e.id !== id);
     });
+
+    try {
+      // 2. Await the real request (see updateEntry above for why)
+      await deleteEntry(trackerId, id);
+    } catch (e) {
+      // 3. Roll back
+      setEntries(removed);
+      setError(e.message);
+      throw e; // let the caller know it failed
+    }
   }, [trackerId]);
 
   return {

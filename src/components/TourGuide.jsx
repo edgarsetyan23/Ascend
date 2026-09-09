@@ -81,29 +81,75 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
 
       const track = (obj) => { disposables.push(obj); return obj }
       const skinMat  = track(new THREE.MeshStandardMaterial({ color: likeness.skin, roughness: 0.55, flatShading: false }))
-      const shirtMat = track(new THREE.MeshStandardMaterial({ color: 0x202226, roughness: 0.75, flatShading: true }))
+      const shirtMat = track(new THREE.MeshStandardMaterial({ color: 0x637b69, roughness: 0.88 }))
+      const pantsMat = track(new THREE.MeshStandardMaterial({ color: 0x282e38, roughness: 0.9 }))
+      const teeMat = track(new THREE.MeshStandardMaterial({ color: 0xeee5d2, roughness: 0.9 }))
+      const trimMat = track(new THREE.MeshStandardMaterial({ color: 0x40584b, roughness: 0.85 }))
+      const soleMat = track(new THREE.MeshStandardMaterial({ color: 0xc8bfaa, roughness: 0.8 }))
       const lensMat  = track(new THREE.MeshStandardMaterial({ color: new THREE.Color(accentColor), roughness: 0.25, flatShading: true, transparent: true, opacity: 0.45 }))
       const metalMat = track(new THREE.MeshStandardMaterial({ color: 0x8a8d78, roughness: 0.4, metalness: 0.3, flatShading: true }))
 
       const guide = new THREE.Group()
-      const legGeo = track(new THREE.CylinderGeometry(0.12, 0.12, 0.6, 6))
+      const legGeo = track(new THREE.CylinderGeometry(0.115, 0.085, 0.52, 12))
       const legPivotL = new THREE.Group()
       legPivotL.position.set(-0.16, -0.6, 0)
-      const legMeshL = new THREE.Mesh(legGeo, shirtMat)
-      legMeshL.position.y = -0.3
+      const legMeshL = new THREE.Mesh(legGeo, pantsMat)
+      legMeshL.position.y = -0.26
       legPivotL.add(legMeshL)
       guide.add(legPivotL)
 
       const legPivotR = new THREE.Group()
       legPivotR.position.set(0.16, -0.6, 0)
-      const legMeshR = new THREE.Mesh(legGeo, shirtMat)
-      legMeshR.position.y = -0.3
+      const legMeshR = new THREE.Mesh(legGeo, pantsMat)
+      legMeshR.position.y = -0.26
       legPivotR.add(legMeshR)
       guide.add(legPivotR)
-      const torsoGeo = track(new THREE.CylinderGeometry(0.32, 0.27, 0.5, 12))
+      const clothingSphere = track(new THREE.SphereGeometry(1, 20, 12))
+      function clothingBox(parent, material, x, y, z, w, h, d) {
+        const mesh = new THREE.Mesh(track(new THREE.BoxGeometry(w, h, d)), material)
+        mesh.position.set(x, y, z)
+        parent.add(mesh)
+        return mesh
+      }
+      for (const leg of [legPivotL, legPivotR]) {
+        const shoe = new THREE.Mesh(clothingSphere, teeMat)
+        shoe.position.set(0, -0.535, 0.048)
+        shoe.scale.set(0.105, 0.062, 0.165)
+        leg.add(shoe)
+        const sole = new THREE.Mesh(clothingSphere, soleMat)
+        sole.position.set(0, -0.577, 0.05)
+        sole.scale.set(0.108, 0.022, 0.169)
+        leg.add(sole)
+        clothingBox(leg, trimMat, 0, -0.53, 0.181, 0.15, 0.028, 0.012)
+        for (let lace = 0; lace < 3; lace++) {
+          clothingBox(leg, soleMat, 0, -0.476 - lace * 0.005, 0.055 + lace * 0.027, 0.08, 0.008, 0.009)
+        }
+      }
+      const tee = new THREE.Mesh(track(new THREE.CylinderGeometry(0.304, 0.258, 0.51, 32)), teeMat)
+      tee.position.y = -0.285
+      guide.add(tee)
+      // Leave the front open so the cream tee reads as a separate layer.
+      const torsoGeo = track(new THREE.CylinderGeometry(0.32, 0.27, 0.5, 32, 1, false, 0.32, Math.PI * 2 - 0.64))
       const torso = new THREE.Mesh(torsoGeo, shirtMat)
       torso.position.y = -0.28
       guide.add(torso)
+      for (const side of [-1, 1]) {
+        const collar = clothingBox(guide, trimMat, side * 0.105, -0.092, 0.287, 0.085, 0.14, 0.025)
+        collar.rotation.z = side * -0.35
+        const pocket = clothingBox(guide, shirtMat, side * 0.195, -0.25, 0.237, 0.10, 0.11, 0.026)
+        pocket.rotation.y = side * 0.65
+        const flap = clothingBox(guide, trimMat, side * 0.197, -0.205, 0.246, 0.105, 0.025, 0.018)
+        flap.rotation.y = side * 0.65
+        for (let button = 0; button < 3; button++) {
+          const stud = new THREE.Mesh(clothingSphere, soleMat)
+          stud.position.set(side * (0.103 - button * 0.009), -0.23 - button * 0.105, 0.299 - button * 0.01)
+          stud.scale.setScalar(0.009)
+          guide.add(stud)
+        }
+      }
+      const waistband = new THREE.Mesh(track(new THREE.CylinderGeometry(0.256, 0.251, 0.095, 24)), pantsMat)
+      waistband.position.y = -0.555
+      guide.add(waistband)
       const neckGeo = track(new THREE.CylinderGeometry(0.13, 0.16, 0.14, 6))
       const neck = new THREE.Mesh(neckGeo, skinMat)
       neck.position.y = 0.02

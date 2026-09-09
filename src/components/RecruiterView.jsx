@@ -759,6 +759,7 @@ export function RecruiterView() {
   // sidebar/card navigation (already the manual fallback on desktop
   // too) be the whole story.
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 860)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 860)
     window.addEventListener('resize', onResize)
@@ -1470,7 +1471,17 @@ export function RecruiterView() {
       )}
 
       <div className="exh-shell">
-        <aside className="exh-sidebar">
+        <button
+          type="button"
+          className="exh-mobile-nav-toggle"
+          aria-expanded={mobileNavOpen}
+          aria-controls="exhibit-navigation"
+          onClick={() => setMobileNavOpen((open) => !open)}
+        >
+          <span><span className="exh-mobile-nav-label">Explore gallery</span><span className="exh-mobile-nav-current">{activeNavItem?.navTitle || 'Edgar Setyan'}</span></span>
+          <span aria-hidden="true">{mobileNavOpen ? '−' : '+'}</span>
+        </button>
+        <aside id="exhibit-navigation" aria-label="Gallery sections" className={`exh-sidebar${mobileNavOpen ? ' exh-sidebar--open' : ''}`}>
           {NAV_GROUPS.map((group) => (
             <div key={group.label} className="exh-nav-group">
               <div className="exh-nav-group-label">{group.label}</div>
@@ -1479,7 +1490,8 @@ export function RecruiterView() {
                   key={item.id}
                   to={item.path === '/' ? '/portfolio' : `/portfolio${item.path}`}
                   className={`exh-nav-item ${activeId === item.id ? 'exh-nav-item--active' : ''}`}
-                  onClick={cancelAutoTour}
+                  aria-current={activeId === item.id ? 'page' : undefined}
+                  onClick={() => { cancelAutoTour(); setMobileNavOpen(false) }}
                 >
                   {item.plate && <PlateMark n={item.plate} />}
                   <span className="exh-nav-item-text">

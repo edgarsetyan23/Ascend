@@ -110,19 +110,18 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
       guide.add(neck)
 
       guide.add(createEdgarHead(track, likeness))
-      const armGeo = track(new THREE.CylinderGeometry(0.06, 0.075, 0.42, 6))
       // A relaxed upper arm and raised forearm make the elbow readable.
       // Build between joint positions so the sleeve, elbow and wrist meet.
       const shoulder = new THREE.Vector3(0.29, -0.105, 0)
       const elbow = new THREE.Vector3(0.47, -0.35, 0.055)
       const wrist = new THREE.Vector3(0.57, -0.045, 0.15)
       const jointGeo = track(new THREE.SphereGeometry(1, 16, 12))
-      function armSegment(start, end, startRadius, endRadius, material) {
+      function armSegment(start, end, startRadius, endRadius, material, parent = guide) {
         const direction = new THREE.Vector3().subVectors(end, start)
         const mesh = new THREE.Mesh(track(new THREE.CylinderGeometry(endRadius, startRadius, direction.length(), 16)), material)
         mesh.position.copy(start).add(end).multiplyScalar(0.5)
         mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize())
-        guide.add(mesh)
+        parent.add(mesh)
       }
       armSegment(shoulder, elbow, 0.078, 0.061, skinMat)
       armSegment(shoulder, shoulder.clone().lerp(elbow, 0.48), 0.105, 0.086, shirtMat)
@@ -167,10 +166,40 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
       magHead.add(lens)
       magHead.position.set(0.015, 0.292, 0.028)
       holdingHand.add(magHead)
-      const armL = new THREE.Mesh(armGeo, skinMat)
-      armL.position.set(-0.32, -0.28, 0)
-      armL.rotation.z = 0.15
+      // The free arm hangs from a shoulder pivot, with a slight elbow
+      // bend and a relaxed hand. Its full silhouette swings together.
+      const armL = new THREE.Group()
+      armL.position.set(-0.29, -0.105, 0)
       guide.add(armL)
+      const freeShoulder = new THREE.Vector3(0, 0, 0)
+      const freeElbow = new THREE.Vector3(-0.095, -0.245, 0.025)
+      const freeWrist = new THREE.Vector3(-0.105, -0.465, 0.075)
+      armSegment(freeShoulder, freeElbow, 0.078, 0.061, skinMat, armL)
+      armSegment(freeShoulder, freeShoulder.clone().lerp(freeElbow, 0.48), 0.105, 0.086, shirtMat, armL)
+      const freeElbowJoint = new THREE.Mesh(jointGeo, skinMat)
+      freeElbowJoint.position.copy(freeElbow)
+      freeElbowJoint.scale.set(0.062, 0.064, 0.062)
+      armL.add(freeElbowJoint)
+      armSegment(freeElbow, freeWrist, 0.061, 0.037, skinMat, armL)
+      const freeHand = new THREE.Group()
+      freeHand.position.copy(freeWrist)
+      freeHand.rotation.x = -0.1
+      armL.add(freeHand)
+      const freePalm = new THREE.Mesh(jointGeo, skinMat)
+      freePalm.position.set(0, -0.038, 0)
+      freePalm.scale.set(0.045, 0.058, 0.028)
+      freeHand.add(freePalm)
+      for (let finger = 0; finger < 4; finger++) {
+        const fingertip = new THREE.Mesh(jointGeo, skinMat)
+        fingertip.position.set(-0.029 + finger * 0.019, -0.075 - Math.sin(finger * Math.PI / 3) * 0.01, 0.008)
+        fingertip.scale.set(0.012, 0.032, 0.015)
+        freeHand.add(fingertip)
+      }
+      const freeThumb = new THREE.Mesh(jointGeo, skinMat)
+      freeThumb.position.set(0.042, -0.032, 0.014)
+      freeThumb.scale.set(0.018, 0.033, 0.019)
+      freeThumb.rotation.z = 0.35
+      freeHand.add(freeThumb)
 
       guide.rotation.y = facingRef.current
       scene.add(guide)

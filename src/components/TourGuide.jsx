@@ -111,34 +111,62 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
 
       guide.add(createEdgarHead(track, likeness))
       const armGeo = track(new THREE.CylinderGeometry(0.06, 0.075, 0.42, 6))
-      const armR = new THREE.Mesh(armGeo, skinMat)
-      armR.position.set(0.32, -0.02, 0)
-      armR.rotation.z = -0.9
-      guide.add(armR)
-      const handGeo = track(new THREE.SphereGeometry(0.075, 7, 5))
-      const hand = new THREE.Mesh(handGeo, skinMat)
-      hand.position.set(0, 0.23, 0)
-      armR.add(hand)
-      const handleGeo = track(new THREE.CylinderGeometry(0.02, 0.02, 0.46, 5))
+      // A relaxed upper arm and raised forearm make the elbow readable.
+      // Build between joint positions so the sleeve, elbow and wrist meet.
+      const shoulder = new THREE.Vector3(0.29, -0.105, 0)
+      const elbow = new THREE.Vector3(0.47, -0.35, 0.055)
+      const wrist = new THREE.Vector3(0.57, -0.045, 0.15)
+      const jointGeo = track(new THREE.SphereGeometry(1, 16, 12))
+      function armSegment(start, end, startRadius, endRadius, material) {
+        const direction = new THREE.Vector3().subVectors(end, start)
+        const mesh = new THREE.Mesh(track(new THREE.CylinderGeometry(endRadius, startRadius, direction.length(), 16)), material)
+        mesh.position.copy(start).add(end).multiplyScalar(0.5)
+        mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize())
+        guide.add(mesh)
+      }
+      armSegment(shoulder, elbow, 0.078, 0.061, skinMat)
+      armSegment(shoulder, shoulder.clone().lerp(elbow, 0.48), 0.105, 0.086, shirtMat)
+      const elbowJoint = new THREE.Mesh(jointGeo, skinMat)
+      elbowJoint.position.copy(elbow)
+      elbowJoint.scale.set(0.064, 0.065, 0.064)
+      guide.add(elbowJoint)
+      armSegment(elbow, wrist, 0.061, 0.043, skinMat)
+
+      // Fingers and glass share a wrist pivot; the lens never swivels
+      // independently of its handle or slips out of the grip.
+      const holdingHand = new THREE.Group()
+      holdingHand.position.copy(wrist)
+      holdingHand.rotation.z = -0.12
+      guide.add(holdingHand)
+      const palm = new THREE.Mesh(jointGeo, skinMat)
+      palm.position.set(-0.008, 0.025, -0.008)
+      palm.scale.set(0.052, 0.065, 0.035)
+      holdingHand.add(palm)
+      const handleGeo = track(new THREE.CylinderGeometry(0.019, 0.024, 0.23, 12))
       const handle = new THREE.Mesh(handleGeo, metalMat)
-      handle.position.set(0, 0.34, 0)
-      armR.add(handle)
-      const gripGeo = track(new THREE.TorusGeometry(0.05, 0.016, 6, 10))
-      const grip = new THREE.Mesh(gripGeo, skinMat)
-      grip.position.set(0, 0.23, 0)
-      grip.rotation.x = Math.PI / 2
-      armR.add(grip)
+      handle.position.set(0.015, 0.065, 0.028)
+      holdingHand.add(handle)
+      for (let finger = 0; finger < 3; finger++) {
+        const knuckle = new THREE.Mesh(jointGeo, skinMat)
+        knuckle.position.set(0.02, -0.005 + finger * 0.028, 0.048)
+        knuckle.scale.set(0.036, 0.017, 0.024)
+        holdingHand.add(knuckle)
+      }
+      const thumb = new THREE.Mesh(jointGeo, skinMat)
+      thumb.position.set(-0.018, 0.052, 0.05)
+      thumb.scale.set(0.023, 0.041, 0.025)
+      thumb.rotation.z = -0.5
+      holdingHand.add(thumb)
       const magHead = new THREE.Group()
-      const ringGeo = track(new THREE.TorusGeometry(0.09, 0.018, 6, 12))
+      const ringGeo = track(new THREE.TorusGeometry(0.12, 0.017, 10, 32))
       const ring = new THREE.Mesh(ringGeo, metalMat)
       magHead.add(ring)
-      const lensGeo = track(new THREE.CircleGeometry(0.078, 10))
+      const lensGeo = track(new THREE.CircleGeometry(0.105, 32))
       const lens = new THREE.Mesh(lensGeo, lensMat)
       lens.position.z = -0.006
       magHead.add(lens)
-      magHead.position.set(0, 0.6, 0)
-      magHead.rotation.z = 0.9
-      armR.add(magHead)
+      magHead.position.set(0.015, 0.292, 0.028)
+      holdingHand.add(magHead)
       const armL = new THREE.Mesh(armGeo, skinMat)
       armL.position.set(-0.32, -0.28, 0)
       armL.rotation.z = 0.15
@@ -202,7 +230,7 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
 
         guide.position.y = bob
         guide.rotation.y = facing
-        magHead.rotation.y = Math.sin(t * magSpeed) * 0.18
+        holdingHand.rotation.y = Math.sin(t * magSpeed) * 0.1
 
         renderer.render(scene, camera)
         frameId = requestAnimationFrame(animate)

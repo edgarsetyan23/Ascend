@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import {
   listEntries,
   createEntry,
@@ -35,6 +35,13 @@ export function useEntries(trackerId) {
   // Incrementing this re-triggers the fetch without changing trackerId.
   // Used by refetch() so the error toast can offer a "Retry" button.
   const [fetchKey, setFetchKey] = useState(0);
+  const mutationScope = useRef(null);
+
+  // Each visit to a tracker owns its completions, including when switching back.
+  useLayoutEffect(() => {
+    mutationScope.current = {};
+    return () => { mutationScope.current = null; };
+  }, [trackerId]);
 
   const refetch = useCallback(() => setFetchKey((k) => k + 1), []);
 
@@ -69,6 +76,7 @@ export function useEntries(trackerId) {
 
   // ── addEntry ───────────────────────────────────────────────────────────────
   const addEntry = useCallback(async (data) => {
+    const scope = mutationScope.current;
     // 1. Build optimistic record with a temp id
     const tempId = crypto.randomUUID();
     const optimistic = { ...data, id: tempId, createdAt: Date.now() };
@@ -79,6 +87,7 @@ export function useEntries(trackerId) {
     try {
       // 3. Create on server
       const created = await createEntry(trackerId, data);
+      if (mutationScope.current !== scope) return created;
       // 4. Replace temp record with real server record (real id + createdAt)
       setEntries((prev) =>
         prev.map((e) => (e.id === tempId ? created : e))
@@ -86,44 +95,54 @@ export function useEntries(trackerId) {
       return created;
     } catch (e) {
       // 5. Roll back on failure
-      setEntries((prev) => prev.filter((e) => e.id !== tempId));
-      setError(e.message);
+      if (mutationScope.current === scope) {
+        setEntries((prev) => prev.filter((e) => e.id !== tempId));
+        setError(e.message);
+      }
       throw e; // let the caller know it failed
     }
   }, [trackerId]);
 
   // ── updateEntry ────────────────────────────────────────────────────────────
   const updateEntry_ = useCallback(async (id, data) => {
-    // 1. Save old state for rollback (reading previous state is fine inside
-    //    an updater; the network call and setError below happen outside it)
+    const scope = mutationScope.current;
+    // Capture only this record; unrelated mutations must survive a rollback.
     let previous;
+    let optimistic;
     setEntries((prev) => {
-      previous = prev;
-      return prev.map((e) =>
-        e.id === id ? { ...e, ...data, updatedAt: Date.now() } : e
-      );
+      previous = prev.find((e) => e.id === id);
+      optimistic = previous && { ...previous, ...data, updatedAt: Date.now() };
+      return prev.map((e) => (e.id === id ? optimistic : e));
     });
 
     try {
       // 2. Await the real request so callers can rely on this promise
       //    settling only once the server has actually confirmed the update.
       const updated = await updateEntry(trackerId, id, data);
-      setEntries((cur) => cur.map((e) => (e.id === id ? updated : e)));
+      if (mutationScope.current === scope) {
+        setEntries((cur) => cur.map((e) => (e === optimistic ? updated : e)));
+      }
       return updated;
     } catch (e) {
-      // 3. Roll back to the state we captured above
-      setEntries(previous);
-      setError(e.message);
+      // Restore only our optimistic version, preserving later changes.
+      if (mutationScope.current === scope) {
+        setEntries((cur) => cur.map((entry) => (entry === optimistic ? previous : entry)));
+        setError(e.message);
+      }
       throw e; // let the caller know it failed
     }
   }, [trackerId]);
 
   // ── deleteEntry ────────────────────────────────────────────────────────────
   const deleteEntry_ = useCallback(async (id) => {
+    const scope = mutationScope.current;
     // 1. Remove from UI immediately
     let removed;
+    let followingIds;
     setEntries((prev) => {
-      removed = prev;
+      const index = prev.findIndex((e) => e.id === id);
+      removed = prev[index];
+      followingIds = prev.slice(index + 1).map((e) => e.id);
       return prev.filter((e) => e.id !== id);
     });
 
@@ -131,9 +150,16 @@ export function useEntries(trackerId) {
       // 2. Await the real request (see updateEntry above for why)
       await deleteEntry(trackerId, id);
     } catch (e) {
-      // 3. Roll back
-      setEntries(removed);
-      setError(e.message);
+      // Restore the deleted record beside its surviving successors.
+      if (mutationScope.current === scope) {
+        setEntries((cur) => {
+          if (!removed || cur.some((entry) => entry.id === id)) return cur;
+          const index = cur.findIndex((entry) => followingIds.includes(entry.id));
+          const insertion = index < 0 ? cur.length : index;
+          return [...cur.slice(0, insertion), removed, ...cur.slice(insertion)];
+        });
+        setError(e.message);
+      }
       throw e; // let the caller know it failed
     }
   }, [trackerId]);

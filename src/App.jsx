@@ -22,6 +22,7 @@ import { useAuth } from './context/AuthContext.jsx'
 import { useToast } from './context/ToastContext.jsx'
 import { useEntries } from './hooks/useEntries.js'
 import { useTheme } from './hooks/useTheme.js'
+import { useNotifications } from './hooks/useNotifications.js'
 import { TRACKER_CONFIGS, TRACKER_LIST } from './trackers/index.js'
 import { computeStats } from './utils/stats.js'
 
@@ -31,6 +32,7 @@ import { computeStats } from './utils/stats.js'
  * run with a valid user in context.
  */
 function AppShell() {
+  const notifications = useNotifications()
   const { logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const { addToast } = useToast()
@@ -220,7 +222,7 @@ function AppShell() {
       </div>
 
       {showNotifSettings && (
-        <NotificationSettings onClose={() => setShowNotifSettings(false)} />
+        <NotificationSettings notifications={notifications} onClose={() => setShowNotifSettings(false)} />
       )}
 
       {modal && (

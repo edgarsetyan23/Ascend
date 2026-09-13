@@ -320,9 +320,9 @@ function HistoryList({ entries, onSelect, onDelete, onNew }) {
 }
 
 // ─── Input panel ──────────────────────────────────────────────────────────
-function InputPanel({ onAnalyze, onCancel, hasHistory }) {
-  const [mode, setMode] = useState('upload')
-  const [text, setText] = useState('')
+function InputPanel({ onAnalyze, onCancel, hasHistory, initialText = '', error }) {
+  const [mode, setMode] = useState(initialText ? 'text' : 'upload')
+  const [text, setText] = useState(initialText)
   const [isExtracting, setIsExtracting] = useState(false)
   const [extractError, setExtractError] = useState('')
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0
@@ -381,6 +381,7 @@ function InputPanel({ onAnalyze, onCancel, hasHistory }) {
       )}
 
       {extractError && <p className="resume-error">{extractError}</p>}
+      {error && <p className="resume-error" role="alert">{error}</p>}
 
       <div className="resume-blueprint-preview">
         <h3 className="blueprint-title">What we check for</h3>
@@ -494,6 +495,8 @@ export function ResumeReview({ entries = [], addEntry, deleteEntry, loading }) {
   const [view, setView] = useState('history') // 'history' | 'new' | 'result'
   const [selected, setSelected] = useState(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [draftText, setDraftText] = useState('')
+  const [analysisError, setAnalysisError] = useState('')
 
   // After first load: if no history yet, go straight to the upload form
   useEffect(() => {
@@ -501,12 +504,23 @@ export function ResumeReview({ entries = [], addEntry, deleteEntry, loading }) {
   }, [loading, entries.length])
 
   async function handleAnalyze(text) {
+    setDraftText(text)
+    setAnalysisError('')
     setIsAnalyzing(true)
-    const result = await scoreResume(text)
-    // Save to DynamoDB via the resume tracker — persists across sessions
-    await addEntry(result)
-    setIsAnalyzing(false)
-    setView('history')
+    let stage = 'score'
+    try {
+      const result = await scoreResume(text)
+      stage = 'save'
+      // Save to DynamoDB via the resume tracker — persists across sessions
+      await addEntry(result)
+      setDraftText('')
+      setView('history')
+    } catch {
+      setAnalysisError(`Could not ${stage} your resume. Your text is preserved below. Select Analyze Resume to try again.`)
+      setView('new')
+    } finally {
+      setIsAnalyzing(false)
+    }
   }
 
   if (loading) {
@@ -550,6 +564,8 @@ export function ResumeReview({ entries = [], addEntry, deleteEntry, loading }) {
 
       {view === 'new' && (
         <InputPanel
+          initialText={draftText}
+          error={analysisError}
           onAnalyze={handleAnalyze}
           onCancel={() => setView('history')}
           hasHistory={entries.length > 0}

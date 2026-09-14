@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useToast } from '../context/ToastContext.jsx'
 
 /**
@@ -9,8 +9,8 @@ import { useToast } from '../context/ToastContext.jsx'
  * OAuth flow (new-tab redirect, no popup):
  *   1. Click → open new tab with Google OAuth URL
  *   2. User signs in → Google redirects to /oauth-callback in that tab
- *   3. OAuthCallback writes token to localStorage → closes the tab
- *   4. The 'storage' event fires here → scan starts automatically
+ *   3. OAuthCallback sends the result over a same-origin BroadcastChannel
+ *   4. Only the initiating scanner validates and consumes its pending state
  *
  * Props:
  *   addEntry    — from useEntries; adds one row to DynamoDB + optimistic UI
@@ -21,6 +21,7 @@ export function EmailScanner({ addEntry, updateEntry, entries }) {
   const { addToast } = useToast()
   const [scanning, setScanning] = useState(false)
   const [oauthPending, setOauthPending] = useState(false)
+  const pendingLogin = useRef(null)
   const [error, setError] = useState(null)
   const [status, setStatus] = useState(null)
   const [modal, setModal] = useState({
@@ -31,31 +32,64 @@ export function EmailScanner({ addEntry, updateEntry, entries }) {
     selectedFollowUps: new Set(),
   })
 
-  // Listen for the token written by OAuthCallback in the sign-in tab
-  useEffect(() => {
-    function onStorage(e) {
-      if (e.key !== 'gmail-scan-token' || !e.newValue) return
-      localStorage.removeItem('gmail-scan-token')
-      setOauthPending(false)
-      setScanning(true)
-      handleToken(e.newValue)
+  function clearLogin() {
+    const pending = pendingLogin.current
+    pendingLogin.current = null
+    if (pending) {
+      clearTimeout(pending.timer)
+      pending.channel.close()
     }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    setOauthPending(false)
+  }
+
+  useEffect(() => () => {
+    const pending = pendingLogin.current
+    pendingLogin.current = null
+    if (pending) {
+      clearTimeout(pending.timer)
+      pending.channel.close()
+    }
+  }, [])
 
   function handleScan() {
+    if (pendingLogin.current) return
     setError(null)
     setStatus(null)
-    setOauthPending(true)
-    const params = new URLSearchParams({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      redirect_uri: `${window.location.origin}/oauth-callback`,
-      response_type: 'token',
-      scope: 'https://www.googleapis.com/auth/gmail.readonly',
-      state: 'gmail-scan',
-    })
-    window.open(`https://accounts.google.com/o/oauth2/v2/auth?${params}`, '_blank')
+    try {
+      const state = Array.from(crypto.getRandomValues(new Uint8Array(32)),
+        byte => byte.toString(16).padStart(2, '0')).join('')
+      const channel = new BroadcastChannel('gmail-scan-oauth')
+      const pending = { state, channel, expiresAt: Date.now() + 5 * 60 * 1000 }
+      pendingLogin.current = pending
+      pending.timer = setTimeout(() => {
+        clearLogin()
+        setError('Sign-in expired. Please try again.')
+      }, 5 * 60 * 1000)
+      channel.onmessage = ({ data }) => {
+        if (pendingLogin.current !== pending || data?.state !== pending.state) return
+        const expired = Date.now() >= pending.expiresAt
+        // Consume synchronously before async work, including error responses.
+        clearLogin()
+        if (expired || data.error || typeof data.token !== 'string' || !data.token) {
+          setError('Sign-in was cancelled or expired. Please try again.')
+          return
+        }
+        setScanning(true)
+        handleToken(data.token)
+      }
+      setOauthPending(true)
+      const params = new URLSearchParams({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        redirect_uri: `${window.location.origin}/oauth-callback`,
+        response_type: 'token',
+        scope: 'https://www.googleapis.com/auth/gmail.readonly',
+        state,
+      })
+      window.open(`https://accounts.google.com/o/oauth2/v2/auth?${params}`, '_blank', 'noopener')
+    } catch {
+      clearLogin()
+      setError('Unable to start sign-in. Please try again in a supported browser.')
+    }
   }
 
   async function handleToken(accessToken) {
@@ -242,6 +276,9 @@ export function EmailScanner({ addEntry, updateEntry, entries }) {
           <button className="btn btn--secondary" onClick={handleScan} disabled={scanning || oauthPending}>
             {scanning ? 'Scanning…' : oauthPending ? 'Waiting for sign-in…' : '📧 Scan Emails'}
           </button>
+          {oauthPending && (
+            <button className="btn btn--ghost" onClick={clearLogin}>Cancel sign-in</button>
+          )}
           <span className="email-scanner-hint">Finds new applications and status updates from your Gmail</span>
         </div>
         {status && !error && <p className="email-scanner-status">{status}</p>}

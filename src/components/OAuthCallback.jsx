@@ -1,30 +1,33 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 /**
  * OAuthCallback — landing page after Google OAuth redirect (new tab).
- * Stores the access token in localStorage so the storage event fires
- * in the original tab, then closes this tab.
+ * Forwards the result across tabs; the initiating scanner owns state validation.
  */
 export function OAuthCallback() {
+  const sent = useRef(false)
   useEffect(() => {
+    if (sent.current) return
+    sent.current = true
     const params = new URLSearchParams(window.location.hash.slice(1))
+    window.history.replaceState(null, '', window.location.pathname)
     const token = params.get('access_token')
     const state = params.get('state')
 
-    if (token && state === 'gmail-scan') {
-      // Writing to localStorage fires a 'storage' event in all OTHER open tabs.
-      // EmailScanner listens for this key and picks up the token automatically.
-      localStorage.setItem('gmail-scan-token', token)
+    if (!state) return
+    try {
+      const channel = new BroadcastChannel('gmail-scan-oauth')
+      channel.postMessage({ state, token, error: params.get('error') })
+      channel.close()
+      window.close()
+    } catch {
+      // The initiating tab allows cancellation and expires its pending login.
     }
-
-    // Close this tab — the original tab takes it from here.
-    // Small delay gives the storage event time to propagate first.
-    setTimeout(() => window.close(), 200)
   }, [])
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'system-ui', color: '#666' }}>
-      Signed in — closing tab…
+      Return to the original tab to continue or retry sign-in. You can close this tab.
     </div>
   )
 }

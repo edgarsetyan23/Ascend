@@ -1,0 +1,150 @@
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { EmailScanner } from '../components/EmailScanner.jsx'
+import { OAuthCallback } from '../components/OAuthCallback.jsx'
+
+vi.mock('../context/ToastContext.jsx', () => ({ useToast: () => ({ addToast: vi.fn() }) }))
+
+let channels
+beforeEach(() => {
+  vi.useFakeTimers()
+  channels = new Set()
+  vi.stubGlobal('BroadcastChannel', class {
+    constructor(name) { this.name = name; channels.add(this) }
+    postMessage(data) {
+      for (const peer of channels) {
+        if (peer !== this && peer.name === this.name) peer.onmessage?.({ data })
+      }
+    }
+    close() { channels.delete(this) }
+  })
+  vi.spyOn(window, 'open').mockReturnValue({ closed: false })
+  vi.spyOn(window, 'close').mockImplementation(() => {})
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ messages: [] }) }))
+  localStorage.clear()
+  sessionStorage.clear()
+})
+afterEach(() => {
+  cleanup()
+  vi.useRealTimers()
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+  window.history.replaceState(null, '', '/')
+})
+
+function scanner() {
+  return render(<EmailScanner entries={[]} addEntry={vi.fn()} updateEntry={vi.fn()} />)
+}
+function start() {
+  fireEvent.click(screen.getByRole('button', { name: /Scan Emails/ }))
+  return new URL(window.open.mock.calls.at(-1)[0]).searchParams.get('state')
+}
+async function callback(state, extra = 'access_token=test-token') {
+  // A separate tab has no access to the initiating tab's sessionStorage.
+  sessionStorage.clear()
+  window.history.replaceState(null, '', `/oauth-callback#state=${state}&${extra}`)
+  let view
+  await act(async () => { view = render(<OAuthCallback />) })
+  view.unmount()
+}
+
+test('generates fresh cryptographic state and accepts a separate-tab callback exactly once', async () => {
+  const random = vi.spyOn(crypto, 'getRandomValues')
+  scanner()
+  const state = start()
+  expect(random).toHaveBeenCalled()
+  expect(state).toMatch(/^[a-f0-9]{64}$/)
+  await callback(state)
+  expect(fetch).toHaveBeenCalledTimes(1)
+  expect(fetch.mock.calls[0][1].headers.Authorization).toBe('Bearer test-token')
+  await callback(state)
+  expect(fetch).toHaveBeenCalledTimes(1)
+  expect(start()).not.toBe(state)
+})
+
+test('rejects unsolicited legacy tokens and callbacks', async () => {
+  scanner()
+  await callback('gmail-scan')
+  act(() => window.dispatchEvent(new StorageEvent('storage', { key: 'gmail-scan-token', newValue: 'injected' })))
+  expect(fetch).not.toHaveBeenCalled()
+  expect(localStorage.getItem('gmail-scan-token')).toBeNull()
+})
+
+test('rejects a mismatched callback while preserving the pending login', async () => {
+  scanner()
+  const state = start()
+  await callback('wrong')
+  expect(fetch).not.toHaveBeenCalled()
+  expect(screen.getByRole('button', { name: /Waiting for sign-in/ })).toBeDisabled()
+  await callback(state)
+  expect(fetch).toHaveBeenCalledTimes(1)
+})
+
+test('rejects expired callbacks and permits retry', async () => {
+  scanner()
+  const state = start()
+  act(() => vi.advanceTimersByTime(5 * 60 * 1000))
+  await callback(state)
+  expect(fetch).not.toHaveBeenCalled()
+  expect(screen.getByRole('button', { name: /Scan Emails/ })).toBeEnabled()
+})
+
+test('denial consumes the login and permits retry', async () => {
+  scanner()
+  const state = start()
+  await callback(state, 'error=access_denied')
+  expect(screen.getByRole('button', { name: /Scan Emails/ })).toBeEnabled()
+  await callback(state)
+  expect(fetch).not.toHaveBeenCalled()
+  start()
+})
+
+test('cancellation invalidates the old login even after another login starts', async () => {
+  scanner()
+  const state = start()
+  fireEvent.click(screen.getByRole('button', { name: /Cancel sign-in/ }))
+  const next = start()
+  await callback(state)
+  expect(fetch).not.toHaveBeenCalled()
+  await callback(next)
+  expect(fetch).toHaveBeenCalledTimes(1)
+})
+
+test('unmount invalidates pending login', async () => {
+  const view = scanner()
+  const state = start()
+  view.unmount()
+  scanner()
+  await callback(state)
+  expect(fetch).not.toHaveBeenCalled()
+})
+
+test('checks wall-clock expiry even when the timeout has not run', async () => {
+  scanner()
+  const state = start()
+  vi.setSystemTime(Date.now() + 5 * 60 * 1000)
+  await callback(state)
+  expect(fetch).not.toHaveBeenCalled()
+  expect(screen.getByRole('button', { name: /Scan Emails/ })).toBeEnabled()
+})
+
+test('a malformed response consumes matching state and allows retry', async () => {
+  scanner()
+  const state = start()
+  await callback(state, '')
+  await callback(state)
+  expect(fetch).not.toHaveBeenCalled()
+  expect(screen.getByRole('button', { name: /Scan Emails/ })).toBeEnabled()
+})
+
+test('only the initiating scanner consumes a broadcast result', async () => {
+  scanner()
+  const first = start()
+  scanner()
+  const second = start()
+  await callback(first)
+  expect(fetch).toHaveBeenCalledTimes(1)
+  expect(screen.getByRole('button', { name: /Waiting for sign-in/ })).toBeDisabled()
+  await callback(second)
+  expect(fetch).toHaveBeenCalledTimes(2)
+})

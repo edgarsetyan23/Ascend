@@ -39,6 +39,46 @@ function start() {
   fireEvent.click(screen.getByRole('button', { name: /Scan Emails/ }))
   return new URL(window.open.mock.calls.at(-1)[0]).searchParams.get('state')
 }
+
+test('repeated scans use current entries after imports and pending sign-in edits', async () => {
+  const application = { company: 'Acme', role: 'Engineer' }
+  const imported = { ...application, id: 'entry-1', status: 'Applied' }
+  const edited = { ...imported, status: 'Interview' }
+  const followUp = { ...application, matchedEntryId: imported.id, suggestedStatus: 'Interview' }
+  const requests = []
+  fetch.mockImplementation(async (url, options) => {
+    if (url === '/api/scan-emails') {
+      requests.push(JSON.parse(options.body))
+      return { ok: true, json: async () => ({ applications: [application], followUps: [followUp] }) }
+    }
+    return { ok: true, json: async () => url.includes('format=metadata')
+      ? { payload: { headers: [] } } : { messages: [{ id: 'email-1' }] } }
+  })
+  const addEntry = vi.fn()
+  const updateEntry = vi.fn()
+  const view = render(<EmailScanner entries={[]} addEntry={addEntry} updateEntry={updateEntry} />)
+  const first = start()
+  expect(channels.size).toBe(1)
+  await callback(first)
+  fireEvent.click(screen.getByRole('button', { name: 'Apply 1 Selected' }))
+  await act(async () => {})
+  expect(addEntry).toHaveBeenCalledTimes(1)
+  view.rerender(<EmailScanner entries={[imported]} addEntry={addEntry} updateEntry={updateEntry} />)
+  const second = start()
+  view.rerender(<EmailScanner entries={[edited]} addEntry={addEntry} updateEntry={updateEntry} />)
+  expect(channels.size).toBe(1)
+  await callback(first)
+  expect(requests).toHaveLength(1)
+  await callback(second)
+  await callback(second)
+  expect(requests).toHaveLength(2)
+  expect(fetch).toHaveBeenCalledTimes(6)
+  expect(channels.size).toBe(0)
+  expect(requests[1].existingEntries).toEqual([edited])
+  expect(screen.queryByText('Review scan results')).not.toBeInTheDocument()
+  expect(screen.getByText(/everything is up to date/)).toBeInTheDocument()
+  expect(updateEntry).not.toHaveBeenCalled()
+})
 async function callback(state, extra = 'access_token=test-token') {
   // A separate tab has no access to the initiating tab's sessionStorage.
   sessionStorage.clear()

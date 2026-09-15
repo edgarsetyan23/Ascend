@@ -22,6 +22,10 @@ export function EmailScanner({ addEntry, updateEntry, entries }) {
   const [scanning, setScanning] = useState(false)
   const [oauthPending, setOauthPending] = useState(false)
   const pendingLogin = useRef(null)
+  const currentEntries = useRef(entries)
+  useEffect(() => {
+    currentEntries.current = entries
+  }, [entries])
   const [error, setError] = useState(null)
   const [status, setStatus] = useState(null)
   const [modal, setModal] = useState({
@@ -143,7 +147,7 @@ export function EmailScanner({ addEntry, updateEntry, entries }) {
       }))
 
       // 4. Send to serverless function — pass existing entries so Claude can match follow-ups
-      const existingEntries = entries.map((e) => ({
+      const existingEntries = currentEntries.current.map((e) => ({
         id: e.id,
         company: e.company,
         role: e.role,
@@ -161,7 +165,7 @@ export function EmailScanner({ addEntry, updateEntry, entries }) {
 
       // 5. Deduplicate new applications against existing entries (case-insensitive)
       const existingKeys = new Set(
-        entries.map((e) => `${e.company?.toLowerCase()}|${e.role?.toLowerCase()}`)
+        currentEntries.current.map((e) => `${e.company?.toLowerCase()}|${e.role?.toLowerCase()}`)
       )
       const newApps = applications.filter(
         (a) => !existingKeys.has(`${a.company?.toLowerCase()}|${a.role?.toLowerCase()}`)
@@ -169,7 +173,7 @@ export function EmailScanner({ addEntry, updateEntry, entries }) {
 
       // 6. Filter follow-ups to only those where the suggested status differs from current
       const actionableFollowUps = followUps.filter((fu) => {
-        const existing = entries.find((e) => e.id === fu.matchedEntryId)
+        const existing = currentEntries.current.find((e) => e.id === fu.matchedEntryId)
         return existing && existing.status !== fu.suggestedStatus
       })
 

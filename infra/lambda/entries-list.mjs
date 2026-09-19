@@ -21,19 +21,24 @@ export async function handler(event) {
 
     validateTrackerId(trackerId)
 
-    const result = await ddb.send(
-      new QueryCommand({
-        TableName: TABLE_NAME,
-        KeyConditionExpression: 'PK = :pk AND begins_with(SK, :skPrefix)',
-        ExpressionAttributeValues: {
-          ':pk':       `USER#${userId}`,
-          ':skPrefix': `TRACKER#${trackerId}#ENTRY#`,
-        },
-        ScanIndexForward: false,
-      }),
-    )
-
-    const entries = (result.Items ?? []).map((item) => item.data)
+    const entries = []
+    let lastEvaluatedKey
+    do {
+      const result = await ddb.send(
+        new QueryCommand({
+          TableName: TABLE_NAME,
+          ExclusiveStartKey: lastEvaluatedKey,
+          KeyConditionExpression: 'PK = :pk AND begins_with(SK, :skPrefix)',
+          ExpressionAttributeValues: {
+            ':pk':       `USER#${userId}`,
+            ':skPrefix': `TRACKER#${trackerId}#ENTRY#`,
+          },
+          ScanIndexForward: false,
+        }),
+      )
+      for (const item of result.Items ?? []) entries.push(item.data)
+      lastEvaluatedKey = result.LastEvaluatedKey
+    } while (lastEvaluatedKey)
 
     log('info', 'entries-list', { trackerId, itemCount: entries.length, statusCode: 200, ...stop() })
     return ok(entries)

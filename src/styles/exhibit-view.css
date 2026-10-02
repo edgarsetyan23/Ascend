@@ -220,6 +220,8 @@
   padding-right: 360px;
 }
 
+.exh-mobile-nav-toggle { display: none; }
+
 .exh-sidebar {
   width: 250px;
   flex-shrink: 0;
@@ -1348,11 +1350,35 @@
     width: 100%;
     height: auto;
     position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 12px;
+    display: none;
+    flex-direction: column;
+    padding: 8px 20px 20px;
+    border-right: 0;
+    border-bottom: 1px solid var(--exh-border);
   }
-  .exh-nav-group { margin-bottom: 0; margin-right: 14px; }
+  .exh-sidebar--open { display: flex; }
+  .exh-mobile-nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    padding: 14px 20px;
+    border: 0;
+    border-bottom: 1px solid var(--exh-border);
+    background: var(--exh-sidebar-bg);
+    color: var(--exh-ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .exh-mobile-nav-toggle > span:last-child { font-size: 1.5rem; color: var(--exh-accent); }
+  .exh-mobile-nav-label { display: block; font-size: 0.75rem; color: var(--exh-accent); margin-bottom: 3px; }
+  .exh-mobile-nav-current { display: block; font-size: 0.95rem; font-weight: 600; }
+  .exh-mobile-nav-toggle:focus-visible { outline: 2px solid var(--exh-accent); outline-offset: -4px; }
+  .exh-nav-group { margin: 0; padding: 12px 0; }
+  .exh-nav-group + .exh-nav-group { border-top: 1px solid var(--exh-border); }
+  .exh-nav-item { min-height: 44px; }
   .exh-sidebar-source-link { display: none; }
   /* No guide or floor below this width (see isMobile in
      RecruiterView.jsx) — nothing fixed to the bottom of the screen

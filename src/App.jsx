@@ -22,6 +22,7 @@ import { useAuth } from './context/AuthContext.jsx'
 import { useToast } from './context/ToastContext.jsx'
 import { useEntries } from './hooks/useEntries.js'
 import { useTheme } from './hooks/useTheme.js'
+import { useNotifications } from './hooks/useNotifications.js'
 import { TRACKER_CONFIGS, TRACKER_LIST } from './trackers/index.js'
 import { computeStats } from './utils/stats.js'
 
@@ -31,6 +32,7 @@ import { computeStats } from './utils/stats.js'
  * run with a valid user in context.
  */
 function AppShell() {
+  const notifications = useNotifications()
   const { logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const { addToast } = useToast()
@@ -100,19 +102,25 @@ function AppShell() {
 
   function handleDelete(id) {
     if (window.confirm('Delete this entry?')) {
+      // Toast only once the delete is actually confirmed; a failure still
+      // surfaces via the `error` state effect above, so just swallow it here
+      // to avoid an unhandled rejection.
       deleteEntry(id)
-      addToast('Entry deleted', 'success')
+        .then(() => addToast('Entry deleted', 'success'))
+        .catch(() => {})
     }
   }
 
   function handleSave(formData) {
-    if (modal.mode === 'add') {
-      addEntry(formData)
-      addToast('Entry added', 'success')
-    } else {
-      updateEntry(modal.entry.id, formData)
-      addToast('Entry updated', 'success')
-    }
+    // Close the modal immediately (the optimistic row already renders), but
+    // only announce success after the server actually confirms the write —
+    // same reasoning as handleDelete above.
+    const saved = modal.mode === 'add'
+      ? addEntry(formData)
+      : updateEntry(modal.entry.id, formData)
+    saved
+      .then(() => addToast(modal.mode === 'add' ? 'Entry added' : 'Entry updated', 'success'))
+      .catch(() => {})
     setModal(null)
   }
 
@@ -214,7 +222,7 @@ function AppShell() {
       </div>
 
       {showNotifSettings && (
-        <NotificationSettings onClose={() => setShowNotifSettings(false)} />
+        <NotificationSettings notifications={notifications} onClose={() => setShowNotifSettings(false)} />
       )}
 
       {modal && (

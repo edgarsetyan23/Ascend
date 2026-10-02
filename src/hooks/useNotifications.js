@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 const STORAGE_KEY = 'notification_settings'
 
@@ -61,6 +61,8 @@ function buildNotificationBody(trackerIds) {
 }
 
 export function useNotifications() {
+  // Keep duplicate suppression across settings edits and interval restarts.
+  const lastFiredMinute = useRef(null)
   const [settings, setSettings] = useState(loadSettings)
   const [permission, setPermission] = useState(
     typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
@@ -77,8 +79,6 @@ export function useNotifications() {
   useEffect(() => {
     if (!settings.enabled || permission !== 'granted') return
 
-    let lastFiredMinute = null // prevent duplicate fires within the same minute
-
     const interval = setInterval(() => {
       const now = new Date()
       const hh = String(now.getHours()).padStart(2, '0')
@@ -86,8 +86,8 @@ export function useNotifications() {
       const currentTime = `${hh}:${mm}`
       const todayMinuteKey = `${now.toISOString().slice(0, 10)}_${currentTime}`
 
-      if (currentTime === settings.time && lastFiredMinute !== todayMinuteKey) {
-        lastFiredMinute = todayMinuteKey
+      if (currentTime === settings.time && lastFiredMinute.current !== todayMinuteKey) {
+        lastFiredMinute.current = todayMinuteKey
         const body = buildNotificationBody(settings.trackers)
         new Notification('Ascend — Daily Check-in', {
           body,

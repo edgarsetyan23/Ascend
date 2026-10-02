@@ -81,68 +81,171 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
 
       const track = (obj) => { disposables.push(obj); return obj }
       const skinMat  = track(new THREE.MeshStandardMaterial({ color: likeness.skin, roughness: 0.55, flatShading: false }))
-      const shirtMat = track(new THREE.MeshStandardMaterial({ color: 0x202226, roughness: 0.75, flatShading: true }))
+      const shirtMat = track(new THREE.MeshStandardMaterial({ color: 0x637b69, roughness: 0.88 }))
+      const pantsMat = track(new THREE.MeshStandardMaterial({ color: 0x282e38, roughness: 0.9 }))
+      const teeMat = track(new THREE.MeshStandardMaterial({ color: 0xeee5d2, roughness: 0.9 }))
+      const trimMat = track(new THREE.MeshStandardMaterial({ color: 0x40584b, roughness: 0.85 }))
+      const soleMat = track(new THREE.MeshStandardMaterial({ color: 0xc8bfaa, roughness: 0.8 }))
       const lensMat  = track(new THREE.MeshStandardMaterial({ color: new THREE.Color(accentColor), roughness: 0.25, flatShading: true, transparent: true, opacity: 0.45 }))
       const metalMat = track(new THREE.MeshStandardMaterial({ color: 0x8a8d78, roughness: 0.4, metalness: 0.3, flatShading: true }))
 
       const guide = new THREE.Group()
-      const legGeo = track(new THREE.CylinderGeometry(0.12, 0.12, 0.6, 6))
+      const legGeo = track(new THREE.CylinderGeometry(0.115, 0.085, 0.52, 12))
       const legPivotL = new THREE.Group()
       legPivotL.position.set(-0.16, -0.6, 0)
-      const legMeshL = new THREE.Mesh(legGeo, shirtMat)
-      legMeshL.position.y = -0.3
+      const legMeshL = new THREE.Mesh(legGeo, pantsMat)
+      legMeshL.position.y = -0.26
       legPivotL.add(legMeshL)
       guide.add(legPivotL)
 
       const legPivotR = new THREE.Group()
       legPivotR.position.set(0.16, -0.6, 0)
-      const legMeshR = new THREE.Mesh(legGeo, shirtMat)
-      legMeshR.position.y = -0.3
+      const legMeshR = new THREE.Mesh(legGeo, pantsMat)
+      legMeshR.position.y = -0.26
       legPivotR.add(legMeshR)
       guide.add(legPivotR)
-      const torsoGeo = track(new THREE.CylinderGeometry(0.32, 0.27, 0.5, 12))
+      const clothingSphere = track(new THREE.SphereGeometry(1, 20, 12))
+      function clothingBox(parent, material, x, y, z, w, h, d) {
+        const mesh = new THREE.Mesh(track(new THREE.BoxGeometry(w, h, d)), material)
+        mesh.position.set(x, y, z)
+        parent.add(mesh)
+        return mesh
+      }
+      for (const leg of [legPivotL, legPivotR]) {
+        const shoe = new THREE.Mesh(clothingSphere, teeMat)
+        shoe.position.set(0, -0.535, 0.048)
+        shoe.scale.set(0.105, 0.062, 0.165)
+        leg.add(shoe)
+        const sole = new THREE.Mesh(clothingSphere, soleMat)
+        sole.position.set(0, -0.577, 0.05)
+        sole.scale.set(0.108, 0.022, 0.169)
+        leg.add(sole)
+        clothingBox(leg, trimMat, 0, -0.53, 0.181, 0.15, 0.028, 0.012)
+        for (let lace = 0; lace < 3; lace++) {
+          clothingBox(leg, soleMat, 0, -0.476 - lace * 0.005, 0.055 + lace * 0.027, 0.08, 0.008, 0.009)
+        }
+      }
+      const tee = new THREE.Mesh(track(new THREE.CylinderGeometry(0.304, 0.258, 0.51, 32)), teeMat)
+      tee.position.y = -0.285
+      guide.add(tee)
+      // Leave the front open so the cream tee reads as a separate layer.
+      const torsoGeo = track(new THREE.CylinderGeometry(0.32, 0.27, 0.5, 32, 1, false, 0.32, Math.PI * 2 - 0.64))
       const torso = new THREE.Mesh(torsoGeo, shirtMat)
       torso.position.y = -0.28
       guide.add(torso)
+      for (const side of [-1, 1]) {
+        const collar = clothingBox(guide, trimMat, side * 0.105, -0.092, 0.287, 0.085, 0.14, 0.025)
+        collar.rotation.z = side * -0.35
+        const pocket = clothingBox(guide, shirtMat, side * 0.195, -0.25, 0.237, 0.10, 0.11, 0.026)
+        pocket.rotation.y = side * 0.65
+        const flap = clothingBox(guide, trimMat, side * 0.197, -0.205, 0.246, 0.105, 0.025, 0.018)
+        flap.rotation.y = side * 0.65
+        for (let button = 0; button < 3; button++) {
+          const stud = new THREE.Mesh(clothingSphere, soleMat)
+          stud.position.set(side * (0.103 - button * 0.009), -0.23 - button * 0.105, 0.299 - button * 0.01)
+          stud.scale.setScalar(0.009)
+          guide.add(stud)
+        }
+      }
+      const waistband = new THREE.Mesh(track(new THREE.CylinderGeometry(0.256, 0.251, 0.095, 24)), pantsMat)
+      waistband.position.y = -0.555
+      guide.add(waistband)
       const neckGeo = track(new THREE.CylinderGeometry(0.13, 0.16, 0.14, 6))
       const neck = new THREE.Mesh(neckGeo, skinMat)
       neck.position.y = 0.02
       guide.add(neck)
 
       guide.add(createEdgarHead(track, likeness))
-      const armGeo = track(new THREE.CylinderGeometry(0.06, 0.075, 0.42, 6))
-      const armR = new THREE.Mesh(armGeo, skinMat)
-      armR.position.set(0.32, -0.02, 0)
-      armR.rotation.z = -0.9
-      guide.add(armR)
-      const handGeo = track(new THREE.SphereGeometry(0.075, 7, 5))
-      const hand = new THREE.Mesh(handGeo, skinMat)
-      hand.position.set(0, 0.23, 0)
-      armR.add(hand)
-      const handleGeo = track(new THREE.CylinderGeometry(0.02, 0.02, 0.46, 5))
+      // A relaxed upper arm and raised forearm make the elbow readable.
+      // Build between joint positions so the sleeve, elbow and wrist meet.
+      const shoulder = new THREE.Vector3(0.29, -0.105, 0)
+      const elbow = new THREE.Vector3(0.47, -0.35, 0.055)
+      const wrist = new THREE.Vector3(0.57, -0.045, 0.15)
+      const jointGeo = track(new THREE.SphereGeometry(1, 16, 12))
+      function armSegment(start, end, startRadius, endRadius, material, parent = guide) {
+        const direction = new THREE.Vector3().subVectors(end, start)
+        const mesh = new THREE.Mesh(track(new THREE.CylinderGeometry(endRadius, startRadius, direction.length(), 16)), material)
+        mesh.position.copy(start).add(end).multiplyScalar(0.5)
+        mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize())
+        parent.add(mesh)
+      }
+      armSegment(shoulder, elbow, 0.078, 0.061, skinMat)
+      armSegment(shoulder, shoulder.clone().lerp(elbow, 0.48), 0.105, 0.086, shirtMat)
+      const elbowJoint = new THREE.Mesh(jointGeo, skinMat)
+      elbowJoint.position.copy(elbow)
+      elbowJoint.scale.set(0.064, 0.065, 0.064)
+      guide.add(elbowJoint)
+      armSegment(elbow, wrist, 0.061, 0.043, skinMat)
+
+      // Fingers and glass share a wrist pivot; the lens never swivels
+      // independently of its handle or slips out of the grip.
+      const holdingHand = new THREE.Group()
+      holdingHand.position.copy(wrist)
+      holdingHand.rotation.z = -0.12
+      guide.add(holdingHand)
+      const palm = new THREE.Mesh(jointGeo, skinMat)
+      palm.position.set(-0.008, 0.025, -0.008)
+      palm.scale.set(0.052, 0.065, 0.035)
+      holdingHand.add(palm)
+      const handleGeo = track(new THREE.CylinderGeometry(0.019, 0.024, 0.23, 12))
       const handle = new THREE.Mesh(handleGeo, metalMat)
-      handle.position.set(0, 0.34, 0)
-      armR.add(handle)
-      const gripGeo = track(new THREE.TorusGeometry(0.05, 0.016, 6, 10))
-      const grip = new THREE.Mesh(gripGeo, skinMat)
-      grip.position.set(0, 0.23, 0)
-      grip.rotation.x = Math.PI / 2
-      armR.add(grip)
+      handle.position.set(0.015, 0.065, 0.028)
+      holdingHand.add(handle)
+      for (let finger = 0; finger < 3; finger++) {
+        const knuckle = new THREE.Mesh(jointGeo, skinMat)
+        knuckle.position.set(0.02, -0.005 + finger * 0.028, 0.048)
+        knuckle.scale.set(0.036, 0.017, 0.024)
+        holdingHand.add(knuckle)
+      }
+      const thumb = new THREE.Mesh(jointGeo, skinMat)
+      thumb.position.set(-0.018, 0.052, 0.05)
+      thumb.scale.set(0.023, 0.041, 0.025)
+      thumb.rotation.z = -0.5
+      holdingHand.add(thumb)
       const magHead = new THREE.Group()
-      const ringGeo = track(new THREE.TorusGeometry(0.09, 0.018, 6, 12))
+      const ringGeo = track(new THREE.TorusGeometry(0.12, 0.017, 10, 32))
       const ring = new THREE.Mesh(ringGeo, metalMat)
       magHead.add(ring)
-      const lensGeo = track(new THREE.CircleGeometry(0.078, 10))
+      const lensGeo = track(new THREE.CircleGeometry(0.105, 32))
       const lens = new THREE.Mesh(lensGeo, lensMat)
       lens.position.z = -0.006
       magHead.add(lens)
-      magHead.position.set(0, 0.6, 0)
-      magHead.rotation.z = 0.9
-      armR.add(magHead)
-      const armL = new THREE.Mesh(armGeo, skinMat)
-      armL.position.set(-0.32, -0.28, 0)
-      armL.rotation.z = 0.15
+      magHead.position.set(0.015, 0.292, 0.028)
+      holdingHand.add(magHead)
+      // The free arm hangs from a shoulder pivot, with a slight elbow
+      // bend and a relaxed hand. Its full silhouette swings together.
+      const armL = new THREE.Group()
+      armL.position.set(-0.29, -0.105, 0)
       guide.add(armL)
+      const freeShoulder = new THREE.Vector3(0, 0, 0)
+      const freeElbow = new THREE.Vector3(-0.095, -0.245, 0.025)
+      const freeWrist = new THREE.Vector3(-0.105, -0.465, 0.075)
+      armSegment(freeShoulder, freeElbow, 0.078, 0.061, skinMat, armL)
+      armSegment(freeShoulder, freeShoulder.clone().lerp(freeElbow, 0.48), 0.105, 0.086, shirtMat, armL)
+      const freeElbowJoint = new THREE.Mesh(jointGeo, skinMat)
+      freeElbowJoint.position.copy(freeElbow)
+      freeElbowJoint.scale.set(0.062, 0.064, 0.062)
+      armL.add(freeElbowJoint)
+      armSegment(freeElbow, freeWrist, 0.061, 0.037, skinMat, armL)
+      const freeHand = new THREE.Group()
+      freeHand.position.copy(freeWrist)
+      freeHand.rotation.x = -0.1
+      armL.add(freeHand)
+      const freePalm = new THREE.Mesh(jointGeo, skinMat)
+      freePalm.position.set(0, -0.038, 0)
+      freePalm.scale.set(0.045, 0.058, 0.028)
+      freeHand.add(freePalm)
+      for (let finger = 0; finger < 4; finger++) {
+        const fingertip = new THREE.Mesh(jointGeo, skinMat)
+        fingertip.position.set(-0.029 + finger * 0.019, -0.075 - Math.sin(finger * Math.PI / 3) * 0.01, 0.008)
+        fingertip.scale.set(0.012, 0.032, 0.015)
+        freeHand.add(fingertip)
+      }
+      const freeThumb = new THREE.Mesh(jointGeo, skinMat)
+      freeThumb.position.set(0.042, -0.032, 0.014)
+      freeThumb.scale.set(0.018, 0.033, 0.019)
+      freeThumb.rotation.z = 0.35
+      freeHand.add(freeThumb)
 
       guide.rotation.y = facingRef.current
       scene.add(guide)
@@ -202,7 +305,7 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
 
         guide.position.y = bob
         guide.rotation.y = facing
-        magHead.rotation.y = Math.sin(t * magSpeed) * 0.18
+        holdingHand.rotation.y = Math.sin(t * magSpeed) * 0.1
 
         renderer.render(scene, camera)
         frameId = requestAnimationFrame(animate)

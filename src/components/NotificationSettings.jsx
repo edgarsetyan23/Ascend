@@ -1,14 +1,13 @@
 import { useState } from 'react'
-import { useNotifications } from '../hooks/useNotifications.js'
 
 const TRACKER_OPTIONS = [
   { id: 'leetcode', label: '🧩 LeetCode' },
   { id: 'jobs',     label: '💼 Job Applications' },
 ]
 
-export function NotificationSettings({ onClose }) {
+export function NotificationSettings({ onClose, notifications }) {
   const { settings, permission, requestAndEnable, updateSettings, disable, sendTest } =
-    useNotifications()
+    notifications
   const [testStatus, setTestStatus] = useState(null) // null | 'sent' | 'blocked'
 
   function handleToggle() {

@@ -8,7 +8,7 @@ import { validateTrackerId, validateBody } from './shared/validate.mjs';
 /**
  * PUT /trackers/{trackerId}/entries/{entryId}
  *
- * Replaces the entry's `data` attribute with the new payload.
+ * Updates supplied fields in `data`, preserving omitted fields atomically.
  * Fails with 404 if the entry doesn't exist (ConditionExpression).
  */
 export async function handler(event) {
@@ -24,6 +24,13 @@ export async function handler(event) {
     validateBody(patch)
 
     const updatedData = { ...patch, id: entryId, updatedAt: Date.now() }
+    const names = { '#d': 'data' }
+    const values = {}
+    const assignments = Object.entries(updatedData).map(([field, value], index) => {
+      names[`#f${index}`] = field
+      values[`:v${index}`] = value
+      return `#d.#f${index} = :v${index}`
+    })
 
     const result = await ddb.send(
       new UpdateCommand({
@@ -32,9 +39,9 @@ export async function handler(event) {
           PK: `USER#${userId}`,
           SK: `TRACKER#${trackerId}#ENTRY#${entryId}`,
         },
-        UpdateExpression:          'SET #d = :data',
-        ExpressionAttributeNames:  { '#d': 'data' },
-        ExpressionAttributeValues: { ':data': updatedData },
+        UpdateExpression:          `SET ${assignments.join(', ')}`,
+        ExpressionAttributeNames:  names,
+        ExpressionAttributeValues: values,
         ConditionExpression:       'attribute_exists(PK)',
         ReturnValues:              'ALL_NEW',
       }),
@@ -52,7 +59,7 @@ export async function handler(event) {
       return err(400, e.message)
     }
     if (e.name === 'ConditionalCheckFailedException') {
-      log('warn', 'entries-update not found', { trackerId, entryId, statusCode: 404, ...stop() })
+      log('warn', 'entries-update not found', { ...event.pathParameters, statusCode: 404, ...stop() })
       return err(404, 'Entry not found')
     }
     log('error', 'entries-update error', { error: e.message, statusCode: 500, ...stop() })

@@ -32,22 +32,27 @@ export async function handler(event) {
       return err(500, 'Internal server error');
     }
 
-    const result = await ddb.send(
-      new QueryCommand({
-        TableName: TABLE_NAME,
-        KeyConditionExpression: 'PK = :pk AND begins_with(SK, :skPrefix)',
-        ExpressionAttributeValues: {
-          ':pk': `USER#${userId}`,
-          ':skPrefix': `TRACKER#${trackerId}#ENTRY#`,
-        },
-        ScanIndexForward: false, // newest first
-      }),
-    );
-
-    // Strip DynamoDB housekeeping keys — return only the app payload
-    const entries = (result.Items ?? [])
-      .map((item) => item.data)
-      .filter(Boolean);
+    const entries = [];
+    let lastEvaluatedKey;
+    do {
+      const result = await ddb.send(
+        new QueryCommand({
+          TableName: TABLE_NAME,
+          ExclusiveStartKey: lastEvaluatedKey,
+          KeyConditionExpression: 'PK = :pk AND begins_with(SK, :skPrefix)',
+          ExpressionAttributeValues: {
+            ':pk': `USER#${userId}`,
+            ':skPrefix': `TRACKER#${trackerId}#ENTRY#`,
+          },
+          ScanIndexForward: false, // newest first
+        }),
+      );
+      // Strip DynamoDB housekeeping keys — return only the app payload
+      for (const item of result.Items ?? []) {
+        if (item.data) entries.push(item.data);
+      }
+      lastEvaluatedKey = result.LastEvaluatedKey;
+    } while (lastEvaluatedKey);
 
     return ok(entries);
   } catch (e) {

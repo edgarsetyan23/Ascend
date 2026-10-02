@@ -3445,9 +3445,7 @@ a {
 
 .lc-langs { display: flex; flex-direction: column; gap: 5px; }
 .lc-langs-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-subtle); margin-bottom: 2px; }
-.lc-lang-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
-.lc-lang-name { font-size: 0.92rem; color: var(--text-muted); }
-.lc-lang-count { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+.lc-lang-list { font-size: 0.92rem; color: var(--text); }
 
 .lc-ext-link {
   position: absolute; top: var(--space-3); right: var(--space-3);

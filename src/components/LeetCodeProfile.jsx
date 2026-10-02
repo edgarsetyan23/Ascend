@@ -216,19 +216,15 @@ export function LeetCodeProfile({ fixedUsername = '', fixedDisplayName = '' }) {
         </div>
       </div>
 
-      {!isFixed && <div className="lc-sep" />}
-
-      {/* ── Right: languages (hidden on the public portfolio) ── */}
-      {!isFixed && languages.length > 0 && (
-        <div className="lc-langs">
-          <span className="lc-langs-label">Languages</span>
-          {languages.map((l) => (
-            <div key={l.name} className="lc-lang-row">
-              <span className="lc-lang-name">{l.name}</span>
-              <span className="lc-lang-count">{l.count}</span>
-            </div>
-          ))}
-        </div>
+      {/* ── Right: languages (names only, no per-language counts) ── */}
+      {languages.length > 0 && (
+        <>
+          <div className="lc-sep" />
+          <div className="lc-langs">
+            <span className="lc-langs-label">Languages</span>
+            <span className="lc-lang-list">{languages.map((l) => l.name).join(' · ')}</span>
+          </div>
+        </>
       )}
 
       <a

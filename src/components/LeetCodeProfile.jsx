@@ -216,10 +216,10 @@ export function LeetCodeProfile({ fixedUsername = '', fixedDisplayName = '' }) {
         </div>
       </div>
 
-      <div className="lc-sep" />
+      {!isFixed && <div className="lc-sep" />}
 
-      {/* ── Right: languages ── */}
-      {languages.length > 0 && (
+      {/* ── Right: languages (hidden on the public portfolio) ── */}
+      {!isFixed && languages.length > 0 && (
         <div className="lc-langs">
           <span className="lc-langs-label">Languages</span>
           {languages.map((l) => (

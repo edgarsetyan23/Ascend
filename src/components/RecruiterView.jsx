@@ -63,27 +63,22 @@ const EXPERIENCE = [
     ],
     // A prose lede synthesized from the highlights below — same facts,
     // woven into a paragraph instead of only existing as bullet
-    // fragments. Precise about status: the config API and the
-    // load-test framework were both real implementation work, but
-    // neither shipped — the API's logic was approved on its own
-    // branch, and the load-test framework never left prototype form.
+    // fragments. Status wording matches the résumé: the config API's
+    // logic was "approved ahead of integration", and the load-test
+    // work stayed a prototype built toward a design target.
     // No new claims added beyond what the highlights below state.
-    intro: "A year on RDS's engineering team in Toronto, split between building and keeping things running. On the building side: core business logic for an instance-configuration API — approved, but never finalized or merged — and a local load-testing prototype built toward a 10,000+ TPS design target. On the running side: the on-call rotation — 25+ incidents deep — plus a sweep across 60+ AWS accounts to clean up infrastructure that had gone stale.",
+    intro: "Just over a year on RDS's engineering team in Toronto, split between building and keeping things running. On the building side: core Java logic for an instance-configuration API, approved ahead of integration, and a local load-testing prototype built toward a 10,000+ TPS design target. On the running side: the on-call rotation — 25+ incidents deep — plus a sweep across 60+ AWS accounts to clean up infrastructure that had gone stale.",
     data: {
       company: 'Amazon Web Services (AWS)',
       role: 'Software Development Engineer I, RDS Team',
       location: 'Toronto, ON',
-      period: 'Jan 2025 – Jan 2026',
+      // Through April 2026: still under contract (and paid) until then.
+      period: 'Jan 2025 – Apr 2026',
       highlights: [
-        // The approved-but-unmerged status is stated once, plainly, in
-        // the intro paragraph above — repeating it in full on every
-        // bullet that touches this work reads as over-qualified. These
-        // two just describe what was built, without implying it shipped.
-        'Implemented core business logic for a synchronous RDS instance-configuration API on a separate branch, including DynamoDB persistence and CloudWatch instrumentation.',
+        'Implemented core Java logic for a synchronous RDS instance-configuration API with DynamoDB persistence and CloudWatch instrumentation; implementation approved ahead of integration.',
         'Developed a local load-testing prototype for a distributed telemetry service with a 10,000+ TPS design target, adding ECS task-health and CPU monitoring to investigate capacity and surface bottlenecks.',
         'Supported on-call for a metrics ingestion service; triaged and resolved 25+ production incidents, executed mitigations via runbooks, and delivered follow-up fixes to prevent recurrence.',
         'Remediated stale CloudFormation deployments across 60+ AWS accounts by auditing stacks, removing failed/obsolete resources, and safely re-deploying to restore consistent infrastructure.',
-        'Refactored CloudWatch dashboards to stay within service limits and automated KPI extraction for Monthly Business Reviews, reducing manual reporting overhead.',
       ],
     },
   },
@@ -133,6 +128,26 @@ const EXPERIENCE = [
 ]
 
 const PROJECTS = [
+  {
+    id: 'jobrelay',
+    path: '/projects/jobrelay',
+    navTitle: 'JobRelay',
+    navSub: 'Async Job Processing',
+    note: 'A project about what happens to a job when something breaks.',
+    repoUrl: 'https://github.com/edgarsetyan23/jobrelay',
+    data: {
+      name: 'JobRelay — Asynchronous Job Processing',
+      stack: 'TypeScript, Express, PostgreSQL, Redis, BullMQ',
+      // Same three bullets as the résumé. The benchmark keeps its full
+      // qualifier (concurrency 4, local 40-job synthetic run) so it
+      // never reads as a production throughput number.
+      highlights: [
+        'Built a TypeScript/Express image-processing service with PostgreSQL, Redis, and BullMQ; implemented a transactional outbox to durably accept jobs during Redis outages and dispatch them after recovery.',
+        'Implemented idempotent submissions, bounded retries with exponential backoff and jitter, and worker-crash recovery; built a live dashboard for job status, attempt history, and fault injection.',
+        'Added integration tests for duplicate delivery, Redis outages, and real worker termination; benchmarked 76.3 completed jobs/sec at concurrency 4 in a local 40-job synthetic-image run.',
+      ],
+    },
+  },
   {
     id: 'ascend',
     path: '/projects/ascend',
@@ -203,11 +218,12 @@ const EDUCATION = {
   },
 }
 
+// Same groups and items as the résumé's Technical Skills section.
 const SKILLS = {
-  Languages:      ['Java', 'Kotlin', 'SQL', 'Python', 'JavaScript'],
-  Backend:        ['REST APIs', 'Distributed Systems', 'Spring Boot'],
-  Cloud:          ['AWS RDS', 'DynamoDB', 'CloudFormation', 'CloudWatch', 'Lambda', 'ECS'],
-  Infrastructure: ['Docker', 'Kubernetes', 'Linux/Unix', 'CI/CD'],
+  'Languages':         ['Java', 'Kotlin', 'Python', 'SQL', 'JavaScript', 'TypeScript'],
+  'Frameworks & Data': ['Spring Boot', 'React', 'Node.js', 'Express', 'PostgreSQL', 'Redis', 'BullMQ', 'REST', 'GraphQL'],
+  'AWS':               ['RDS', 'DynamoDB', 'Lambda', 'API Gateway', 'Cognito', 'ECS', 'CloudWatch', 'CloudFormation', 'CDK'],
+  'Tools':             ['Docker', 'Kubernetes', 'Git', 'CI/CD', 'Linux', 'Maven', 'JUnit', 'Vitest'],
 }
 
 // ── Sidebar nav structure ────────────────────────────────────────────────────
@@ -264,7 +280,7 @@ function sectionIdFromPathname(pathname) {
 
 // What the guide "says" on the overview cards — one summary per
 // section, since a card stands for the whole group (all 3 Field Work
-// entries, both projects), not any one exhibit inside it.
+// entries, all 3 projects), not any one exhibit inside it.
 const GUIDE_LINES = {
   'Introduction': "You're just in time — the doors are still open. I'm Edgar; take a look at the AWS work, this app itself, or just poke around.",
   'Field Work': 'Two internships and the job that came after graduating.',
@@ -284,6 +300,7 @@ const EXHIBIT_LINES = {
   aws: 'Some of this work was about building; some was about keeping systems running. The on-call work connected the code to what happened in production.',
   'tangerine-2021': 'Second summer, same bank — this time I was in the deploy pipeline.',
   'tangerine-2020': 'The first one — cut build errors in half with Maven before anything else.',
+  jobrelay: 'Redis can go down and jobs still get accepted — the outbox holds them until it’s back.',
   ascend: 'This portfolio reads live data through its own read-only API. The case study explains how that stays separate from my private trackers.',
   oncall: 'Three days, one team — we turned a ticket ID into a guided troubleshooting checklist so on-call didn’t rely on memory at 3 a.m.',
   york: 'Everything above traces back here — the CS fundamentals that made the AWS and Ascend work possible.',
@@ -616,6 +633,16 @@ function AscendIcon() {
     </svg>
   )
 }
+function JobRelayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="4" width="6" height="6" rx="1" />
+      <rect x="15" y="14" width="6" height="6" rx="1" />
+      <path d="M9 7h4a2 2 0 012 2v5" />
+      <path d="M13 12l2 2 2-2" />
+    </svg>
+  )
+}
 function OnCallIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -624,6 +651,7 @@ function OnCallIcon() {
     </svg>
   )
 }
+const PROJECT_ICONS = { jobrelay: JobRelayIcon, ascend: AscendIcon, oncall: OnCallIcon }
 
 // A dozen small particles bursting outward from where the guide
 // lands center-stage — mounted fresh once per celebrateTick (the
@@ -1167,7 +1195,7 @@ export function RecruiterView() {
                 </span>
                 <span className="exh-featured-card-arrow">Read the story →</span>
               </Link>
-              <Link to={`/portfolio${PROJECTS[0].path}`} className="exh-featured-card">
+              <Link to={`/portfolio${PROJECTS.find((p) => p.id === 'ascend').path}`} className="exh-featured-card">
                 <span className="exh-featured-card-title">Ascend</span>
                 <span className="exh-featured-card-why">
                   Explore the authentication, data model, and API behind this site.
@@ -1224,10 +1252,11 @@ export function RecruiterView() {
 
     const proj = PROJECTS.find((p) => p.id === activeId)
     if (proj) {
+      const ProjectIcon = PROJECT_ICONS[proj.id]
       return (
         <ExhibitFrame note={proj.note}
           title={proj.data.name} byline={proj.data.stack}
-          emblem={proj.id === 'ascend' ? <AscendIcon /> : <OnCallIcon />} emblemVariant="icon">
+          emblem={ProjectIcon && <ProjectIcon />} emblemVariant="icon">
           <HighlightList items={proj.data.highlights} />
           {proj.id === 'ascend' ? (
             // Grouped as one action row near the top of the exhibit —

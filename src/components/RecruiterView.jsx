@@ -213,7 +213,7 @@ const SKILLS = {
 // ── Sidebar nav structure ────────────────────────────────────────────────────
 
 const NAV_GROUPS = [
-  { label: 'Introduction', items: [{ id: 'root', path: '/', navTitle: 'Edgar Setyan', navSub: null }] },
+  { label: 'Introduction', items: [{ id: 'root', path: '/', navTitle: 'Overview', navSub: null }] },
   {
     label: 'Field Work',
     items: EXPERIENCE.map((e) => ({ id: e.id, path: e.path, navTitle: e.navTitle, navSub: e.navSub })),
@@ -1383,7 +1383,7 @@ export function RecruiterView() {
           <span className="exh-brand-mark">✦</span>
           <span className="exh-brand-name">Ascend</span>
         </Link>
-        <span className="exh-topbar-crumb">{activeNavItem ? activeNavItem.navTitle : 'Edgar Setyan'}</span>
+        <span className="exh-topbar-crumb">{activeNavItem ? activeNavItem.navTitle : 'Overview'}</span>
         <div className="exh-topbar-actions">
           {autoTourActive && !isMobile && (
             <>
@@ -1425,7 +1425,7 @@ export function RecruiterView() {
           <span className="exh-museum-banner-eyebrow">Welcome to the</span>
           <div className="exh-museum-banner-row">
             <BannerFlourish />
-            <span className="exh-museum-banner-name">The Edgar Setyan Gallery</span>
+            <span className="exh-museum-banner-name">Gallery</span>
             <BannerFlourish flip />
           </div>
         </div>
@@ -1439,7 +1439,7 @@ export function RecruiterView() {
           aria-controls="exhibit-navigation"
           onClick={() => setMobileNavOpen((open) => !open)}
         >
-          <span><span className="exh-mobile-nav-label">Explore gallery</span><span className="exh-mobile-nav-current">{activeNavItem?.navTitle || 'Edgar Setyan'}</span></span>
+          <span><span className="exh-mobile-nav-label">Explore gallery</span><span className="exh-mobile-nav-current">{activeNavItem?.navTitle || 'Overview'}</span></span>
           <span aria-hidden="true">{mobileNavOpen ? '−' : '+'}</span>
         </button>
         <aside id="exhibit-navigation" aria-label="Gallery sections" className={`exh-sidebar${mobileNavOpen ? ' exh-sidebar--open' : ''}`}>

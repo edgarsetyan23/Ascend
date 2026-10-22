@@ -60,7 +60,9 @@ const EXPERIENCE = [
     stats: [
       { value: '25+', label: 'on-call incidents resolved' },
       { value: '60+', label: 'AWS accounts · stale deployments remediated' },
-      { value: '10,000+ TPS target', label: 'Local load-testing prototype' },
+      // Non-breaking space: at the lead size this wraps, and "TPS target"
+      // should break as a unit rather than leave "target" on its own.
+      { value: '10,000+ TPS target', label: 'Local load-testing prototype' },
     ],
     // A prose lede synthesized from the highlights below — same facts,
     // woven into a paragraph instead of only existing as bullet

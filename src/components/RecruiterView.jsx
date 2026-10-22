@@ -25,8 +25,9 @@ const TourGuide = lazy(() => import('./TourGuide.jsx').then((m) => ({ default: m
 const ACCENT = { light: '#4f7a63', dark: '#8fc2a6' }
 
 // ── Resume data ─────────────────────────────────────────────────────────────
-// "The Exhibit" — every entry is a numbered plate in a small collection,
-// the way a gallery guide numbers its pieces. No invented content: every
+// "The Exhibit" — every entry is a plate in a small collection. (No
+// plate numbers on screen — they were decoration, not navigation.)
+// No invented content: every
 // fact below is the same one on the PDF resume, just laid out as prose
 // instead of a resume-shaped list of bullets.
 
@@ -34,7 +35,6 @@ const EXPERIENCE = [
   {
     id: 'aws',
     path: '/experience/aws',
-    plate: '01',
     navTitle: 'Amazon Web Services',
     navSub: '2025 – 2026',
     note: 'My first job after graduating.',
@@ -90,7 +90,6 @@ const EXPERIENCE = [
   {
     id: 'tangerine-2021',
     path: '/experience/tangerine/2021',
-    plate: '02',
     navTitle: 'Tangerine Bank',
     navSub: 'Summer 2021',
     note: 'My second internship — same company, a year later.',
@@ -115,7 +114,6 @@ const EXPERIENCE = [
   {
     id: 'tangerine-2020',
     path: '/experience/tangerine/2020',
-    plate: '03',
     navTitle: 'Tangerine Bank',
     navSub: 'Summer 2020',
     note: 'My first internship — where it started.',
@@ -138,7 +136,6 @@ const PROJECTS = [
   {
     id: 'ascend',
     path: '/projects/ascend',
-    plate: '01',
     navTitle: 'Ascend',
     navSub: 'Accountability Tracker',
     note: "The project this whole page you're looking at is built on.",
@@ -173,7 +170,6 @@ export function useEntries(trackerId) {
   {
     id: 'oncall',
     path: '/projects/oncall-assistant',
-    plate: '02',
     navTitle: 'On-Call Assistant',
     navSub: 'Hackathon, 1st place',
     note: 'A hackathon win I built with a team in three days.',
@@ -191,7 +187,6 @@ export function useEntries(trackerId) {
 const EDUCATION = {
   id: 'york',
   path: '/education/york',
-  plate: '01',
   navTitle: 'York University',
   navSub: 'Class of 2024',
   note: 'Where it started, before any of the above.',
@@ -221,13 +216,13 @@ const NAV_GROUPS = [
   { label: 'Introduction', items: [{ id: 'root', path: '/', navTitle: 'Edgar Setyan', navSub: null }] },
   {
     label: 'Field Work',
-    items: EXPERIENCE.map((e) => ({ id: e.id, path: e.path, plate: e.plate, navTitle: e.navTitle, navSub: e.navSub })),
+    items: EXPERIENCE.map((e) => ({ id: e.id, path: e.path, navTitle: e.navTitle, navSub: e.navSub })),
   },
   {
     label: 'Studio Projects',
-    items: PROJECTS.map((p) => ({ id: p.id, path: p.path, plate: p.plate, navTitle: p.navTitle, navSub: p.navSub })),
+    items: PROJECTS.map((p) => ({ id: p.id, path: p.path, navTitle: p.navTitle, navSub: p.navSub })),
   },
-  { label: 'Education', items: [{ id: 'york', path: EDUCATION.path, plate: EDUCATION.plate, navTitle: EDUCATION.navTitle, navSub: EDUCATION.navSub }] },
+  { label: 'Education', items: [{ id: 'york', path: EDUCATION.path, navTitle: EDUCATION.navTitle, navSub: EDUCATION.navSub }] },
   { label: 'Toolkit', items: [{ id: 'skills', path: '/skills', navTitle: 'Technical Skills', navSub: null }] },
   {
     label: 'Live Demonstrations',
@@ -302,10 +297,6 @@ const ID_TO_GROUP = Object.fromEntries(
 )
 
 // ── Small building blocks ────────────────────────────────────────────────────
-
-function PlateMark({ n }) {
-  return <span className="exh-plate">{n}</span>
-}
 
 // Big-number callouts for an entry's headline stats — same facts
 // already in its highlight sentences, just pulled out and given a
@@ -1142,13 +1133,13 @@ export function RecruiterView() {
               </button>
             )}
 
-            <StatRow stats={EXPERIENCE[0].stats} />
-
             {/* Only "Download résumé" is a real button — it's the one
                 action here that actually does something (starts a
                 download). GitHub/LinkedIn/email are just where to find
                 me, so they read as plain links (exh-root-link--plain),
-                not three more boxes next to the stat row above. */}
+                not three more boxes in a row. The AWS stats used to sit
+                above this too; they now open the AWS plate instead of
+                being repeated here. */}
             <div className={`exh-root-links ${tourFinale ? 'exh-root-links--spotlight' : ''}`}>
               <a href="https://github.com/edgarsetyan23" target="_blank" rel="noopener noreferrer" className="exh-root-link exh-root-link--plain">
                 <span className="exh-root-link-icon"><GitHubIcon /></span> GitHub
@@ -1170,7 +1161,6 @@ export function RecruiterView() {
                 cards) — this is ordinary navigation, not the tour. */}
             <div className="exh-featured-row">
               <Link to={`/portfolio${EXPERIENCE[0].path}`} className="exh-featured-card">
-                <span className="exh-featured-card-eyebrow">Most Recent</span>
                 <span className="exh-featured-card-title">Amazon Web Services</span>
                 <span className="exh-featured-card-why">
                   The year right after graduating — a load-testing prototype, real on-call pages, and a long AWS account cleanup.
@@ -1178,7 +1168,6 @@ export function RecruiterView() {
                 <span className="exh-featured-card-arrow">Read the story →</span>
               </Link>
               <Link to={`/portfolio${PROJECTS[0].path}`} className="exh-featured-card">
-                <span className="exh-featured-card-eyebrow">Behind This Page</span>
                 <span className="exh-featured-card-title">Ascend</span>
                 <span className="exh-featured-card-why">
                   Explore the authentication, data model, and API behind this site.
@@ -1465,7 +1454,6 @@ export function RecruiterView() {
                   aria-current={activeId === item.id ? 'page' : undefined}
                   onClick={() => { cancelAutoTour(); setMobileNavOpen(false) }}
                 >
-                  {item.plate && <PlateMark n={item.plate} />}
                   <span className="exh-nav-item-text">
                     <span className="exh-nav-item-title">{item.navTitle}</span>
                     {item.navSub && <span className="exh-nav-item-sub">{item.navSub}</span>}

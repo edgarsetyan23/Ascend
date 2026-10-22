@@ -320,23 +320,6 @@
   padding-bottom: 280px;
 }
 
-/* ── Plate mark ── */
-
-.exh-plate {
-  font-family: var(--exh-font-display);
-  font-size: 0.8rem;
-  color: var(--exh-accent);
-  border: 1px solid var(--exh-border);
-  border-radius: 4px;
-  min-width: 24px;
-  height: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  background: var(--exh-bg-raised);
-}
-
 /* ── Exhibit frame ── */
 
 /* Centered within the available reading pane (not flush against the
@@ -1056,12 +1039,6 @@
   border-color: var(--exh-accent);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(25, 26, 20, 0.1);
-}
-.exh-featured-card-eyebrow {
-  font-size: 0.78rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--exh-accent);
 }
 .exh-featured-card-title {
   font-family: var(--exh-font-display);

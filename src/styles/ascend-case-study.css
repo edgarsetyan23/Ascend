@@ -398,3 +398,7 @@
   .exh-cs-decision-grid dt:first-child { padding-top: 0; }
   .exh-demo-result-row { flex-direction: column; align-items: flex-start; gap: 4px; }
 }
+
+/* A paragraph that follows a list (the JobRelay testing section)
+   needs the gap the list itself doesn't leave below it. */
+.exh-cs-limitations + .exh-cs-text { margin-top: 18px; }

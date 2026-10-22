@@ -15,6 +15,7 @@ import {
   extractTextFromPdf,
 } from './ResumeReview.jsx'
 import { AscendCaseStudy } from './portfolio/AscendCaseStudy.jsx'
+import { JobRelayCaseStudy } from './portfolio/JobRelayCaseStudy.jsx'
 import { prefersReducedMotion } from '../utils/motion.js'
 import '../styles/exhibit-view.css'
 
@@ -1297,6 +1298,9 @@ export function RecruiterView() {
           )}
           {proj.snippet && <DetailPanel file={proj.snippet.file} code={proj.snippet.code} />}
           {proj.id === 'ascend' && showEngineering && <AscendCaseStudy />}
+          {/* Short enough to show outright — no reveal toggle like
+              Ascend's much longer case study. */}
+          {proj.id === 'jobrelay' && <JobRelayCaseStudy />}
         </ExhibitFrame>
       )
     }

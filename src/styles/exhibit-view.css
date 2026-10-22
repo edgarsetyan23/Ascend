@@ -336,7 +336,7 @@
    Offset OUTSIDE the frame via negative position values on the
    brackets themselves, rather than padding+negative-margin on the
    frame — that earlier approach shifted .exh-frame's own left edge,
-   which threw off alignment with .exh-museum-banner sitting right
+   which threw off alignment with the entrance banner that used to sit right
    above it (that element wasn't given the same compensating margin,
    so its underline no longer lined up with the frame below it). */
 
@@ -384,50 +384,6 @@
 
 @media (max-width: 860px) {
   .exh-intro-path { display: none; }
-}
-
-/* Full-bleed entrance sign — spans the entire page width (a sibling
-   of .exh-shell, not nested inside the sidebar-narrowed content
-   column) so centering it actually lands dead center of the page,
-   not centered within a column that itself sits left-of-center. */
-.exh-museum-banner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 6px;
-  padding: 22px 20px 18px;
-  background: var(--exh-accent-soft);
-  border-bottom: 2px solid var(--exh-accent);
-}
-.exh-museum-banner-eyebrow {
-  font-family: var(--exh-font-display);
-  font-style: italic;
-  font-size: 0.85rem;
-  color: var(--exh-ink-subtle);
-  letter-spacing: 0.04em;
-}
-.exh-museum-banner-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.exh-museum-banner-name {
-  font-family: var(--exh-font-display);
-  font-weight: 700;
-  font-size: 1.6rem;
-  line-height: 1.25;
-  color: var(--exh-ink);
-  letter-spacing: 0.01em;
-}
-.exh-banner-flourish {
-  color: var(--exh-accent);
-  flex-shrink: 0;
-  opacity: 0.75;
-}
-@media (max-width: 640px) {
-  .exh-banner-flourish { display: none; }
-  .exh-museum-banner-name { font-size: 1.3rem; }
 }
 
 /* The tour never runs on mobile (see isMobile in RecruiterView.jsx),

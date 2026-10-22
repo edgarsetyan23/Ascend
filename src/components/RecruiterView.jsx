@@ -563,25 +563,6 @@ function CaseBrackets() {
   )
 }
 
-// Small laurel-branch flourish flanking the entrance banner's name —
-// the one bit of ornamental "museum plaque" artwork on the page,
-// hand-drawn as inline SVG rather than a sourced image so it stays
-// crisp at any size and needs no licensing story. Mirrored via CSS
-// transform for the right-hand side.
-function BannerFlourish({ flip }) {
-  return (
-    <svg
-      className="exh-banner-flourish"
-      style={flip ? { transform: 'scaleX(-1)' } : undefined}
-      width="34" height="18" viewBox="0 0 34 18" fill="none" aria-hidden="true"
-    >
-      <path d="M2 9 C 12 2, 24 2, 32 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-      <path d="M7 8.6c1.6-3 4.3-4 6.2-3M13 7c1.6-3 4.3-4 6.2-3M19 5.6c1.6-3 4.3-4 6.2-3"
-            stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 // Icons for the contact row — recognizable brand marks for GitHub/
 // LinkedIn (standard, widely-reused glyph paths — the same shapes
 // every portfolio site uses to link out to a profile) plus plain
@@ -1418,7 +1399,10 @@ export function RecruiterView() {
           <span className="exh-brand-mark">✦</span>
           <span className="exh-brand-name">Ascend</span>
         </Link>
-        <span className="exh-topbar-crumb">{activeNavItem ? activeNavItem.navTitle : 'Overview'}</span>
+        {/* No crumb on the home page — the name heading right below
+            already says where you are, so "Overview" was one more
+            header stacked above it. */}
+        <span className="exh-topbar-crumb">{activeId === 'root' ? '' : activeNavItem?.navTitle}</span>
         <div className="exh-topbar-actions">
           {autoTourActive && !isMobile && (
             <>
@@ -1451,21 +1435,6 @@ export function RecruiterView() {
         </div>
       </nav>
 
-      {/* Full-bleed entrance sign — spans the whole page, not just the
-          content column next to the sidebar, so it actually sits dead
-          center of the page instead of centered within a narrow
-          column that itself sits left-of-center. Introduction only. */}
-      {activeId === 'root' && (
-        <div className="exh-museum-banner">
-          <span className="exh-museum-banner-eyebrow">Welcome to the</span>
-          <div className="exh-museum-banner-row">
-            <BannerFlourish />
-            <span className="exh-museum-banner-name">Gallery</span>
-            <BannerFlourish flip />
-          </div>
-        </div>
-      )}
-
       <div className="exh-shell">
         <button
           type="button"
@@ -1480,7 +1449,9 @@ export function RecruiterView() {
         <aside id="exhibit-navigation" aria-label="Gallery sections" className={`exh-sidebar${mobileNavOpen ? ' exh-sidebar--open' : ''}`}>
           {NAV_GROUPS.map((group) => (
             <div key={group.label} className="exh-nav-group">
-              <div className="exh-nav-group-label">{group.label}</div>
+              {/* "Introduction" over a lone "Overview" link was a
+                  heading for one item — the link stands on its own. */}
+              {group.label !== 'Introduction' && <div className="exh-nav-group-label">{group.label}</div>}
               {group.items.map((item) => (
                 <Link
                   key={item.id}

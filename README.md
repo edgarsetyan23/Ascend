@@ -5,13 +5,14 @@ A personal accountability tracker built with a production AWS stack. Tracks Leet
 **Live:** [edgarsetyan.com](https://edgarsetyan.com) · **Portfolio:** [edgarsetyan.com/portfolio](https://edgarsetyan.com/portfolio)
 
 <p>
-  <img src="docs/screenshot-gallery.jpg" width="32%" alt="The Edgar Setyan Gallery — the public portfolio's Introduction plate" />
+  <img src="docs/screenshot-gallery.jpg" width="32%" alt="The public portfolio's home page" />
   <img src="docs/screenshot-exhibit.jpg" width="32%" alt="An exhibit plate on the public portfolio, framed like a museum display case" />
   <img src="docs/screenshot-resume-review.jpg" width="32%" alt="Resume Review — a live Claude-powered resume scorer on the public portfolio" />
 </p>
 <p>
   <img src="docs/screenshot-case-study.jpg" width="32%" alt="The Ascend engineering case study — problem, system overview, and architecture diagram, revealed in place on the Ascend exhibit" />
   <img src="docs/screenshot-demo.jpg" width="32%" alt="Interactive demo with sample data — the review-before-import step from the Gmail scanner, reproduced with fictional applications" />
+  <img src="docs/screenshot-jobrelay.jpg" width="32%" alt="The JobRelay write-up on the portfolio: the problem and a diagram of how a job moves from the API through PostgreSQL, the outbox and Redis to the workers" />
 </p>
 
 ---

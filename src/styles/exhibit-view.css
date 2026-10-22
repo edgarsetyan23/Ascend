@@ -981,30 +981,36 @@
 .exh-root-links--spotlight .exh-root-link:nth-child(3) { animation-delay: 0.3s; }
 .exh-root-links--spotlight .exh-root-link:nth-child(4) { animation-delay: 0.45s; }
 
-/* Filled, not outlined — the same weight as .exh-root-link--primary
-   (Download résumé), the site's other "this is the main action"
-   button. Sitting right after the intro paragraph now, before any of
-   the evidence below it, it needs to read as a primary way to
-   explore the portfolio, not a secondary option easy to skip past. */
+/* Outlined, not filled — Download résumé is the one filled button,
+   so a recruiter's main action is never in doubt. The tour stays
+   noticeable a different way: a tinted fill, a strong accent border,
+   and a soft halo that pulses a few times shortly after load (the
+   same ring as the finale spotlight), drawing the eye once without
+   flashing forever. Reduced-motion users get the static style. */
+@keyframes exh-tour-invite {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79, 122, 99, 0); }
+  50%      { box-shadow: 0 0 0 7px rgba(79, 122, 99, 0.18); }
+}
 .exh-start-tour {
   display: inline-block;
   margin: 18px 0 28px;
-  padding: 13px 24px;
+  padding: 12px 22px;
   font-family: var(--exh-font-display);
   font-weight: 600;
   font-size: 1.02rem;
-  color: var(--exh-bg-raised);
-  background: var(--exh-accent);
-  border: 1px solid var(--exh-accent);
+  color: var(--exh-accent);
+  background: var(--exh-accent-soft);
+  border: 1.5px solid var(--exh-accent);
   border-radius: 8px;
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+  transition: background 0.15s ease, transform 0.15s ease;
+  animation: exh-tour-invite 1.6s ease-in-out 1.2s 3;
 }
 .exh-start-tour:hover {
-  box-shadow: 0 8px 20px rgba(25, 26, 20, 0.22);
+  background: rgba(79, 122, 99, 0.18);
   transform: translateY(-1px);
-  opacity: 0.94;
 }
+[data-theme="dark"] .exh-start-tour:hover { background: rgba(143, 194, 166, 0.2); }
 
 /* ── Featured evidence (Introduction plate) ──
    Two direct links — AWS and Ascend — given more visual weight than

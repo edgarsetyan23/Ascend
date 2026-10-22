@@ -95,14 +95,11 @@ const EXPERIENCE = [
     navSub: 'Summer 2021',
     note: 'My second internship — same company, a year later.',
     logo: '/logos/tangerine.svg',
-    // Same treatment as the AWS entry: a prose lede synthesized purely
-    // from the highlights below (no new facts), plus the concrete
-    // tools those highlights already name, pulled into a tag row.
-    // Two bullets and a bare highlight list read thin next to AWS's
-    // paragraph-plus-stats — this brings it up to the same pattern
-    // instead of leaving the shortest entries the least developed.
+    // A prose lede synthesized purely from the highlights below (no
+    // new facts). Deliberately lighter than AWS — no stat callouts —
+    // so the most recent, most substantial entry carries more weight
+    // instead of every plate using the same template.
     intro: 'Second summer at Tangerine, one step further into the stack: Java components for a high-traffic application, then SQL and indexing work to cut query latency. By the end of it I was in the deploy pipeline itself — tightening Docker configs and supporting Kubernetes operations, which cut deployment errors by 20%.',
-    techTags: ['Java', 'SQL', 'Docker', 'Kubernetes'],
     data: {
       company: 'Tangerine Bank',
       role: 'Software Developer Intern',
@@ -124,7 +121,6 @@ const EXPERIENCE = [
     note: 'My first internship — where it started.',
     logo: '/logos/tangerine.svg',
     intro: 'First internship, first real production codebase: building features for a high-performance Java application with scalable design in mind, then automating the build process with Maven — cutting build errors in half and improving CI reliability and developer velocity.',
-    techTags: ['Java', 'Maven', 'CI'],
     data: {
       company: 'Tangerine Bank',
       role: 'Software Developer Intern',
@@ -315,10 +311,11 @@ function PlateMark({ n }) {
 // already in its highlight sentences, just pulled out and given a
 // treatment that actually catches the eye instead of staying buried
 // mid-paragraph. `accent` overrides the site's sage green for entries
-// that want their own visual identity (currently just AWS).
-function StatRow({ stats, accent }) {
+// that want their own visual identity (currently just AWS). `lead`
+// is the oversized version that opens an exhibit, ahead of the prose.
+function StatRow({ stats, accent, lead }) {
   return (
-    <div className="exh-stat-row" style={accent ? { '--exh-stat-accent': accent } : undefined}>
+    <div className={`exh-stat-row ${lead ? 'exh-stat-row--lead' : ''}`} style={accent ? { '--exh-stat-accent': accent } : undefined}>
       {stats.map((s) => (
         <div key={s.label} className="exh-stat">
           <span className="exh-stat-value">{s.value}</span>
@@ -336,28 +333,6 @@ function HighlightList({ items }) {
         <li key={i} className="exh-highlight exh-fade-in" style={{ animationDelay: `${80 + i * 60}ms` }}>{item}</li>
       ))}
     </ul>
-  )
-}
-
-// Reuses the same tag-chip language the résumé analyzer already uses
-// for "AWS Services"/"Tech Stack" (.exh-detected-*) — the entries
-// short enough to need this are the ones whose highlights already
-// name concrete tools (Java, Docker, Maven…), so surfacing them as
-// scannable chips is the same move the analyzer makes on any resume,
-// just applied to mine. No new facts — every tag here is a word
-// already sitting in that entry's own highlight bullets above.
-function TechTagRow({ tags }) {
-  return (
-    <div className="exh-detected-groups exh-tech-tags">
-      <div className="exh-detected-group">
-        <span className="exh-detected-group-label">Stack</span>
-        <div className="exh-detected-tags">
-          {tags.map((t) => (
-            <span key={t} className="exh-detected-tag exh-detected-tag--tech">{t}</span>
-          ))}
-        </div>
-      </div>
-    </div>
   )
 }
 
@@ -695,7 +670,10 @@ function TourBurst() {
   )
 }
 
-function ExhibitFrame({ section, plate, title, note, byline, emblem, emblemVariant = 'logo', flashAccent, noBrackets, children }) {
+// No section eyebrow above the title — the sidebar already marks
+// where you are, so a boxed "Field Work" label on every plate was
+// just repeated decoration.
+function ExhibitFrame({ title, note, byline, emblem, emblemVariant = 'logo', flashAccent, noBrackets, children }) {
   return (
     <div className="exh-frame">
       {/* Skipped on the Introduction plate (noBrackets) — that page
@@ -704,10 +682,6 @@ function ExhibitFrame({ section, plate, title, note, byline, emblem, emblemVaria
           more corners rather than reading as "under glass." Every
           other, single-exhibit plate keeps the vitrine framing. */}
       {!noBrackets && <CaseBrackets />}
-      <div className="exh-eyebrow">
-        {plate && <PlateMark n={plate} />}
-        <span className="exh-eyebrow-text">{section}</span>
-      </div>
       <div className="exh-frame-head">
         <div className="exh-frame-head-text">
           {title && <h1 className="exh-title">{title}</h1>}
@@ -1134,7 +1108,6 @@ export function RecruiterView() {
         <div className="exh-intro-wrap" ref={setIntroWrapEl}>
           <IntroPath wrapEl={introWrapEl} cardRefs={cardRefs} />
           <ExhibitFrame
-            section="Introduction"
             title="Edgar Setyan"
             byline="Software Engineer · Previously AWS RDS · Toronto, ON"
             noBrackets
@@ -1229,10 +1202,7 @@ export function RecruiterView() {
                   onClick={handleCardClick}
                 >
                   <div className="exh-card-row">
-                    <span className="exh-card-eyebrow">
-                      <PlateMark n={String(i + 1).padStart(2, '0')} />
-                      <span className="exh-card-label">{group.label}</span>
-                    </span>
+                    <span className="exh-card-label">{group.label}</span>
                     <span className="exh-card-count">
                       {group.items.length} {group.items.length === 1 ? 'entry' : 'entries'} →
                     </span>
@@ -1249,14 +1219,16 @@ export function RecruiterView() {
     const exp = EXPERIENCE.find((e) => e.id === activeId)
     if (exp) {
       return (
-        <ExhibitFrame section="Field Work" plate={exp.plate} note={exp.note}
+        <ExhibitFrame note={exp.note}
           title={exp.data.role} byline={`${exp.data.company} · ${exp.data.location} · ${exp.data.period}`}
           emblem={exp.logo && <img src={exp.logo} alt={exp.data.company} />}
           flashAccent={exp.flashAccent}>
+          {/* Stats open the exhibit, oversized, before the prose — only
+              AWS has them, so it reads heavier than the internships
+              instead of every Field Work plate sharing one template. */}
+          {exp.stats && <StatRow stats={exp.stats} accent={exp.flashAccent} lead />}
           {exp.intro && <p className="exh-intro-text">{exp.intro}</p>}
-          {exp.stats && <StatRow stats={exp.stats} accent={exp.flashAccent} />}
           <HighlightList items={exp.data.highlights} />
-          {exp.techTags && <TechTagRow tags={exp.techTags} />}
         </ExhibitFrame>
       )
     }
@@ -1264,7 +1236,7 @@ export function RecruiterView() {
     const proj = PROJECTS.find((p) => p.id === activeId)
     if (proj) {
       return (
-        <ExhibitFrame section="Studio Projects" plate={proj.plate} note={proj.note}
+        <ExhibitFrame note={proj.note}
           title={proj.data.name} byline={proj.data.stack}
           emblem={proj.id === 'ascend' ? <AscendIcon /> : <OnCallIcon />} emblemVariant="icon">
           <HighlightList items={proj.data.highlights} />
@@ -1313,7 +1285,7 @@ export function RecruiterView() {
 
     if (activeId === 'york') {
       return (
-        <ExhibitFrame section="Education" plate={EDUCATION.plate} note={EDUCATION.note}
+        <ExhibitFrame note={EDUCATION.note}
           title={EDUCATION.data.school} byline={`${EDUCATION.data.degree} · ${EDUCATION.data.grad}`}
           emblem={<img src={EDUCATION.logo} alt={EDUCATION.data.school} />}>
           {EDUCATION.data.coursework?.length > 0 && (
@@ -1334,7 +1306,7 @@ export function RecruiterView() {
 
     if (activeId === 'skills') {
       return (
-        <ExhibitFrame section="Toolkit" title="Technical Skills"
+        <ExhibitFrame title="Technical Skills"
           byline="Grouped by domain, not proficiency level — I don't self-rate skills on a bar chart.">
           <div className="exh-skills">
             {Object.entries(SKILLS).map(([category, items]) => (
@@ -1354,7 +1326,7 @@ export function RecruiterView() {
 
     if (activeId === 'leetcode') {
       return (
-        <ExhibitFrame section="Live Demonstrations" title="Problem-Solving Log"
+        <ExhibitFrame title="Problem-Solving Log"
           byline="Live-fetched, not a screenshot — this reflects my actual solved count as of now.">
           {loading && <p className="exh-loading">Loading live data…</p>}
           {error && <p className="exh-error">Could not load data: {error}</p>}
@@ -1370,7 +1342,7 @@ export function RecruiterView() {
 
     if (activeId === 'activity') {
       return (
-        <ExhibitFrame section="Live Demonstrations" title="Daily Practice Log"
+        <ExhibitFrame title="Daily Practice Log"
           byline={`${activity.length} entries logged in Ascend's activity tracker.`}>
           {loading && <p className="exh-loading">Loading live data…</p>}
           {error && <p className="exh-error">Could not load data: {error}</p>}
@@ -1383,7 +1355,7 @@ export function RecruiterView() {
 
     if (activeId === 'analyzer') {
       return (
-        <ExhibitFrame section="Live Demonstrations" title="Resume Review, Live"
+        <ExhibitFrame title="Resume Review, Live"
           byline="A Claude-powered resume scorer benchmarked for early-career SWEs, built into Ascend. Drop a PDF — nothing is stored.">
           <div className="exh-analyzer-card">
             {analyzing ? (

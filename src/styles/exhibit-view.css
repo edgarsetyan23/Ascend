@@ -457,23 +457,6 @@
   .exh-back-link { display: none; }
 }
 
-.exh-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 18px;
-  padding: 6px 12px;
-  border: 1px solid var(--exh-border);
-  border-radius: 4px;
-  background: var(--exh-sidebar-bg);
-}
-.exh-eyebrow-text {
-  font-family: var(--exh-font-display);
-  font-style: italic;
-  font-size: 0.85rem;
-  color: var(--exh-ink-subtle);
-}
-
 /* Title/note on the left, a big logo/icon badge on the right — real
    visual content on every plate instead of a title floating alone
    above a mostly-empty page. */
@@ -573,6 +556,22 @@
   font-size: 0.85rem;
   color: var(--exh-ink-muted);
   margin-top: 3px;
+}
+/* Opening version on the AWS plate — above the prose at a much
+   bigger size, so the most substantial entry gets a different
+   composition from the internships instead of the same template. */
+.exh-stat-row--lead {
+  margin: 8px 0 32px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--exh-border);
+}
+.exh-stat-row--lead .exh-stat-value {
+  font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+  line-height: 1.05;
+}
+.exh-stat-row--lead .exh-stat-label {
+  font-size: 0.92rem;
+  margin-top: 6px;
 }
 
 @media (max-width: 560px) {
@@ -1132,11 +1131,6 @@
   justify-content: space-between;
   gap: 12px;
 }
-.exh-card-eyebrow {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
 
 .exh-card-label {
   font-family: var(--exh-font-display);
@@ -1304,11 +1298,6 @@
 }
 .exh-cat-bars { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .exh-detected-groups { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-/* Extra breathing room where this reused component follows a
-   highlight list on an exhibit plate, rather than the résumé
-   analyzer's own category bars — .exh-detected-groups' own
-   margin-bottom is fine there and stays untouched. */
-.exh-tech-tags { margin-top: 22px; }
 .exh-detected-group-label {
   font-family: var(--exh-font-display);
   font-style: italic;

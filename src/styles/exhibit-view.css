@@ -14,7 +14,7 @@
   --exh-bg-raised: #ffffff;
   --exh-sidebar-bg: #f7f5ea;
   --exh-ink: #191a14;
-  --exh-ink-muted: #5c5f4f;
+  --exh-ink-muted: #43463a;
   /* Was #8a8d78 — 3.34:1 against --exh-bg, below WCAG AA's 4.5:1 for
      normal text. This is used for sidebar metadata and eyebrow labels,
      not just decoration, so it needs to actually pass. */
@@ -42,7 +42,7 @@
   --exh-bg-raised: #1b1c15;
   --exh-sidebar-bg: #17180f;
   --exh-ink: #e9ebe0;
-  --exh-ink-muted: #a3a690;
+  --exh-ink-muted: #bcbfab;
   /* Was #6b6e5c — 3.51:1 against this theme's --exh-bg, same AA
      failure as light mode but in the opposite direction (too dark
      here instead of too light). */
@@ -241,7 +241,7 @@
 .exh-nav-group-label {
   font-family: var(--exh-font-display);
   font-style: italic;
-  font-size: 0.8rem;
+  font-size: 0.86rem;
   letter-spacing: 0.03em;
   color: var(--exh-ink-subtle);
   padding: 0 10px 7px;
@@ -274,14 +274,14 @@
   min-width: 0;
 }
 .exh-nav-item-title {
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--exh-ink-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .exh-nav-item-sub {
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--exh-ink-subtle);
   white-space: nowrap;
   overflow: hidden;
@@ -536,7 +536,7 @@
 }
 .exh-stat-label {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.93rem;
   color: var(--exh-ink-muted);
   margin-top: 3px;
 }
@@ -553,7 +553,7 @@
   line-height: 1.05;
 }
 .exh-stat-row--lead .exh-stat-label {
-  font-size: 0.92rem;
+  font-size: 1rem;
   margin-top: 6px;
 }
 
@@ -580,7 +580,7 @@
 
 .exh-title {
   font-family: var(--exh-font-display);
-  font-size: 1.9rem;
+  font-size: 2.1rem;
   font-weight: 600;
   line-height: 1.25;
   margin-bottom: 10px;
@@ -589,13 +589,13 @@
 .exh-note {
   font-family: var(--exh-font-display);
   font-style: italic;
-  font-size: 0.92rem;
+  font-size: 1rem;
   color: var(--exh-accent);
   margin-bottom: 6px;
 }
 
 .exh-byline {
-  font-size: 0.98rem;
+  font-size: 1.03rem;
   color: var(--exh-ink-muted);
   line-height: 1.6;
   margin-bottom: 28px;
@@ -619,7 +619,7 @@
    footnote to the pitch above, not a second headline competing with
    it or a banner demanding attention. */
 .exh-availability-note {
-  font-size: 0.88rem;
+  font-size: 0.96rem;
   color: var(--exh-ink-subtle);
   margin: -14px 0 24px;
   max-width: 68ch;
@@ -868,7 +868,7 @@
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: var(--exh-ink);
   text-decoration: none;
@@ -1047,13 +1047,13 @@
   color: var(--exh-ink);
 }
 .exh-featured-card-why {
-  font-size: 0.95rem;
+  font-size: 1.02rem;
   color: var(--exh-ink-muted);
   line-height: 1.5;
 }
 .exh-featured-card-arrow {
   margin-top: 4px;
-  font-size: 0.85rem;
+  font-size: 0.93rem;
   color: var(--exh-accent);
   font-weight: 600;
 }
@@ -1122,13 +1122,13 @@
      same plaque language, just without a box around it. */
   font-family: var(--exh-font-display);
   font-style: italic;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--exh-ink-muted);
   line-height: 1.5;
 }
 .exh-card-count {
   flex: none;
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   color: var(--exh-accent);
   white-space: nowrap;
 }
@@ -1144,8 +1144,9 @@
   gap: 16px;
 }
 .exh-highlight {
-  font-size: 0.96rem;
+  font-size: 1.07rem;
   line-height: 1.7;
+  max-width: 72ch;
   color: var(--exh-ink-muted);
   padding-left: 20px;
   position: relative;

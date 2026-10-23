@@ -41,7 +41,7 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
   const hairlineAt = angle => {
     const front = Math.max(0, Math.cos(angle))
     const lock = Math.exp(-(((Math.sin(angle) + 0.3) / 0.28) ** 2)) * front ** 5
-    return 0.43 + 0.23 * front - 0.035 * lock
+    return 0.43 + 0.235 * front - 0.052 * lock
   }
   for (let row = 0; row <= rows; row++) {
     const ring = profile.getPoint(row / rows)
@@ -130,14 +130,19 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
         else hi = mid
       }
       const ring = profile.getPoint((lo + hi) / 2)
-      // Broad, low-amplitude waves keep a soft silhouette without spiky ridges.
-      const wave = (1 + Math.sin(angle * 7 + t * 9)) * 0.009 * Math.sin(Math.PI * t)
-      const padding = (0.012 + wave + 0.016 * Math.sin(Math.PI * t)) * (1 - t ** 8)
+      // Close sides transition into a broad, swept-up quiff. Flowing ridges
+      // follow the sweep rather than forming an evenly inflated round cap.
+      const front = Math.max(0, Math.cos(angle))
+      const envelope = Math.sin(Math.PI * t)
+      const top = THREE.MathUtils.smoothstep(t, 0.12, 0.78)
+      const quiff = front ** 2 * envelope
+      const wave = Math.sin(angle * 11 - t * 8) * 0.0045 * envelope * top
+      const padding = (0.007 + 0.019 * top + 0.025 * quiff + wave) * (1 - t ** 8)
       const radiusX = row === capRows ? 0 : ring.x + padding
       const radiusZ = row === capRows ? 0 : ring.z + padding
-      capPositions.push(Math.sin(angle) * radiusX,
-        headY + 0.12 * p.hairHeight * t + wave,
-        Math.cos(angle) * radiusZ)
+      capPositions.push(Math.sin(angle) * radiusX - 0.047 * top * p.hairHeight,
+        headY + p.hairHeight * (0.11 * t + 0.092 * quiff) + wave,
+        Math.cos(angle) * radiusZ + 0.022 * quiff * p.hairHeight)
       if (row < capRows && col < capSegments) {
         const a = row * (capSegments + 1) + col, b = a + capSegments + 1
         capIndices.push(a, a + 1, b, a + 1, b + 1, b)

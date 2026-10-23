@@ -468,7 +468,7 @@ function AnalyzerResult({ result, onReset }) {
 
 // ── Exhibit frame — every plate shares this shell ───────────────────────────
 
-// Corner brackets � the classic display-case/vitrine framing device.
+// Corner brackets — the classic display-case/vitrine framing device.
 // Four small fixed-size L-shapes rather than a scaled SVG, so they
 // stay crisp corners regardless of how tall/wide the frame's content
 // makes it (a stretched viewBox would distort them into unequal arms).
@@ -483,8 +483,8 @@ function CaseBrackets() {
   )
 }
 
-// Icons for the contact row � recognizable brand marks for GitHub/
-// LinkedIn (standard, widely-reused glyph paths � the same shapes
+// Icons for the contact row — recognizable brand marks for GitHub/
+// LinkedIn (standard, widely-reused glyph paths — the same shapes
 // every portfolio site uses to link out to a profile) plus plain
 // generic glyphs for email/download so the row reads as a set of
 // real buttons instead of bare underlined text.
@@ -522,7 +522,7 @@ function DownloadIcon() {
 
 // Studio Projects have no real-world logo to show (they're personal
 // work, not an employer), so each gets a small hand-drawn icon badge
-// instead � same "big emblem" treatment as the company logos on
+// instead — same "big emblem" treatment as the company logos on
 // Field Work/Education, just built from a glyph instead of a
 // sourced image.
 function AscendIcon() {
@@ -558,7 +558,7 @@ function OnCallIcon() {
 const PROJECT_ICONS = { jobrelay: JobRelayIcon, ascend: AscendIcon, oncall: OnCallIcon }
 
 // A dozen small particles bursting outward from where the guide
-// lands center-stage � mounted fresh once per celebrateTick (the
+// lands center-stage — mounted fresh once per celebrateTick (the
 // parent keys it), so building the angles/distances directly in the
 // function body is enough; no memoization needed for something that
 // only exists for under a second and remounts clean every time.
@@ -593,7 +593,7 @@ function TourBurst() {
   )
 }
 
-// No section eyebrow above the title � the sidebar already marks
+// No section eyebrow above the title — the sidebar already marks
 // where you are, so a boxed "Field Work" label on every plate was
 // just repeated decoration.
 function ExhibitFrame({ title, note, byline, emblem, emblemVariant = 'logo', flashAccent, noBrackets, children }) {

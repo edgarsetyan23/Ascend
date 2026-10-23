@@ -1050,6 +1050,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .exh-card-label {
@@ -1073,7 +1074,7 @@
   flex: none;
   font-size: 0.9rem;
   color: var(--exh-accent);
-  white-space: nowrap;
+  white-space: normal;
 }
 
 /* ── Highlight list (replaces resume bullets with readable prose) ── */

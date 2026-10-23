@@ -1090,7 +1090,7 @@ export function RecruiterView() {
                 cards) — this is ordinary navigation, not the tour. */}
             <div className="exh-featured-row">
               <Link to={`/portfolio${EXPERIENCE[0].path}`} className="exh-featured-card">
-                <img className="exh-featured-image" src="/previews/aws-work.png" alt="AWS RDS work highlights" width="800" height="400" />
+                <img className="exh-featured-image" src="/previews/aws-rds.svg" alt="RDS engineering: backend services and production operations" width="800" height="400" />
                 <span className="exh-featured-card-title">Amazon Web Services</span>
                 <span className="exh-featured-card-why">
                   The year right after graduating — a load-testing prototype, real on-call pages, and a long AWS account cleanup.
@@ -1098,7 +1098,7 @@ export function RecruiterView() {
                 <span className="exh-featured-card-arrow">Read the story →</span>
               </Link>
               <Link to={`/portfolio${PROJECTS.find((p) => p.id === 'ascend').path}`} className="exh-featured-card">
-                <img className="exh-featured-image" src="/previews/ascend-demo.png" alt="Ascend application import review with sample job applications" width="800" height="400" />
+                <img className="exh-featured-image" src="/previews/ascend-workflow.png" alt="Close-up of Ascend's application review interface using sample data" width="800" height="400" />
                 <span className="exh-featured-card-title">Ascend</span>
                 <span className="exh-featured-card-why">
                   Explore the authentication, data model, and API behind this site.
@@ -1123,7 +1123,7 @@ export function RecruiterView() {
                   <div className="exh-card-row">
                     <span className="exh-card-label">{{ 'Field Work': 'Experience', 'Studio Projects': 'Projects', 'Education': 'Education', 'Toolkit': 'Skills', 'Live Demonstrations': 'Live demos' }[group.label]}</span>
                     <span className="exh-card-count">
-                      {group.items.length} {group.items.length === 1 ? 'entry' : 'entries'} →
+                      {group.items.length > 1 ? 'Start with ' : 'Open '}{group.items[0].navTitle} →
                     </span>
                   </div>
                 </Link>

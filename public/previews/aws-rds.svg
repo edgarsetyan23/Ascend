@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#172537"/><stop offset="1" stop-color="#2c4056"/></linearGradient><linearGradient id="db" x2="0" y2="1"><stop stop-color="#a6bef7"/><stop offset="1" stop-color="#718bd4"/></linearGradient></defs>
+  <rect width="800" height="400" rx="16" fill="url(#bg)"/>
+  <circle cx="673" cy="193" r="173" fill="none" stroke="#ffffff" stroke-opacity=".05" stroke-width="48"/>
+  <text x="48" y="76" fill="#f5a544" font-family="Arial,sans-serif" font-size="25" font-weight="700" letter-spacing="3">AMAZON WEB SERVICES</text>
+  <text x="48" y="166" fill="#fff" font-family="Georgia,serif" font-size="58">RDS engineering</text>
+  <text x="50" y="216" fill="#c2cfdb" font-family="Arial,sans-serif" font-size="24">Backend services.</text>
+  <text x="50" y="251" fill="#c2cfdb" font-family="Arial,sans-serif" font-size="24">Production operations.</text>
+  <path d="M50 307h245" stroke="#f5a544" stroke-width="4" stroke-linecap="round"/>
+  <g transform="translate(597 135)">
+    <path d="M0 27v119c0 36 142 36 142 0V27" fill="url(#db)"/>
+    <ellipse cx="71" cy="27" rx="71" ry="27" fill="#c4d3fb"/>
+    <path d="M0 68c0 36 142 36 142 0M0 106c0 36 142 36 142 0" fill="none" stroke="#263d73" stroke-opacity=".5" stroke-width="4"/>
+  </g>
+</svg>

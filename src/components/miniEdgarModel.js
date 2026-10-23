@@ -12,6 +12,10 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
   const lips = track(new THREE.MeshStandardMaterial({ color: '#a57770', roughness: 0.9 }))
   const dark = track(new THREE.MeshStandardMaterial({ color: '#35342d', roughness: 0.8 }))
   const white = track(new THREE.MeshStandardMaterial({ color: '#ded5c7', roughness: 0.75 }))
+  const iris = track(new THREE.MeshStandardMaterial({ color: '#626657', roughness: 0.65 }))
+  const pupil = track(new THREE.MeshStandardMaterial({ color: '#202520', roughness: 0.5 }))
+  const glint = track(new THREE.MeshBasicMaterial({ color: '#eee9df' }))
+  const nostril = track(new THREE.MeshStandardMaterial({ color: '#846457', roughness: 1 }))
   const sphere = track(new THREE.SphereGeometry(1, 24, 16))
   function ellipsoid(material, x, y, z, sx, sy, sz) {
     const mesh = new THREE.Mesh(sphere, material)
@@ -52,10 +56,10 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
       // Blend the bridge, tip and nostril wings into the face surface.
       const gaussian = (cx, cy, sx, sy) => Math.exp(-(((x - cx) / sx) ** 2) - ((ring.y - cy) / sy) ** 2)
       const nose = front > 0 ? (
-        0.035 * gaussian(0, 0.425, 0.044 * p.noseWidth, 0.103)
-        + 0.055 * gaussian(0, 0.35, 0.06 * p.noseWidth, 0.04)
-        + 0.02 * gaussian(-0.045 * p.noseWidth, 0.335, 0.022, 0.024)
-        + 0.02 * gaussian(0.045 * p.noseWidth, 0.335, 0.022, 0.024)
+        0.041 * gaussian(0, 0.423, 0.035 * p.noseWidth, 0.105)
+        + 0.048 * gaussian(0, 0.353, 0.043 * p.noseWidth, 0.033)
+        + 0.014 * gaussian(-0.038 * p.noseWidth, 0.337, 0.018, 0.018)
+        + 0.014 * gaussian(0.038 * p.noseWidth, 0.337, 0.018, 0.018)
       ) : 0
       // Connected cheek beard, chin, sideburns and mustache from the latest portrait.
       // Color and a slight surface expansion keep it attached to the actual face.
@@ -70,7 +74,7 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
       const grain = Math.abs(Math.sin(row * 127.1 + col * 311.7) * 43758.5453) % 1
       const bulk = coverage * 0.003
       positions.push(x + Math.sin(angle) * bulk, ring.y, front * (ring.z + bulk) + nose)
-      const color = base.clone().lerp(beard, coverage * (0.72 + grain * 0.08))
+      const color = base.clone().lerp(beard, coverage * (0.4 + grain * 0.6))
       // The scalp itself has hair color above the shared hairline. Even at
       // minimum hair height, it cannot show a skin-colored patch through the cap.
       if (ring.y >= hairlineAt(angle)) color.set(p.hair)
@@ -101,10 +105,31 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
   for (const side of [-1, 1]) {
     ellipsoid(skin, side * 0.278, 0.395, -0.005, 0.046, 0.084, 0.039)
     const x = side * 0.115 * p.eyeSpacing
-    ellipsoid(white, x, 0.462, 0.246, 0.061, 0.021, 0.029)
-    ellipsoid(dark, x, 0.462, 0.272, 0.022, 0.019, 0.009)
-    curve([[x - 0.059, 0.461, 0.251], [x, 0.485, 0.268], [x + 0.059, 0.461, 0.251]], 0.009, skin)
+    // A shallow almond surface keeps the whites inside the lids, rather than
+    // exposing a round eyeball. The outer corner rises slightly as in the photo.
+    const eyePositions = [x, 0.46, 0.282], eyeIndices = []
+    for (let i = 0; i <= 48; i++) {
+      const angle = i / 48 * Math.PI * 2
+      const u = Math.cos(angle), v = Math.sin(angle)
+      eyePositions.push(x + u * 0.058,
+        0.46 + v * (v > 0 ? 0.021 : 0.015) + side * u * 0.004,
+        0.255 + (1 - u * u) * 0.016)
+      if (i < 48) eyeIndices.push(0, i + 1, i + 2)
+    }
+    const eye = track(new THREE.BufferGeometry())
+    eye.setAttribute('position', new THREE.Float32BufferAttribute(eyePositions, 3))
+    eye.setIndex(eyeIndices)
+    eye.computeVertexNormals()
+    group.add(new THREE.Mesh(eye, white))
+    ellipsoid(iris, x, 0.461, 0.28, 0.018, 0.018, 0.004)
+    ellipsoid(pupil, x, 0.461, 0.284, 0.009, 0.011, 0.002)
+    ellipsoid(glint, x - 0.005, 0.467, 0.286, 0.003, 0.003, 0.001)
+    curve([[x - 0.058, 0.46 - side * 0.004, 0.255], [x, 0.482, 0.273], [x + 0.058, 0.46 + side * 0.004, 0.255]], 0.007, skin)
+    curve([[x - 0.057, 0.46 - side * 0.004, 0.255], [x, 0.444, 0.273], [x + 0.057, 0.46 + side * 0.004, 0.255]], 0.004, skin)
     curve([[x - 0.059, 0.532, 0.244], [x, 0.54, 0.259], [x + 0.059, 0.532, 0.244]], 0.011, hair)
+  }
+  for (const side of [-1, 1]) {
+    ellipsoid(nostril, side * 0.03 * p.noseWidth, 0.333, 0.305, 0.009, 0.004, 0.002)
   }
   curve([[-0.087, 0.269, 0.238], [-0.038, 0.259, 0.259], [0, 0.255, 0.266], [0.038, 0.259, 0.259], [0.087, 0.269, 0.238]], 0.009, lips)
   curve([[-0.074, 0.263, 0.249], [0, 0.246, 0.27], [0.074, 0.263, 0.249]], 0.009, lips)

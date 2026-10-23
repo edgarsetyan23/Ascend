@@ -285,7 +285,7 @@ function sectionIdFromPathname(pathname) {
 // section, since a card stands for the whole group (all 3 Field Work
 // entries, all 3 projects), not any one exhibit inside it.
 const GUIDE_LINES = {
-  'Introduction': "You're just in time — the doors are still open. I'm Edgar; take a look at the AWS work, this app itself, or just poke around.",
+  'Introduction': "Hi, I'm Edgar. Take a look at what I've built.",
   'Field Work': 'Two internships and the job that came after graduating.',
   'Studio Projects': "Stuff I built because I wanted to, not because someone assigned it.",
   'Education': 'Where it started, for what it’s worth.',
@@ -300,12 +300,12 @@ const GUIDE_LINES = {
 // the three Field Work pages used to share the exact same caption;
 // now each gets its own, tied to what's actually on that page.
 const EXHIBIT_LINES = {
-  aws: 'Some of this work was about building; some was about keeping systems running. The on-call work connected the code to what happened in production.',
+  aws: 'Backend engineering and production operations on AWS RDS.',
   'tangerine-2021': 'Second summer, same bank — this time I was in the deploy pipeline.',
   'tangerine-2020': 'The first one — cut build errors in half with Maven before anything else.',
   jobrelay: 'Redis can go down and jobs still get accepted — the outbox holds them until it’s back.',
-  ascend: 'This portfolio reads live data through its own read-only API. The case study explains how that stays separate from my private trackers.',
-  oncall: 'Three days, one team — we turned a ticket ID into a guided troubleshooting checklist so on-call didn’t rely on memory at 3 a.m.',
+  ascend: 'The engineering behind this portfolio and my private trackers.',
+  oncall: 'A ticket ID becomes a troubleshooting checklist. Built in three days.',
   york: 'Everything above traces back here — the CS fundamentals that made the AWS and Ascend work possible.',
   leetcode: 'Live-pulled from LeetCode — refresh and the numbers actually move.',
   activity: 'Every entry here is one I actually logged.',
@@ -1036,8 +1036,8 @@ export function RecruiterView() {
                 a visitor should have the professional picture and the
                 strongest evidence before ever being told to explore. */}
             <p className="exh-intro-text">
-              Software engineer with experience on AWS RDS, building backend
-              services and tools for operating production systems.
+              I build backend services and tools that make production systems
+              easier to operate.
             </p>
             {/* Short, unobtrusive — a statement of direction, not a
                 banner. No claims about remote/relocation/seniority
@@ -1090,6 +1090,7 @@ export function RecruiterView() {
                 cards) — this is ordinary navigation, not the tour. */}
             <div className="exh-featured-row">
               <Link to={`/portfolio${EXPERIENCE[0].path}`} className="exh-featured-card">
+                <img className="exh-featured-image" src="/previews/aws-work.png" alt="AWS RDS work highlights" width="800" height="400" />
                 <span className="exh-featured-card-title">Amazon Web Services</span>
                 <span className="exh-featured-card-why">
                   The year right after graduating — a load-testing prototype, real on-call pages, and a long AWS account cleanup.
@@ -1097,6 +1098,7 @@ export function RecruiterView() {
                 <span className="exh-featured-card-arrow">Read the story →</span>
               </Link>
               <Link to={`/portfolio${PROJECTS.find((p) => p.id === 'ascend').path}`} className="exh-featured-card">
+                <img className="exh-featured-image" src="/previews/ascend-demo.png" alt="Ascend application import review with sample job applications" width="800" height="400" />
                 <span className="exh-featured-card-title">Ascend</span>
                 <span className="exh-featured-card-why">
                   Explore the authentication, data model, and API behind this site.
@@ -1119,12 +1121,11 @@ export function RecruiterView() {
                   onClick={handleCardClick}
                 >
                   <div className="exh-card-row">
-                    <span className="exh-card-label">{group.label}</span>
+                    <span className="exh-card-label">{{ 'Field Work': 'Experience', 'Studio Projects': 'Projects', 'Education': 'Education', 'Toolkit': 'Skills', 'Live Demonstrations': 'Live demos' }[group.label]}</span>
                     <span className="exh-card-count">
                       {group.items.length} {group.items.length === 1 ? 'entry' : 'entries'} →
                     </span>
                   </div>
-                  <span className="exh-card-teaser">{GUIDE_LINES[group.label]}</span>
                 </Link>
               ))}
             </div>

@@ -672,7 +672,7 @@
      box near the guide. Capped and wrapping instead, same as hero
      mode already did. */
   white-space: normal;
-  max-width: 300px;
+  max-width: 260px;
 }
 
 /* Tiny display-case corner marks on the guide's speech bubble too —
@@ -703,8 +703,8 @@
 
 .exh-guide-wrap--hero .exh-guide-caption {
   text-align: center;
-  max-width: 300px;
-  font-size: 1.08rem;
+  max-width: 260px;
+  font-size: 1rem;
 }
 
 /* The actual speech-bubble tail — a small square, borrowing the
@@ -971,6 +971,17 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(25, 26, 20, 0.1);
 }
+.exh-featured-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  object-fit: contain;
+  background: #fffdf7;
+  border: 1px solid var(--exh-border);
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
 .exh-featured-card-title {
   font-family: var(--exh-font-display);
   font-size: 1.15rem;
@@ -983,7 +994,8 @@
   line-height: 1.5;
 }
 .exh-featured-card-arrow {
-  margin-top: 4px;
+  margin-top: auto;
+  padding-top: 8px;
   font-size: 0.93rem;
   color: var(--exh-accent);
   font-weight: 600;

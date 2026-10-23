@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { createEdgarHead, EDGAR_LIKENESS } from './miniEdgarModel.js'
 import { prefersReducedMotion as osPrefersReducedMotion } from '../utils/motion.js'
 export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebrateKey, likeness = EDGAR_LIKENESS, portrait = false, facing = -0.15, paused = false }) {
@@ -106,7 +107,7 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
       guide.add(legPivotR)
       const clothingSphere = track(new THREE.SphereGeometry(1, 20, 12))
       function clothingBox(parent, material, x, y, z, w, h, d) {
-        const mesh = new THREE.Mesh(track(new THREE.BoxGeometry(w, h, d)), material)
+        const mesh = new THREE.Mesh(track(new RoundedBoxGeometry(w, h, d, 3, Math.min(w, h, d) * 0.24)), material)
         mesh.position.set(x, y, z)
         parent.add(mesh)
         return mesh
@@ -133,6 +134,12 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
       const torso = new THREE.Mesh(torsoGeo, shirtMat)
       torso.position.y = -0.28
       guide.add(torso)
+      for (const side of [-1, 1]) {
+        const shoulderCap = new THREE.Mesh(clothingSphere, shirtMat)
+        shoulderCap.position.set(side * 0.272, -0.096, 0)
+        shoulderCap.scale.set(0.102, 0.071, 0.19)
+        guide.add(shoulderCap)
+      }
       for (const side of [-1, 1]) {
         const collar = clothingBox(guide, trimMat, side * 0.105, -0.092, 0.287, 0.085, 0.14, 0.025)
         collar.rotation.z = side * -0.35

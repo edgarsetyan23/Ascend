@@ -115,8 +115,9 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
   // Conform the cap to the SAME head profile. The previous independent sphere
   // intersected the scalp when shortened or shifted sideways, creating bald spots.
   const cap = track(new THREE.BufferGeometry())
-  const capPositions = [], capIndices = []
-  const capRows = 48, capSegments = 96
+  const capPositions = [], capIndices = [], capColors = []
+  const hairColor = new THREE.Color(p.hair)
+  const capRows = 80, capSegments = 160
   for (let row = 0; row <= capRows; row++) {
     const t = row / capRows
     for (let col = 0; col <= capSegments; col++) {
@@ -130,19 +131,27 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
         else hi = mid
       }
       const ring = profile.getPoint((lo + hi) / 2)
-      // Close sides transition into a broad, swept-up quiff. Flowing ridges
-      // follow the sweep rather than forming an evenly inflated round cap.
+      // Short sides and a rounded crown support overlapping, irregular locks.
+      // Keep the lift broad: a narrow raised crest reads as a squeezed ribbon.
       const front = Math.max(0, Math.cos(angle))
       const envelope = Math.sin(Math.PI * t)
       const top = THREE.MathUtils.smoothstep(t, 0.12, 0.78)
-      const quiff = front ** 2 * envelope
-      const wave = Math.sin(angle * 11 - t * 8) * 0.0045 * envelope * top
-      const padding = (0.007 + 0.019 * top + 0.025 * quiff + wave) * (1 - t ** 8)
+      const quiff = front * envelope
+      const flow = angle * 19 + 12 * t + 0.65 * Math.sin(angle * 5 - t * 7)
+      const locks = Math.sin(flow) * 0.009 + Math.sin(angle * 31 - t * 13) * 0.004
+      const strands = Math.sin(angle * 67 + t * 17) * 0.0015
+      const wave = (locks + strands) * envelope
+      const padding = (0.008 + 0.016 * top + 0.014 * quiff + wave) * (1 - t ** 8)
       const radiusX = row === capRows ? 0 : ring.x + padding
       const radiusZ = row === capRows ? 0 : ring.z + padding
-      capPositions.push(Math.sin(angle) * radiusX - 0.047 * top * p.hairHeight,
-        headY + p.hairHeight * (0.11 * t + 0.092 * quiff) + wave,
-        Math.cos(angle) * radiusZ + 0.022 * quiff * p.hairHeight)
+      capPositions.push(Math.sin(angle) * radiusX - 0.018 * top * p.hairHeight,
+        headY + p.hairHeight * (0.05 * t + 0.035 * quiff)
+          + wave + 0.012 * Math.sin(angle * 5 + t * 4) * envelope * top,
+        Math.cos(angle) * radiusZ + 0.009 * quiff * p.hairHeight)
+      const shade = 0.9 + 0.1 * Math.sin(flow) * envelope
+        + 0.035 * Math.sin(angle * 67 + t * 17) * envelope
+      const lockColor = hairColor.clone().multiplyScalar(shade)
+      capColors.push(lockColor.r, lockColor.g, lockColor.b)
       if (row < capRows && col < capSegments) {
         const a = row * (capSegments + 1) + col, b = a + capSegments + 1
         capIndices.push(a, a + 1, b, a + 1, b + 1, b)
@@ -150,9 +159,24 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
     }
   }
   cap.setAttribute('position', new THREE.Float32BufferAttribute(capPositions, 3))
+  cap.setAttribute('color', new THREE.Float32BufferAttribute(capColors, 3))
   cap.setIndex(capIndices)
   cap.computeVertexNormals()
-  group.add(new THREE.Mesh(cap, hair))
+  // Join the wrap seam and crown normals so lighting cannot draw a hard stripe.
+  const capNormals = cap.attributes.normal
+  for (let row = 0; row < capRows; row++) {
+    const a = row * (capSegments + 1), b = a + capSegments
+    const normal = new THREE.Vector3().fromBufferAttribute(capNormals, a)
+      .add(new THREE.Vector3().fromBufferAttribute(capNormals, b)).normalize()
+    capNormals.setXYZ(a, normal.x, normal.y, normal.z)
+    capNormals.setXYZ(b, normal.x, normal.y, normal.z)
+  }
+  for (let col = 0; col <= capSegments; col++) {
+    capNormals.setXYZ(capRows * (capSegments + 1) + col, 0, 1, 0)
+  }
+  group.add(new THREE.Mesh(cap, track(new THREE.MeshStandardMaterial({
+    vertexColors: true, roughness: 1,
+  }))))
   group.scale.set(p.faceWidth, p.faceHeight, 1)
   return group
 }

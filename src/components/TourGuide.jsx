@@ -71,12 +71,12 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
         camera.lookAt(0, 0.47, 0)
       }
 
-      scene.add(new THREE.AmbientLight(0xffffff, 0.65))
-      const key = new THREE.DirectionalLight(0xfff4e6, 1.1)
+      scene.add(new THREE.AmbientLight(0xffffff, 0.85))
+      const key = new THREE.DirectionalLight(0xfff4e6, 1)
       key.position.set(2, 3, 2.5)
       scene.add(key)
       const fill = new THREE.DirectionalLight(0xcfe8ff, 0.3)
-      fill.position.set(-2, -1, 1.5)
+      fill.position.set(-2, 1, 2)
       scene.add(fill)
 
       const track = (obj) => { disposables.push(obj); return obj }
@@ -150,12 +150,14 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
       const waistband = new THREE.Mesh(track(new THREE.CylinderGeometry(0.256, 0.251, 0.095, 24)), pantsMat)
       waistband.position.y = -0.555
       guide.add(waistband)
-      const neckGeo = track(new THREE.CylinderGeometry(0.13, 0.16, 0.14, 6))
+      const neckGeo = track(new THREE.CylinderGeometry(0.13, 0.16, 0.14, 24))
       const neck = new THREE.Mesh(neckGeo, skinMat)
       neck.position.y = 0.02
       guide.add(neck)
 
-      guide.add(createEdgarHead(track, likeness))
+      const head = createEdgarHead(track, likeness)
+      head.scale.multiplyScalar(0.96)
+      guide.add(head)
       // A relaxed upper arm and raised forearm make the elbow readable.
       // Build between joint positions so the sleeve, elbow and wrist meet.
       const shoulder = new THREE.Vector3(0.29, -0.105, 0)
@@ -288,20 +290,30 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
         armL.rotation.x = -swing * 0.7
 
         const walkBob = Math.abs(Math.sin(walkPhase)) * 0.045 * intensity
-        const idleBob = Math.sin(t * 1.1) * 0.03 * (1 - intensity)
+        const idleBob = Math.sin(t * 1.1) * 0.009 * (1 - intensity)
 
-        const idleFacing = -0.15 + Math.sin(t * 0.5) * 0.12
+        const idleFacing = facingRef.current + Math.sin(t * 0.5) * 0.045
         const walkFacing = -0.15
         let facing = idleFacing * (1 - intensity) + walkFacing * intensity
         let bob = walkBob + idleBob
         let magSpeed = 2.2
         const clickP = (performance.now() - clickStartRef.current) / CLICK_DURATION_MS
         if (clickP >= 0 && clickP < 1) {
-          const hop = Math.sin(clickP * Math.PI) * 0.28
+          const hop = Math.sin(clickP * Math.PI) * 0.065
           bob += hop
-          facing += clickP * Math.PI * 2
-          magSpeed = 8
+          head.rotation.x = Math.sin(clickP * Math.PI * 2) * 0.09
+          armL.rotation.z = -Math.sin(clickP * Math.PI) * 0.28
+          magSpeed = 3
+        } else {
+          head.rotation.x = Math.sin(t * 0.7) * 0.012
+          armL.rotation.z = 0
         }
+
+        // Brief, eased blinks with a slower repeating cadence. Reduced-motion
+        // and the paused studio pose retain the fully open initial eyes.
+        const blinkPhase = t % 4.7
+        const blink = blinkPhase > 4.48 ? Math.sin((blinkPhase - 4.48) / 0.22 * Math.PI) : 0
+        head.userData.setBlink(blink)
 
         guide.position.y = bob
         guide.rotation.y = facing

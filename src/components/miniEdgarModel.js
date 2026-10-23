@@ -9,7 +9,7 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
   const group = new THREE.Group()
   const skin = track(new THREE.MeshStandardMaterial({ color: p.skin, roughness: 0.82 }))
   const hair = track(new THREE.MeshStandardMaterial({ color: p.hair, roughness: 0.95 }))
-  const lips = track(new THREE.MeshStandardMaterial({ color: '#a57770', roughness: 0.9 }))
+  const lips = track(new THREE.MeshStandardMaterial({ color: '#ad8077', roughness: 0.95 }))
   const dark = track(new THREE.MeshStandardMaterial({ color: '#35342d', roughness: 0.8 }))
   const white = track(new THREE.MeshStandardMaterial({ color: '#ded5c7', roughness: 0.75 }))
   const iris = track(new THREE.MeshStandardMaterial({ color: '#626657', roughness: 0.65 }))
@@ -34,8 +34,8 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
   // Controlled cheek/jaw rings preserve the lower face's width instead of
   // narrowing to the point of the old low-subdivision icosahedron.
   const rings = [
-    [0.055, 0.01, 0.01], [0.075, 0.11, 0.13], [0.12, 0.19, 0.20],
-    [0.21, 0.245, 0.245], [0.36, 0.28, 0.278], [0.48, 0.275, 0.27],
+    [0.055, 0.01, 0.01], [0.075, 0.105, 0.13], [0.12, 0.18, 0.20],
+    [0.21, 0.229, 0.245], [0.36, 0.266, 0.278], [0.48, 0.275, 0.27],
     [0.60, 0.265, 0.25], [0.70, 0.25, 0.22], [0.78, 0.18, 0.15], [0.81, 0.01, 0.01],
   ]
   const positions = [], colors = [], indices = []
@@ -74,7 +74,9 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
       const grain = Math.abs(Math.sin(row * 127.1 + col * 311.7) * 43758.5453) % 1
       const bulk = coverage * 0.003
       positions.push(x + Math.sin(angle) * bulk, ring.y, front * (ring.z + bulk) + nose)
-      const color = base.clone().lerp(beard, coverage * (0.4 + grain * 0.6))
+      // A restrained shadow with fine variation reads as short stubble at
+      // homepage size; high-contrast vertex noise made the cheeks look mottled.
+      const color = base.clone().lerp(beard, coverage * (0.55 + grain * 0.15))
       // The scalp itself has hair color above the shared hairline. Even at
       // minimum hair height, it cannot show a skin-colored patch through the cap.
       if (ring.y >= hairlineAt(angle)) color.set(p.hair)
@@ -102,9 +104,11 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
   }
   group.add(new THREE.Mesh(geometry, track(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 }))))
 
+  const eyes = []
   for (const side of [-1, 1]) {
     ellipsoid(skin, side * 0.278, 0.395, -0.005, 0.046, 0.084, 0.039)
     const x = side * 0.115 * p.eyeSpacing
+    const eyeStart = group.children.length
     // A shallow almond surface keeps the whites inside the lids, rather than
     // exposing a round eyeball. The outer corner rises slightly as in the photo.
     const eyePositions = [x, 0.46, 0.282], eyeIndices = []
@@ -126,14 +130,21 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
     ellipsoid(glint, x - 0.005, 0.467, 0.286, 0.003, 0.003, 0.001)
     curve([[x - 0.058, 0.46 - side * 0.004, 0.255], [x, 0.482, 0.273], [x + 0.058, 0.46 + side * 0.004, 0.255]], 0.007, skin)
     curve([[x - 0.057, 0.46 - side * 0.004, 0.255], [x, 0.444, 0.273], [x + 0.057, 0.46 + side * 0.004, 0.255]], 0.004, skin)
-    curve([[x - 0.059, 0.532, 0.244], [x, 0.54, 0.259], [x + 0.059, 0.532, 0.244]], 0.011, hair)
+    const eyeParts = group.children.slice(eyeStart)
+    const eyeGroup = new THREE.Group()
+    eyeGroup.position.set(x, 0.46, 0.26)
+    group.add(eyeGroup)
+    group.updateMatrixWorld(true)
+    eyeParts.forEach(part => eyeGroup.attach(part))
+    eyes.push(eyeGroup)
+    curve([[x - 0.057, 0.516 - side * 0.006, 0.251], [x, 0.529, 0.268], [x + 0.057, 0.516 + side * 0.006, 0.251]], 0.012, hair)
   }
   for (const side of [-1, 1]) {
     ellipsoid(nostril, side * 0.03 * p.noseWidth, 0.333, 0.305, 0.009, 0.004, 0.002)
   }
-  curve([[-0.087, 0.269, 0.238], [-0.038, 0.259, 0.259], [0, 0.255, 0.266], [0.038, 0.259, 0.259], [0.087, 0.269, 0.238]], 0.009, lips)
-  curve([[-0.074, 0.263, 0.249], [0, 0.246, 0.27], [0.074, 0.263, 0.249]], 0.009, lips)
-  curve([[-0.078, 0.269, 0.247], [0, 0.255, 0.277], [0.078, 0.269, 0.247]], 0.002, dark)
+  curve([[-0.077, 0.266, 0.249], [-0.025, 0.263, 0.267], [0, 0.259, 0.27], [0.025, 0.263, 0.267], [0.077, 0.266, 0.249]], 0.006, lips)
+  curve([[-0.069, 0.261, 0.253], [0, 0.25, 0.272], [0.069, 0.261, 0.253]], 0.007, lips)
+  curve([[-0.071, 0.265, 0.255], [0, 0.258, 0.277], [0.071, 0.265, 0.255]], 0.0015, nostril)
   // Small distinguishing mark visible beside the eyebrow in the close portrait.
   ellipsoid(dark, 0.235, 0.535, 0.127, 0.006, 0.006, 0.003)
 
@@ -203,5 +214,8 @@ export function createEdgarHead(track, settings = EDGAR_LIKENESS) {
     vertexColors: true, roughness: 1,
   }))))
   group.scale.set(p.faceWidth, p.faceHeight, 1)
+  group.userData.setBlink = closure => {
+    for (const eye of eyes) eye.scale.y = Math.max(0.04, 1 - closure)
+  }
   return group
 }

@@ -310,14 +310,8 @@
      any real excess becomes an outer page margin instead. */
   max-width: 900px;
   padding: 48px 56px;
-  /* The guide is fixed to the bottom-right corner, sitting on TOP of
-     the page rather than pushing content up — fine when there's a
-     lot of empty space below the last content, but on a shorter
-     window (a smaller monitor, a non-maximized browser) real content
-     can end up close enough to the bottom that it visually overlaps
-     him. Reserving room below the last element means that never
-     happens, regardless of viewport height. */
-  padding-bottom: 280px;
+  /* The dedicated guide gutter keeps the reading column clear. */
+  padding-bottom: 56px;
 }
 
 /* ── Exhibit frame ── */
@@ -359,31 +353,6 @@
 .exh-intro-wrap > .exh-frame {
   position: relative;
   z-index: 1;
-}
-
-.exh-intro-path {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
-  overflow: visible;
-}
-.exh-intro-path-line {
-  stroke: var(--exh-accent);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-dasharray: 1 15;
-  opacity: 0.4;
-}
-.exh-intro-path-dot {
-  fill: var(--exh-accent);
-  opacity: 0.55;
-}
-
-@media (max-width: 860px) {
-  .exh-intro-path { display: none; }
 }
 
 /* The tour never runs on mobile (see isMobile in RecruiterView.jsx),
@@ -808,7 +777,7 @@
 }
 
 /* No mobile sizing rules needed here — the guide isn't rendered at
-   all below 860px (see isMobile in RecruiterView.jsx), so there's
+   all below 1180px (see isMobile in RecruiterView.jsx), so there's
    nothing at this breakpoint to size. */
 
 /* ── Root / overview links ── */
@@ -1272,7 +1241,7 @@
 
 /* ── Responsive ── */
 
-@media (max-width: 860px) {
+@media (max-width: 1180px) {
   .exh-topbar-crumb { display: none; }
   /* No guide gutter to reserve below this width — undo the desktop
      composition-centering budget entirely so the stacked mobile

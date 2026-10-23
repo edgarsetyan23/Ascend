@@ -64,8 +64,8 @@ export function TourGuide({ accentColor = '#4f7a63', size = 128, walkKey, celebr
 
       const scene = new THREE.Scene()
       const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100)
-      camera.position.set(0, 0.35, 5.4)
-      camera.lookAt(0, 0.2, 0)
+      camera.position.set(0, 0.1, 4.6)
+      camera.lookAt(0, -0.05, 0)
       if (portrait) {
         camera.position.set(0, 0.47, 2.25)
         camera.lookAt(0, 0.47, 0)

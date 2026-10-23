@@ -468,87 +468,7 @@ function AnalyzerResult({ result, onReset }) {
 
 // ── Exhibit frame — every plate shares this shell ───────────────────────────
 
-// Connects consecutive points with a gentle wiggle (a quadratic curve
-// per segment, control point offset perpendicular to that segment,
-// alternating sides) instead of straight lines — reads as a wandering
-// trail rather than a ruler-straight connector.
-function buildTrailPath(points) {
-  if (points.length < 2) return ''
-  let d = `M ${points[0].x} ${points[0].y}`
-  for (let i = 1; i < points.length; i++) {
-    const p0 = points[i - 1]
-    const p1 = points[i]
-    const mx = (p0.x + p1.x) / 2
-    const my = (p0.y + p1.y) / 2
-    const dx = p1.x - p0.x
-    const dy = p1.y - p0.y
-    const len = Math.sqrt(dx * dx + dy * dy) || 1
-    const nx = -dy / len
-    const ny = dx / len
-    const bend = (i % 2 === 0 ? 1 : -1) * Math.min(36, len * 0.18)
-    d += ` Q ${mx + nx * bend} ${my + ny * bend}, ${p1.x} ${p1.y}`
-  }
-  return d
-}
-
-// A winding trail behind the Introduction plate that actually connects
-// the guide's home corner to each of the 5 exhibit cards — measured
-// from their real on-screen positions (not guessed coordinates), so it
-// stays accurate across viewport widths and however the grid reflows.
-function IntroPath({ wrapEl, cardRefs }) {
-  const [box, setBox] = useState({ w: 0, h: 0 })
-  const [points, setPoints] = useState([])
-
-  useLayoutEffect(() => {
-    // wrapEl is DOM-node state (set by a callback ref), not a stable
-    // ref object — so this effect actually re-runs once the node goes
-    // from null to real, instead of only ever firing once on a ref
-    // object whose identity never changes.
-    if (!wrapEl) return
-
-    function measure() {
-      const wrapRect = wrapEl.getBoundingClientRect()
-      setBox({ w: wrapRect.width, h: wrapRect.height })
-
-      // Home: roughly where the guide's corner spot is, so the trail
-      // reads as starting from him.
-      const home = { x: wrapRect.width - 40, y: wrapRect.height + 40 }
-      const cardPoints = Object.entries(cardRefs.current)
-        .filter(([, el]) => el)
-        .map(([, el]) => {
-          const r = el.getBoundingClientRect()
-          return {
-            x: r.left + r.width / 2 - wrapRect.left,
-            y: r.top + r.height / 2 - wrapRect.top,
-          }
-        })
-      setPoints([home, ...cardPoints])
-    }
-
-    measure()
-    const ro = new ResizeObserver(measure)
-    ro.observe(wrapEl)
-    return () => ro.disconnect()
-  }, [wrapEl, cardRefs])
-
-  if (points.length < 2 || box.w === 0) return null
-
-  return (
-    <svg
-      className="exh-intro-path"
-      viewBox={`0 0 ${box.w} ${box.h}`}
-      preserveAspectRatio="none"
-      aria-hidden="true"
-    >
-      <path d={buildTrailPath(points)} fill="none" className="exh-intro-path-line" />
-      {points.slice(1).map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="4" className="exh-intro-path-dot" />
-      ))}
-    </svg>
-  )
-}
-
-// Corner brackets — the classic display-case/vitrine framing device.
+// Corner brackets � the classic display-case/vitrine framing device.
 // Four small fixed-size L-shapes rather than a scaled SVG, so they
 // stay crisp corners regardless of how tall/wide the frame's content
 // makes it (a stretched viewBox would distort them into unequal arms).
@@ -563,8 +483,8 @@ function CaseBrackets() {
   )
 }
 
-// Icons for the contact row — recognizable brand marks for GitHub/
-// LinkedIn (standard, widely-reused glyph paths — the same shapes
+// Icons for the contact row � recognizable brand marks for GitHub/
+// LinkedIn (standard, widely-reused glyph paths � the same shapes
 // every portfolio site uses to link out to a profile) plus plain
 // generic glyphs for email/download so the row reads as a set of
 // real buttons instead of bare underlined text.
@@ -602,7 +522,7 @@ function DownloadIcon() {
 
 // Studio Projects have no real-world logo to show (they're personal
 // work, not an employer), so each gets a small hand-drawn icon badge
-// instead — same "big emblem" treatment as the company logos on
+// instead � same "big emblem" treatment as the company logos on
 // Field Work/Education, just built from a glyph instead of a
 // sourced image.
 function AscendIcon() {
@@ -638,7 +558,7 @@ function OnCallIcon() {
 const PROJECT_ICONS = { jobrelay: JobRelayIcon, ascend: AscendIcon, oncall: OnCallIcon }
 
 // A dozen small particles bursting outward from where the guide
-// lands center-stage — mounted fresh once per celebrateTick (the
+// lands center-stage � mounted fresh once per celebrateTick (the
 // parent keys it), so building the angles/distances directly in the
 // function body is enough; no memoization needed for something that
 // only exists for under a second and remounts clean every time.
@@ -673,7 +593,7 @@ function TourBurst() {
   )
 }
 
-// No section eyebrow above the title — the sidebar already marks
+// No section eyebrow above the title � the sidebar already marks
 // where you are, so a boxed "Field Work" label on every plate was
 // just repeated decoration.
 function ExhibitFrame({ title, note, byline, emblem, emblemVariant = 'logo', flashAccent, noBrackets, children }) {
@@ -735,10 +655,10 @@ export function RecruiterView() {
   // simpler to just not build the page around it there, and let
   // sidebar/card navigation (already the manual fallback on desktop
   // too) be the whole story.
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 860)
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 1180)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth <= 860)
+    const onResize = () => setIsMobile(window.innerWidth <= 1180)
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
@@ -952,10 +872,6 @@ export function RecruiterView() {
     }
   }
 
-  // Refs for measuring the 5 exhibit cards' real on-screen positions,
-  // so the background trail (IntroPath) can actually connect to them.
-  const [introWrapEl, setIntroWrapEl] = useState(null)
-  const cardRefs = useRef({})
 
   // Exhibit cards are real <Link>s now — navigation is immediate and
   // native (open-in-new-tab, modifier-click, middle-click all just
@@ -1049,7 +965,7 @@ export function RecruiterView() {
 
   const activeNavItem = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.id === activeId)
   const guideIsHero = activeId === 'root' && tourStarted
-  const guideSize = 260
+  const guideSize = 300
 
   // Corner mode used to anchor him to the raw viewport corner
   // (right: 20px, bottom: 12px), completely independent of where the
@@ -1071,7 +987,7 @@ export function RecruiterView() {
       // stacks — content and the guide are already close together
       // there, so defer entirely to the simpler mobile CSS corner
       // position instead of fighting it with a computed one.
-      if (window.innerWidth <= 860) { setGuideHomeRect(null); return }
+      if (window.innerWidth <= 1180) { setGuideHomeRect(null); return }
       const wrapEl = document.querySelector('.exh-guide-wrap')
       if (!wrapEl) return
       const rect = el.getBoundingClientRect()
@@ -1110,8 +1026,7 @@ export function RecruiterView() {
   function renderBody() {
     if (activeId === 'root') {
       return (
-        <div className="exh-intro-wrap" ref={setIntroWrapEl}>
-          <IntroPath wrapEl={introWrapEl} cardRefs={cardRefs} />
+        <div className="exh-intro-wrap">
           <ExhibitFrame
             title="Edgar Setyan"
             byline="Software Engineer · Previously AWS RDS · Toronto, ON"
@@ -1199,7 +1114,6 @@ export function RecruiterView() {
                 <Link
                   key={group.label}
                   to={`/portfolio${group.items[0].path}`}
-                  ref={(el) => { cardRefs.current[group.label] = el }}
                   className="exh-card exh-fade-in"
                   style={{ animationDelay: `${200 + i * 90}ms` }}
                   onClick={handleCardClick}

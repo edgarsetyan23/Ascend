@@ -1,0 +1,107 @@
+/* Tracker workspace polish. Scoped to the signed-in app and its entry dialog. */
+.app {
+  --text-subtle: #6b6e5c;
+}
+[data-theme="dark"] .app { --text-subtle: #969984; }
+.app :focus-visible, .tracker-entry-dialog :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.app .topbar { gap: 16px; box-shadow: none; }
+.app .topbar-left { min-width: 0; }
+.app .topbar-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.app .tracker-name {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+.app .tracker-icon, .app .sidebar-logo { filter: none; }
+.app .notif-bell, .app .theme-toggle, .app .topbar-icon-btn {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 9px;
+}
+.app .sidebar-item { min-height: 46px; font-size: 0.95rem; }
+.app .sidebar-item--active {
+  background: var(--bg-hover);
+  color: var(--text);
+  box-shadow: none;
+}
+.app .stats-bar { gap: 12px; padding: 20px 28px; }
+.app .stat-chip {
+  align-items: flex-start;
+  min-width: 120px;
+  padding: 14px 18px;
+  background: var(--bg-surface);
+  border-top-width: 2px;
+}
+.app .stat-chip:hover { transform: none; box-shadow: none; }
+.app .stat-value { font-size: 1.8rem; font-variant-numeric: tabular-nums; }
+.app .stat-label { font-size: 0.8rem; text-transform: none; letter-spacing: 0; margin-top: 6px; }
+.app .table-toolbar { padding: 18px; gap: 12px; background: var(--bg-surface); }
+.app .search-input { min-height: 42px; font-size: 0.95rem; }
+.app .btn, .tracker-entry-dialog .btn { min-height: 40px; }
+.app .btn--primary, .tracker-entry-dialog .btn--primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: none;
+}
+[data-theme="dark"] .app .btn--primary,
+[data-theme="dark"] .tracker-entry-dialog .btn--primary { color: #14150f; }
+.app .table { font-size: 0.95rem; }
+.app .table-th { padding: 0; background: var(--bg); font-size: 0.8rem; text-transform: none; letter-spacing: 0; }
+.app .table-th--actions { padding: 14px 18px; }
+.app .table-sort-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 18px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+}
+.app .table-td { padding: 16px 18px; line-height: 1.5; }
+.app .table-td:first-child { min-width: 170px; font-weight: 500; }
+.app .table-td--compact { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.app .row-action { min-width: 34px; min-height: 34px; opacity: 1; }
+.app .table-footer { padding: 12px 18px; font-size: 0.8rem; }
+.table-scroll-hint { display: none; }
+.tracker-entry-dialog .field-label { font-size: 0.85rem; text-transform: none; letter-spacing: 0; }
+.tracker-entry-dialog .field-input { min-height: 44px; font-size: 1rem; }
+.tracker-entry-dialog .modal-close { min-width: 36px; min-height: 36px; }
+.tracker-entry-dialog .modal-fields { padding: 24px; gap: 20px; }
+.tracker-entry-dialog .modal-actions { padding: 18px 24px; }
+@media (max-width: 680px) {
+  .app .topbar { padding: 0 12px; gap: 8px; }
+  .app .topbar-left { gap: 8px; }
+  .app .tracker-name { font-size: 1.1rem; }
+  .app .tracker-icon { font-size: 1.15rem; }
+  .app .topbar-actions { gap: 4px; }
+  .app .notif-bell, .app .theme-toggle, .app .topbar-icon-btn { width: 32px; height: 36px; }
+  .app .stats-bar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 16px 14px; gap: 8px; }
+  .app .stat-chip { min-width: 0; flex: 1 1 80px; padding: 12px; }
+  .app .stat-value { font-size: 1.5rem; }
+  .app .stat-label { white-space: normal; }
+  .app .table-toolbar { padding: 14px; }
+  .app .search-input { flex-basis: 100%; min-width: 0; }
+  .app .toolbar-actions { width: 100%; justify-content: space-between; }
+  .app .table-scroll-hint { display: block; padding: 10px 14px; font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+  .app .table { min-width: 760px; }
+  .tracker-modal-overlay { padding: 12px; }
+  .tracker-entry-dialog { max-height: calc(100dvh - 24px); }
+  .tracker-entry-dialog .modal-title { font-size: 1.05rem; }
+  .tracker-entry-dialog .modal-fields { padding: 18px; gap: 18px; }
+  .tracker-entry-dialog .modal-actions { padding: 14px 18px; }
+}

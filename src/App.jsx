@@ -25,6 +25,7 @@ import { useTheme } from './hooks/useTheme.js'
 import { useNotifications } from './hooks/useNotifications.js'
 import { TRACKER_CONFIGS, TRACKER_LIST } from './trackers/index.js'
 import { computeStats } from './utils/stats.js'
+import './styles/tracker-app.css'
 
 /**
  * Inner app — only rendered after the user is authenticated.
@@ -146,26 +147,28 @@ function AppShell() {
             <h1 className="tracker-name">{tracker.name}</h1>
           </div>
 
-          <button
-            className="notif-bell"
-            onClick={() => setShowNotifSettings((v) => !v)}
-            aria-label="Notification settings"
-            title="Daily reminders"
-          >
-            🔔
-          </button>
+          <div className="topbar-actions">
+            <button
+              className="notif-bell"
+              onClick={() => setShowNotifSettings((v) => !v)}
+              aria-label="Notification settings"
+              title="Daily reminders"
+            >
+              🔔
+            </button>
 
-          <ThemeToggle theme={theme} onToggle={toggleTheme} />
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
 
-          {/* Sign out clears the in-memory JWT — next action hits AuthGate */}
-          <button
-            className="topbar-icon-btn"
-            onClick={logout}
-            title="Sign out"
-            aria-label="Sign out"
-          >
-            ⏻
-          </button>
+            {/* Sign out clears the in-memory JWT — next action hits AuthGate */}
+            <button
+              className="topbar-icon-btn"
+              onClick={logout}
+              title="Sign out"
+              aria-label="Sign out"
+            >
+              ⏻
+            </button>
+          </div>
         </header>
 
         {activeId === 'resume' ? (

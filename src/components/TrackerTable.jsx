@@ -85,6 +85,7 @@ export function TrackerTable({ tracker, entries, onAdd, onEdit, onDelete }) {
           type="search"
           className="search-input"
           placeholder="Search entries..."
+          aria-label={`Search ${tracker.name} entries`}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -120,7 +121,9 @@ export function TrackerTable({ tracker, entries, onAdd, onEdit, onDelete }) {
           </div>
         )
       ) : (
-        <div className="table-scroll">
+        <>
+        <p className="table-scroll-hint">Scroll across the table to see all fields and actions.</p>
+        <div className="table-scroll" role="region" aria-label={`${tracker.name} entries`} tabIndex={0}>
           <table className="table">
             <thead>
               <tr>
@@ -128,9 +131,9 @@ export function TrackerTable({ tracker, entries, onAdd, onEdit, onDelete }) {
                   <th
                     key={col.key}
                     className="table-th"
-                    onClick={() => handleSort(col.key)}
+                    aria-sort={sort.key === col.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
                   >
-                    {col.label} <SortIcon colKey={col.key} />
+                    <button type="button" className="table-sort-button" onClick={() => handleSort(col.key)}>{col.label} <SortIcon colKey={col.key} /></button>
                   </th>
                 ))}
                 <th className="table-th table-th--actions">Actions</th>
@@ -140,7 +143,7 @@ export function TrackerTable({ tracker, entries, onAdd, onEdit, onDelete }) {
               {filtered.map((entry) => (
                 <tr key={entry.id} className="table-row">
                   {cols.map((col) => (
-                    <td key={col.key} className="table-td">
+                    <td key={col.key} className={`table-td${['date', 'number'].includes(col.type) ? ' table-td--compact' : ''}`}>
                       <CellValue col={col} value={entry[col.key]} />
                     </td>
                   ))}
@@ -165,6 +168,7 @@ export function TrackerTable({ tracker, entries, onAdd, onEdit, onDelete }) {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <div className="table-footer">

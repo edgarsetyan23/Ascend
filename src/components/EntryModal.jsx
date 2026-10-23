@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useId } from 'react'
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
@@ -15,6 +15,28 @@ function buildInitial(columns, existing) {
 export function EntryModal({ tracker, existing, onSave, onClose }) {
   const [form, setForm] = useState(() => buildInitial(tracker.columns, existing))
   const [errors, setErrors] = useState({})
+  const dialogRef = useRef(null)
+  const titleId = useId()
+
+  useEffect(() => {
+    const opener = document.activeElement
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    dialogRef.current?.querySelector('input, select, textarea')?.focus()
+    return () => {
+      document.body.style.overflow = previousOverflow
+      if (opener?.isConnected) opener.focus()
+    }
+  }, [])
+
+  function handleDialogKey(e) {
+    if (e.key === 'Escape') { e.preventDefault(); onClose(); return }
+    if (e.key !== 'Tab') return
+    const controls = [...dialogRef.current.querySelectorAll('button, input, select, textarea')].filter(element => !element.disabled)
+    const first = controls[0], last = controls[controls.length - 1]
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus() }
+    if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus() }
+  }
 
   // Reset form when tracker changes or modal reopens
   useEffect(() => {
@@ -44,10 +66,10 @@ export function EntryModal({ tracker, existing, onSave, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+    <div className="modal-overlay tracker-modal-overlay" onClick={onClose}>
+      <div ref={dialogRef} className="modal tracker-entry-dialog" onClick={(e) => e.stopPropagation()} onKeyDown={handleDialogKey} role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <div className="modal-header">
-          <h2 className="modal-title">
+          <h2 className="modal-title" id={titleId}>
             {tracker.icon} {existing ? 'Edit' : 'Add'} {tracker.name} Entry
           </h2>
           <button className="modal-close" onClick={onClose} aria-label="Close">✕</button>

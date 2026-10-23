@@ -607,10 +607,10 @@
 /* Hero mode — "Start the tour" summons the guide to center stage on
    the Introduction plate instead of the usual corner. */
 .exh-guide-wrap--hero {
-  right: 50%;
-  bottom: 46%;
-  transform: translate(50%, 50%);
-  align-items: center;
+  right: 20px;
+  bottom: 12px;
+  transform: translate(0, 0);
+  align-items: flex-end;
 }
 
 /* Dims the rest of the page as he glides to center stage, like a

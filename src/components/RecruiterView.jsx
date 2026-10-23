@@ -1049,7 +1049,7 @@ export function RecruiterView() {
 
   const activeNavItem = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.id === activeId)
   const guideIsHero = activeId === 'root' && tourStarted
-  const guideSize = guideIsHero ? 400 : 260
+  const guideSize = 260
 
   // Corner mode used to anchor him to the raw viewport corner
   // (right: 20px, bottom: 12px), completely independent of where the
@@ -1062,8 +1062,8 @@ export function RecruiterView() {
   // its own deliberate centered position.
   const [guideHomeRect, setGuideHomeRect] = useState(null)
   useLayoutEffect(() => {
-    if (guideIsHero) return
-    const el = document.querySelector('.exh-frame')
+    // Anchor to the stable reading column, not its animated inner plate.
+    const el = document.querySelector('.exh-main')
     if (!el) { setGuideHomeRect(null); return }
 
     function measure() {
@@ -1098,6 +1098,8 @@ export function RecruiterView() {
     measure()
     const ro = new ResizeObserver(measure)
     ro.observe(el)
+    const wrapEl = document.querySelector('.exh-guide-wrap')
+    if (wrapEl) ro.observe(wrapEl)
     window.addEventListener('resize', measure)
     return () => {
       ro.disconnect()
@@ -1489,7 +1491,7 @@ export function RecruiterView() {
           style={
             guideTargetRect
               ? { right: `${guideTargetRect.right}px`, bottom: `${guideTargetRect.bottom}px`, transform: 'translate(0, 0)' }
-              : !guideIsHero && guideHomeRect
+              : guideHomeRect
               ? { right: `${guideHomeRect.right}px`, bottom: `${guideHomeRect.bottom}px`, transform: 'translate(0, 0)' }
               : undefined
           }

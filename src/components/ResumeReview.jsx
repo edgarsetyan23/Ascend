@@ -128,12 +128,24 @@ export function DropZone({ onFile, isExtracting }) {
   return (
     <div
       className={`pdf-dropzone ${isDragging ? 'pdf-dropzone--active' : ''} ${isExtracting ? 'pdf-dropzone--loading' : ''}`}
+      role="button"
+      tabIndex={0}
+      aria-label="Choose a resume PDF"
+      aria-disabled={isExtracting}
+      aria-busy={isExtracting}
+      onKeyDown={e => {
+        if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault()
+          if (!isExtracting) inputRef.current?.click()
+        }
+      }}
       onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
       onClick={() => !isExtracting && inputRef.current?.click()}
     >
-      <input ref={inputRef} type="file" accept="application/pdf" style={{ display: 'none' }}
+      <input ref={inputRef} type="file" accept="application/pdf" aria-label="Resume PDF" style={{ display: 'none' }}
+        onClick={e => e.stopPropagation()}
         onChange={e => { const f = e.target.files[0]; if (f) onFile(f) }} />
       {isExtracting ? (
         <><div className="pdf-spinner" /><p className="pdf-drop-label">Extracting text…</p></>

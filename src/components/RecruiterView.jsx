@@ -607,7 +607,7 @@ function ExhibitFrame({ title, note, byline, emblem, emblemVariant = 'logo', fla
       {!noBrackets && <CaseBrackets />}
       <div className="exh-frame-head">
         <div className="exh-frame-head-text">
-          {title && <h1 className="exh-title">{title}</h1>}
+          {title && <h1 className="exh-title" tabIndex={-1}>{title}</h1>}
           {note && <p className="exh-note">{note}</p>}
         </div>
         {emblem && (
@@ -640,7 +640,8 @@ export function RecruiterView() {
   const [leetcode, setLeetcode] = useState([])
   const [activity, setActivity] = useState([])
   const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState(null)
+  const [feedErrors, setFeedErrors] = useState({})
+  const [feedRetry, setFeedRetry] = useState(0)
 
   const [score,       setScore]       = useState(null)
   const [analyzing,   setAnalyzing]   = useState(false)
@@ -926,14 +927,34 @@ export function RecruiterView() {
   }, [activeId])
 
   useEffect(() => {
+    const previousTitle = document.title
+    const title = document.querySelector('.exh-title')
+    document.title = activeId === 'root' ? 'Edgar Setyan | Backend & Cloud Engineer' : `${title?.textContent || 'Portfolio'} | Edgar Setyan`
+    return () => { document.title = previousTitle }
+  }, [activeId])
+
+  const previousPathRef = useRef(location.pathname)
+  useLayoutEffect(() => {
+    if (previousPathRef.current === location.pathname) return
+    previousPathRef.current = location.pathname
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    document.querySelector('.exh-title')?.focus({ preventScroll: true })
+  }, [location.pathname])
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setFeedErrors({})
     Promise.allSettled([listPublicEntries('leetcode'), listPublicEntries('activity')])
       .then(([lc, act]) => {
+        if (cancelled) return
         if (lc.status === 'fulfilled') setLeetcode(lc.value)
         if (act.status === 'fulfilled') setActivity(act.value)
-        if (lc.status === 'rejected' && act.status === 'rejected') setError(lc.reason?.message ?? 'Failed to load data')
+        setFeedErrors({ leetcode: lc.status === 'rejected', activity: act.status === 'rejected' })
       })
-      .finally(() => setLoading(false))
-  }, [])
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [feedRetry])
 
   async function handleFile(file) {
     setExtracting(true)
@@ -1084,10 +1105,7 @@ export function RecruiterView() {
               </a>
             </div>
 
-            {/* The two pieces most worth opening, called out directly
-                instead of leaving them to blend into the five-card
-                category grid below. Real links (not choreographed
-                cards) — this is ordinary navigation, not the tour. */}
+            {/* Featured work opens directly, independently of the tour. */}
             <div className="exh-featured-row">
               <Link to={`/portfolio${EXPERIENCE[0].path}`} className="exh-featured-card">
                 <img className="exh-featured-image" src="/previews/aws-rds.svg" alt="RDS engineering: backend services and production operations" width="800" height="400" />
@@ -1096,6 +1114,14 @@ export function RecruiterView() {
                   The year right after graduating — a load-testing prototype, real on-call pages, and a long AWS account cleanup.
                 </span>
                 <span className="exh-featured-card-arrow">Read the story →</span>
+              </Link>
+              <Link to="/portfolio/projects/jobrelay" className="exh-featured-card">
+                <img className="exh-featured-image" src="/previews/jobrelay-dashboard.png" alt="JobRelay dispatch board with sample jobs in waiting, processing, completed, and failed states" width="800" height="400" />
+                <span className="exh-featured-card-title">JobRelay</span>
+                <span className="exh-featured-card-why">
+                  Reliable background jobs with an outbox, bounded retries, and worker-crash recovery.
+                </span>
+                <span className="exh-featured-card-arrow">See the failure recovery →</span>
               </Link>
               <Link to={`/portfolio${PROJECTS.find((p) => p.id === 'ascend').path}`} className="exh-featured-card">
                 <img className="exh-featured-image" src="/previews/ascend-workflow.png" alt="Close-up of Ascend's application review interface using sample data" width="800" height="400" />
@@ -1250,9 +1276,9 @@ export function RecruiterView() {
       return (
         <ExhibitFrame title="Problem-Solving Log"
           byline="Live-fetched, not a screenshot — this reflects my actual solved count as of now.">
-          {loading && <p className="exh-loading">Loading live data…</p>}
-          {error && <p className="exh-error">Could not load data: {error}</p>}
-          {!loading && !error && (
+          {loading && <p className="exh-loading" role="status">Loading live data…</p>}
+          {feedErrors.leetcode && <div role="alert"><p className="exh-error">The problem-solving log is temporarily unavailable.</p><button className="exh-cs-toggle" onClick={() => setFeedRetry(value => value + 1)}>Try again</button></div>}
+          {!loading && !feedErrors.leetcode && (
             <>
               <LeetCodeProfile fixedUsername="user2986fQ" fixedDisplayName="Eddy-Setyan" />
               <LeetcodeTable entries={leetcode} />
@@ -1265,10 +1291,10 @@ export function RecruiterView() {
     if (activeId === 'activity') {
       return (
         <ExhibitFrame title="Daily Practice Log"
-          byline={`${activity.length} entries logged in Ascend's activity tracker.`}>
-          {loading && <p className="exh-loading">Loading live data…</p>}
-          {error && <p className="exh-error">Could not load data: {error}</p>}
-          {!loading && !error && (
+          byline={loading || feedErrors.activity ? "Entries from Ascend's public activity tracker." : `${activity.length} entries logged in Ascend's activity tracker.`}>
+          {loading && <p className="exh-loading" role="status">Loading live data…</p>}
+          {feedErrors.activity && <div role="alert"><p className="exh-error">The daily practice log is temporarily unavailable.</p><button className="exh-cs-toggle" onClick={() => setFeedRetry(value => value + 1)}>Try again</button></div>}
+          {!loading && !feedErrors.activity && (
             <ActivityLog tracker={activityTracker} entries={activity} readOnly />
           )}
         </ExhibitFrame>
@@ -1298,7 +1324,7 @@ export function RecruiterView() {
                   ))}
                 </div>
                 <DropZone onFile={handleFile} isExtracting={extracting} />
-                {analyzeErr && <p className="exh-error">{analyzeErr}</p>}
+                {analyzeErr && <p className="exh-error" role="alert">{analyzeErr}</p>}
               </div>
             )}
           </div>
@@ -1311,7 +1337,8 @@ export function RecruiterView() {
 
   return (
     <div className="exh-page">
-      <nav className="exh-topbar">
+      <a className="exh-skip-link" href="#portfolio-content">Skip to content</a>
+      <nav className="exh-topbar" aria-label="Portfolio actions">
         <Link to="/" className="exh-brand">
           <span className="exh-brand-mark">✦</span>
           <span className="exh-brand-name">Ascend</span>
@@ -1395,7 +1422,7 @@ export function RecruiterView() {
           </a>
         </aside>
 
-        <main className="exh-main">
+        <main id="portfolio-content" className="exh-main" tabIndex={-1}>
           <div key={activeId} className="exh-plate-enter">{renderBody()}</div>
         </main>
       </div>

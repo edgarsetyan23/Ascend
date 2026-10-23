@@ -33,6 +33,7 @@ export function LeetCodeProfile({ fixedUsername = '', fixedDisplayName = '' }) {
 
   const [input, setInput]     = useState('')
   const [data, setData]       = useState(null)
+  const [loadError, setLoadError] = useState(false)
   const [loading, setLoading] = useState(
     () => !!(fixedUsername || localStorage.getItem(LS_KEY))
   )
@@ -42,14 +43,20 @@ export function LeetCodeProfile({ fixedUsername = '', fixedDisplayName = '' }) {
   useEffect(() => {
     if (!savedUsername) return
     setLoading(true)
+    setLoadError(false)
+    let cancelled = false
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 10_000)
     fetch(`/api/leetcode-stats?username=${encodeURIComponent(savedUsername)}`, { signal: controller.signal })
-      .then((r) => r.json())
-      .then((d) => setData(d.error ? makeFallback(savedUsername) : d))
-      .catch(() => setData(makeFallback(savedUsername)))
-      .finally(() => { clearTimeout(timeoutId); setLoading(false) })
-    return () => { clearTimeout(timeoutId); controller.abort() }
+      .then((r) => { if (!r.ok) throw new Error('Profile unavailable'); return r.json() })
+      .then((d) => {
+        if (cancelled) return
+        if (d.error || !d.solved || typeof d.solved.total !== 'number') throw new Error('Profile unavailable')
+        setData(d)
+      })
+      .catch(() => { if (!cancelled) { setLoadError(true); setData(makeFallback(savedUsername)) } })
+      .finally(() => { clearTimeout(timeoutId); if (!cancelled) setLoading(false) })
+    return () => { cancelled = true; clearTimeout(timeoutId); controller.abort() }
   }, [savedUsername])
 
   useEffect(() => {
@@ -116,7 +123,12 @@ export function LeetCodeProfile({ fixedUsername = '', fixedDisplayName = '' }) {
     )
   }
 
-  if (loading) return <div className="lc-profile lc-profile--loading" />
+  if (loading) return <div className="lc-profile lc-profile--loading" role="status" aria-label="Loading LeetCode profile" />
+  if (isFixed && loadError) return (
+    <div className="lc-profile" role="status">
+      <p>Live LeetCode stats are temporarily unavailable. <a href={`https://leetcode.com/u/${fixedUsername}/`} target="_blank" rel="noopener noreferrer">View the profile on LeetCode →</a></p>
+    </div>
+  )
 
   const { username, avatar, rank, solved, languages, totalProblems } = data
   const pct   = Math.round((solved.total / (totalProblems ?? TOTAL_PROBLEMS_FALLBACK)) * 100)

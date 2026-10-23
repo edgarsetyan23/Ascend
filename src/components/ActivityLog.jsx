@@ -77,7 +77,7 @@ export function ActivityLog({ tracker, entries, onAdd, onEdit, onDelete, readOnl
       {/* ── Groups ── */}
       {groups.length === 0 ? (
         <div className="activity-log-empty">
-          {entries.length === 0 ? 'No entries yet — log your first activity.' : 'No results.'}
+          {entries.length === 0 ? (readOnly ? 'No public activity entries yet.' : 'No entries yet — log your first activity.') : 'No results.'}
         </div>
       ) : (
         groups.map(([date, dayEntries]) => (

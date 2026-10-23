@@ -4,6 +4,7 @@ infra/node_modules/
 
 # Build output
 dist/
+.portfolio-review/
 infra/cdk.out/
 
 # Environment variables — never commit real values

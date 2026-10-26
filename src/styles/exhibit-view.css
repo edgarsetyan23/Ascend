@@ -1341,7 +1341,16 @@
 .exh-archive-note, .exh-privacy-note { color: var(--exh-ink-muted); font-size: 0.9rem; line-height: 1.65; }
 .exh-privacy-note { margin: 0 0 20px; padding: 16px; border: 1px solid var(--exh-border); border-radius: 8px; }
 .exh-privacy-note a { color: var(--exh-accent); text-decoration: underline; }
-.exh-page .lc-ext-link { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+.exh-page .lc-ext-link,
+.exh-page .lc-username,
+.exh-page .lc-profile[role="status"] a {
+  display: inline-flex;
+  align-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 16px;
+}
+.exh-page .lc-ext-link { justify-content: center; }
 .exh-topbar-icon-link { min-width: 44px; min-height: 44px; }
 .route-loading { padding: 32px; font-family: system-ui, sans-serif; }
 

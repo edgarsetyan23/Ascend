@@ -166,14 +166,14 @@ const PROJECTS = [
     path: '/projects/oncall-assistant',
     navTitle: 'On-Call Assistant',
     navSub: 'Hackathon, 1st place',
-    note: 'A hackathon win I built with a team in three days.',
+    note: 'A team hackathon win; I built the diagnostic routing.',
     data: {
       name: 'On-Call Debugging Assistant',
       stack: 'AWS Lambda, Internal Web App — 1st place, AWS RDS Toronto Hackathon',
       summary: 'A team hackathon project that turns an incident ticket into a guided troubleshooting checklist, using three diagnostic playbooks. It won first place at the AWS RDS Toronto hackathon.',
       highlights: [
-        'Built an internal web tool where engineers paste a ticket link/ID to launch guided Q&A troubleshooting flows backed by 3 diagnostic playbooks, outputting actionable next-step debugging checks and mitigations.',
-        'Won 1st place in a 3-day AWS RDS Toronto team hackathon for improving overnight incident triage speed and consistency.',
+        "Wrote the diagnostic routing script: it matched distinctive keywords in the incident ticket to one of three troubleshooting playbooks, then ran CPU, connection, storage, and recent-error checks on the affected database to drive the playbook's next steps.",
+        'Won 1st place in a 3-day team hackathon for faster, more consistent overnight incident triage.',
       ],
     },
   },
@@ -1062,7 +1062,7 @@ export function RecruiterView() {
               </a>
             )
           )}
-          {proj.id === 'oncall' && <p className="exh-cs-text">This was a three-day team project for internal use. The flow starts with a ticket link or ID, asks diagnostic questions, and returns the next checks and possible mitigations. Internal code and incident details are not published.</p>}
+          {proj.id === 'oncall' && <HighlightList items={proj.data.highlights} />}
           {proj.id === 'ascend' && showEngineering && <AscendCaseStudy />}
           {/* Short enough to show outright — no reveal toggle like
               Ascend's much longer case study. */}

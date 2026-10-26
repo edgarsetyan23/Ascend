@@ -1137,6 +1137,9 @@
   height: 1px;
   background: var(--exh-accent);
 }
+/* A closing note after a bullet list (the On-Call plate's "not
+   published" line) needs a little more air than the list's own gap. */
+.exh-highlights + .exh-cs-text { margin-top: 24px; }
 
 /* ── Detail panel (real code excerpt) ── */
 

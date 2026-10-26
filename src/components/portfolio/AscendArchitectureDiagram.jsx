@@ -23,7 +23,7 @@ export function AscendArchitectureDiagram() {
           Ascend request flow: the browser calls API Gateway, which routes
           authenticated requests through a JWT authorizer to a CRUD Lambda,
           and unauthenticated portfolio reads through a separate,
-          read-only Lambda — both writing to and reading from the same
+          read-only Lambda — accessing the same
           DynamoDB table.
         </title>
 
@@ -94,10 +94,10 @@ export function AscendArchitectureDiagram() {
       <figcaption className="exh-diagram-caption">
         <span className="exh-diagram-caption-label">The flow, in words:</span>
         <ol>
-          <li>The browser calls API Gateway over HTTPS for both trackers and this portfolio page.</li>
+          <li>Vercel serves the page. The browser calls API Gateway for private tracker operations and selected public tracker data.</li>
           <li>Authenticated routes (tracker CRUD) go through a Cognito JWT authorizer that rejects an invalid token before any Lambda runs.</li>
           <li>The public portfolio route has no authorizer — it's a separate Lambda with a hardcoded owner id and a read-only IAM role instead.</li>
-          <li>Both Lambdas read and write the same single DynamoDB table, just under different permissions.</li>
+          <li>Private handlers can read and write the DynamoDB table. The public handler has read-only permissions.</li>
           <li>Two integrations sit outside AWS entirely: Vercel serverless functions call the Anthropic API for résumé scoring and Gmail-email classification, and the LeetCode profile banner proxies LeetCode's GraphQL API.</li>
         </ol>
       </figcaption>

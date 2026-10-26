@@ -1333,3 +1333,22 @@
   .exh-main { width: 100%; max-width: none; padding: 28px 20px 40px; }
   .exh-analyzer-result { grid-template-columns: 1fr; }
 }
+
+/* Portfolio review: compact secondary actions and readable targets. */
+.exh-start-tour { margin-top: 24px; font-size: 0.9rem; padding: 10px 14px; }
+.exh-project-summary { max-width: 66ch; margin-bottom: 18px; }
+.exh-cs-actions-row { margin: 0 0 24px; }
+.exh-archive-note, .exh-privacy-note { color: var(--exh-ink-muted); font-size: 0.9rem; line-height: 1.65; }
+.exh-privacy-note { margin: 0 0 20px; padding: 16px; border: 1px solid var(--exh-border); border-radius: 8px; }
+.exh-privacy-note a { color: var(--exh-accent); text-decoration: underline; }
+.exh-page .lc-ext-link { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+.exh-topbar-icon-link { min-width: 44px; min-height: 44px; }
+.route-loading { padding: 32px; font-family: system-ui, sans-serif; }
+
+@media (min-width: 1181px) {
+  .exh-page:not(.exh-page--with-guide) .exh-shell { max-width: 1250px; padding-right: 0; }
+  .exh-page:not(.exh-page--with-guide) .exh-main { max-width: 1000px; }
+  .exh-page:not(.exh-page--with-guide) .exh-featured-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .exh-page:not(.exh-page--with-guide) .exh-featured-card:last-child:nth-child(3) { grid-column: auto; display: flex; }
+  .exh-page:not(.exh-page--with-guide) .exh-featured-card:last-child:nth-child(3) .exh-featured-image { grid-row: auto; margin-bottom: 10px; }
+}

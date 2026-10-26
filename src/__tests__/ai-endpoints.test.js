@@ -1,10 +1,12 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 const { create } = vi.hoisted(() => ({ create: vi.fn() }))
+vi.mock('../../api/_lib/ai-protection.js', async (original) => ({ ...await original(), requireTrackerUser: vi.fn().mockResolvedValue('test-user') }))
 vi.mock('@anthropic-ai/sdk', () => ({ default: class {
   messages = { create }
 } }))
 import resume from '../../api/analyze-resume.js'
 import emails from '../../api/scan-emails.js'
+import { resetLocalLimits } from '../../api/_lib/ai-protection.js'
 import { categories } from '../../api/_lib/structured-output.js'
 
 const report = () => ({
@@ -15,12 +17,13 @@ const report = () => ({
 const response = (value, stop_reason = 'end_turn') => ({ stop_reason, content: [{ type: 'text', text: JSON.stringify(value) }] })
 async function call(handler, body) {
   const res = { status: vi.fn().mockReturnThis(), json: vi.fn().mockReturnThis() }
-  await handler({ method: 'POST', body }, res)
+  await handler({ method: 'POST', body, headers: { 'content-type': 'application/json' } }, res)
   return [res.status.mock.calls[0][0], res.json.mock.calls[0][0]]
 }
 beforeEach(() => {
   vi.stubEnv('ANTHROPIC_API_KEY', 'test-key')
   create.mockReset()
+  resetLocalLimits()
 })
 describe('AI response contracts', () => {
   it('requests structured Haiku output and computes the resume score', async () => {
@@ -44,7 +47,7 @@ describe('AI response contracts', () => {
   })
   it('accepts empty scanner results and requests a schema', async () => {
     create.mockResolvedValue(response({ applications: [], followUps: [] }))
-    expect((await call(emails, { emails: [{}] }))[0]).toBe(200)
+    expect((await call(emails, { emails: [{ subject: 'Application', from: 'jobs@example.com', date: '2026-10-26', snippet: 'Thanks for applying' }] }))[0]).toBe(200)
     expect(create.mock.calls[0][0].output_config.format.schema.required).toEqual(['applications', 'followUps'])
   })
   it.each(['unknown-id', 'status', 'date'])('rejects scanner %s', async (kind) => {
@@ -53,6 +56,6 @@ describe('AI response contracts', () => {
     if (kind === 'status') followUp.suggestedStatus = 'Made Up'
     if (kind === 'date') followUp.emailDate = '2026-02-30'
     create.mockResolvedValue(response({ applications: [], followUps: [followUp] }))
-    expect((await call(emails, { emails: [{}], existingEntries: [{ id: '1' }] }))[0]).toBe(500)
+    expect((await call(emails, { emails: [{ subject: 'Application', from: 'jobs@example.com', date: '2026-10-26', snippet: 'Thanks for applying' }], existingEntries: [{ id: '1', company: 'Acme', role: 'SWE', status: 'Applied' }] }))[0]).toBe(500)
   })
 })

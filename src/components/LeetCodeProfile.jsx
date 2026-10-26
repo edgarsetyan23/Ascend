@@ -245,6 +245,7 @@ export function LeetCodeProfile({ fixedUsername = '', fixedDisplayName = '' }) {
         rel="noopener noreferrer"
         className="lc-ext-link"
         title="Open LeetCode profile"
+        aria-label="Open LeetCode profile"
       >↗</a>
 
     </div>

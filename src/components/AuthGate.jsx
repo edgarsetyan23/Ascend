@@ -110,14 +110,14 @@ export function AuthGate({ children }) {
             </div>
             <p className="auth-private-note">
               This is a private workspace —{' '}
-              <a href="/portfolio" className="auth-blurb-link">the gallery</a>
+              <a href="/" className="auth-blurb-link">the gallery</a>
               {' '}is this way if you're a recruiter or just browsing.
             </p>
           </>
         )}
 
         {mode !== 'login' && (
-          <a href="/portfolio" className="auth-portfolio-link">View the gallery →</a>
+          <a href="/" className="auth-portfolio-link">View the gallery →</a>
         )}
 
         <p className="auth-subtitle">{subtitle}</p>

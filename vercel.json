@@ -1,5 +1,7 @@
 {
-  "alias": ["useascend.vercel.app"],
+  "alias": [
+    "useascend.vercel.app"
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -11,5 +13,29 @@
       ]
     }
   ],
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/portfolio/:path*",
+      "destination": "/portfolio/:path*.html"
+    },
+    {
+      "source": "/app",
+      "destination": "/app.html"
+    },
+    {
+      "source": "/oauth-callback",
+      "destination": "/oauth-callback.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/portfolio",
+      "destination": "/",
+      "permanent": true
+    }
+  ]
 }

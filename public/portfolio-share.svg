@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#fffdf7"/>
+  <rect x="0" width="24" height="630" fill="#4f7a63"/>
+  <path d="M88 100h40M88 100v40M1112 530h-40M1112 530v-40" fill="none" stroke="#4f7a63" stroke-width="3"/>
+  <text x="100" y="186" fill="#4f7a63" font-family="Arial,sans-serif" font-size="24" letter-spacing="3">BACKEND &amp; CLOUD ENGINEER</text>
+  <text x="96" y="288" fill="#191a14" font-family="Georgia,serif" font-size="86">Edgar Setyan</text>
+  <text x="100" y="356" fill="#43463a" font-family="Arial,sans-serif" font-size="30">Previously AWS RDS · Toronto</text>
+  <path d="M100 402h1000" stroke="#d4d8cc"/>
+  <text x="100" y="462" fill="#43463a" font-family="Arial,sans-serif" font-size="27">Backend services. Production operations. Reliable systems.</text>
+  <text x="100" y="540" fill="#4f7a63" font-family="Arial,sans-serif" font-size="24">edgarsetyan.com</text>
+</svg>

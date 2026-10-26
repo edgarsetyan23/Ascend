@@ -4,7 +4,7 @@ Ascend is a tracker for job applications, LeetCode practice, daily activity, and
 
 The tracker and portfolio share an AWS backend. The Gmail importer helps fill in the Jobs tracker, and the portfolio has a PDF resume review tool. Those two features use Claude Haiku 4.5 through Vercel functions.
 
-[Open Ascend](https://edgarsetyan.com) | [View the portfolio](https://edgarsetyan.com/portfolio)
+[View the portfolio](https://www.edgarsetyan.com/) | [Open the tracker](https://www.edgarsetyan.com/app)
 
 <p>
   <img src="docs/screenshot-gallery-v2.jpg" width="32%" alt="The public portfolio's home page" />
@@ -21,7 +21,7 @@ The tracker and portfolio share an AWS backend. The Gmail importer helps fill in
 
 The public portfolio is available without an account. The Ascend project page includes a walkthrough of the backend and a small Gmail-import demo with fictional applications. The demo runs locally in the browser; it doesn't connect to Gmail or save entries.
 
-The signed-in app has four trackers with editable entries. For Jobs, the Gmail scanner searches up to 50 matching messages from the last 90 days and reads their headers and snippets. It suggests new applications and status changes, then lets you review them before saving. Full email bodies and attachments aren't fetched.
+The signed-in app at `/app` has four trackers with editable entries. For Jobs, the Gmail scanner searches up to 50 matching messages from the last 90 days and reads their headers and snippets. It suggests new applications and status changes, then lets you review them before saving. Full email bodies and attachments aren't fetched.
 
 The resume tool extracts text from a PDF in the browser and sends the extracted text for scoring across six categories. The score is feedback from a model, not a prediction of hiring outcomes.
 
@@ -51,7 +51,7 @@ A tracker entry has a partition key of `USER#{sub}` and a sort key of `TRACKER#{
 - **DynamoDB fits the current reads.** The app mostly loads one user's entries for one tracker. That maps to a partition key and sort-key prefix. Reporting across trackers would need more work.
 - **The public page has a separate handler.** Its Lambda has read-only table permissions, uses a configured owner ID, and only allows the LeetCode and Activity trackers. It doesn't reuse the private CRUD handler with authentication switched off.
 - **Edits update the UI immediately.** `useEntries` sends the request in the background and rolls back the local change if it fails. This keeps routine edits responsive, but it isn't an offline sync system.
-- **Gmail uses a new-tab OAuth flow.** The callback hands the token to the original tab through a storage event. This avoids the popup flow's COOP issue, at the cost of briefly putting the token in localStorage during the handoff.
+- **Gmail uses a new-tab OAuth flow.** The callback hands the token to the original tab through BroadcastChannel. The scanner validates a one-use state value and expires pending sign-ins after five minutes.
 - **AI results have a schema and a review step.** Both Claude calls use JSON Schema structured outputs. The server checks the returned fields and types, score bounds, category uniqueness, dates, and follow-up IDs. The weighted resume total is calculated in code. Email suggestions still need review because a valid response can misread an email.
 
 These AI features each make one extraction or scoring request. They don't need a tool-execution loop. If a future feature lets the model choose and perform actions, strict tool use would be a better fit for those actions. See [Anthropic's structured output documentation](https://platform.claude.com/docs/en/build-with-claude/structured-outputs).
@@ -62,9 +62,9 @@ This is a personal app with a public portfolio attached. The public-data handler
 
 The table has a tracker-specific date index, but the list handlers don't query it yet. The base sort key ends in a random UUID, so its order isn't creation-date order.
 
-The AI endpoints currently have no authentication or application-level rate limiting. They need abuse controls before opening them to wider use. Resume feedback is subjective, and the Gmail scanner can miss messages outside its search terms or misclassify a snippet. Structured output handles response shape; it doesn't establish accuracy.
+Email scanning requires a verified Cognito ID token. Both AI endpoints validate payload size and shape, limit simultaneous calls, apply per-runtime request caps, and disable SDK retries. Optional Redis counters share quotas across serverless instances; without that configuration the caps reset on cold starts and do not form a deployment-wide budget. Resume feedback is subjective, and the Gmail scanner can miss messages outside its search terms or misclassify a snippet. Structured output handles response shape; it doesn't establish accuracy.
 
-The Cognito SDK persists its session in localStorage. The Gmail handoff also uses localStorage briefly. Both depend on keeping scripts running on the app's origin trustworthy.
+The Cognito SDK persists its session in localStorage. The Gmail handoff uses BroadcastChannel with a one-use state value and a five-minute expiry. The Cognito session still depends on keeping scripts running on the app's origin trustworthy.
 
 ## Finding the code
 
@@ -125,6 +125,18 @@ The frontend suite includes mocked AI endpoint tests for successful responses an
 | `OWNER_USER_ID` | `infra/.env` | Cognito sub baked into public Lambda at deploy time |
 
 See `.env.example` and `infra/.env.example` for templates.
+
+## Public routes and sharing
+
+The portfolio opens at `/`; the tracker opens at `/app`. Older `/portfolio` overview links redirect to the homepage, while existing project and experience links remain valid. Legacy tracker hash bookmarks (such as `/#jobs`) redirect to `/app#jobs`. The PWA starts at `/app`.
+
+The build writes initial HTML titles, descriptions, canonical links, and social metadata for each known public route. The share image is `public/portfolio-share.png`, with its editable SVG source alongside it. Tracker and OAuth HTML are marked noindex. The PDF/scoring code loads on the resume route; private tracker code loads at `/app`. Mini Edgar remains visible on desktop, with the 3D scene loaded after the main content.
+
+## AI request limits
+
+Local runtime caps are five requests per client per ten minutes, twenty per feature per hour, and two concurrent AI calls per runtime. They are a backstop, not a distributed quota. For shared counters, configure server-only `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`: ten requests per client per hour and one hundred per feature per day. Once configured, an unavailable quota store rejects the request before calling Claude. No email or resume text is sent to that store.
+
+The public resume tool remains anonymous. Its local heuristic fallback works when cloud scoring is unavailable. Scanning emails requires a valid Cognito ID token using the existing `VITE_USER_POOL_ID` and `VITE_USER_POOL_CLIENT_ID` deployment settings. Tests verify signature rejection and issuer, audience, token-use, and expiry checks. No new secrets are needed for that authentication check.
 
 ## More detail
 

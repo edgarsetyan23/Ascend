@@ -1,3 +1,4 @@
+import { validateJSONRequest, reserveAIRequest, requireTrackerUser, sendAIError } from './_lib/ai-protection.js'
 import Anthropic from '@anthropic-ai/sdk'
 import { emailSchema, parseStructuredOutput, validateEmails } from './_lib/structured-output.js'
 
@@ -41,6 +42,8 @@ Return {"applications": [], "followUps": []} if nothing is found.`
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
+  try { validateJSONRequest(req, 150000) } catch (error) { return sendAIError(res, error) }
+
   const { emails, existingEntries = [] } = req.body || {}
   if (!Array.isArray(emails) || emails.length === 0)
     return res.status(400).json({ error: 'emails array required' })
@@ -48,11 +51,21 @@ export default async function handler(req, res) {
   if (!Array.isArray(existingEntries))
     return res.status(400).json({ error: 'existingEntries must be an array' })
 
+  const validString = value => typeof value === 'string' && value.length <= 2000
+  if (emails.length > 50 || emails.some(email => !email || !['subject', 'from', 'date', 'snippet'].every(key => validString(email[key]))))
+    return res.status(400).json({ error: 'Send up to 50 emails with subject, from, date, and snippet strings (2,000 characters each).' })
+  if (existingEntries.length > 500 || existingEntries.some(entry => !entry || !['id', 'company', 'role', 'status'].every(key => validString(entry[key]))))
+    return res.status(400).json({ error: 'Send up to 500 tracked entries with id, company, role, and status strings.' })
+
   if (!process.env.ANTHROPIC_API_KEY)
     return res.status(503).json({ error: 'API key not configured' })
 
+  let release
   try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    await requireTrackerUser(req)
+    release = await reserveAIRequest(req, 'emails')
+    res.setHeader?.('Cache-Control', 'no-store')
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 20_000, maxRetries: 0 })
 
     const entriesContext = existingEntries.length > 0
       ? `Already tracked applications:\n${existingEntries.map((e) => `  id=${e.id} | ${e.company} | ${e.role} | status=${e.status}`).join('\n')}\n\n`
@@ -78,6 +91,8 @@ export default async function handler(req, res) {
     })
   } catch (err) {
     console.error('scan-emails error:', err.message)
-    return res.status(500).json({ error: 'Parsing failed', detail: err.message })
+    return sendAIError(res, err)
+  } finally {
+    release?.()
   }
 }

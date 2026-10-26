@@ -7,15 +7,9 @@ import { ThemeToggle } from './ThemeToggle.jsx'
 import { LeetCodeProfile } from './LeetCodeProfile.jsx'
 import { ActivityLog } from './ActivityLog.jsx'
 import activityTracker from '../trackers/activity.js'
-import {
-  ScoreCircle,
-  CatBar,
-  DropZone,
-  scoreResume,
-  extractTextFromPdf,
-} from './ResumeReview.jsx'
 import { AscendCaseStudy } from './portfolio/AscendCaseStudy.jsx'
 import { JobRelayCaseStudy } from './portfolio/JobRelayCaseStudy.jsx'
+import { updatePortfolioMetadata } from '../lib/portfolioPages.js'
 import { prefersReducedMotion } from '../utils/motion.js'
 import '../styles/exhibit-view.css'
 
@@ -23,6 +17,7 @@ import '../styles/exhibit-view.css'
 // downloads once someone actually lands on /portfolio, not as part of
 // the base app bundle.
 const TourGuide = lazy(() => import('./TourGuide.jsx').then((m) => ({ default: m.TourGuide })))
+const PortfolioResumeReview = lazy(() => import('./portfolio/PortfolioResumeReview.jsx'))
 const ACCENT = { light: '#4f7a63', dark: '#8fc2a6' }
 
 // ── Resume data ─────────────────────────────────────────────────────────────
@@ -62,7 +57,6 @@ const EXPERIENCE = [
       { value: '60+', label: 'AWS accounts · stale deployments remediated' },
       // Non-breaking space: at the lead size this wraps, and "TPS target"
       // should break as a unit rather than leave "target" on its own.
-      { value: '10,000+ TPS target', label: 'Local load-testing prototype' },
     ],
     // A prose lede synthesized from the highlights below — same facts,
     // woven into a paragraph instead of only existing as bullet
@@ -70,7 +64,7 @@ const EXPERIENCE = [
     // logic was "approved ahead of integration", and the load-test
     // work stayed a prototype built toward a design target.
     // No new claims added beyond what the highlights below state.
-    intro: "Just over a year on RDS's engineering team in Toronto, split between building and keeping things running. On the building side: core Java logic for an instance-configuration API, approved ahead of integration, and a local load-testing prototype built toward a 10,000+ TPS design target. On the running side: the on-call rotation — 25+ incidents deep — plus a sweep across 60+ AWS accounts to clean up infrastructure that had gone stale.",
+    intro: "On the RDS team in Toronto, I worked on Java backend logic and production operations. The work included an instance-configuration API, a local load-testing prototype, and the on-call rotation.",
     data: {
       company: 'Amazon Web Services (AWS)',
       role: 'Software Development Engineer I, RDS Team',
@@ -141,6 +135,7 @@ const PROJECTS = [
     data: {
       name: 'JobRelay — Asynchronous Job Processing',
       stack: 'TypeScript, Express, PostgreSQL, Redis, BullMQ',
+      summary: 'An image-processing service built to accept jobs durably and recover when Redis or a worker fails. The local dashboard lets you trigger failures and follow each attempt.',
       // Same three bullets as the résumé. The benchmark keeps its full
       // qualifier (concurrency 4, local 40-job synthetic run) so it
       // never reads as a production throughput number.
@@ -156,34 +151,15 @@ const PROJECTS = [
     path: '/projects/ascend',
     navTitle: 'Ascend',
     navSub: 'Accountability Tracker',
-    note: "The project this whole page you're looking at is built on.",
+    note: "A tracker and the portfolio built on top of it.",
     repoUrl: 'https://github.com/edgarsetyan23/Ascend',
     data: {
       name: 'Ascend — Personal Accountability Platform',
       stack: 'React 18, Vite, AWS Lambda, DynamoDB, API Gateway, Cognito, CDK, Node 22, Vercel',
-      // Three specific engineering decisions instead of a flat feature
-      // dump — each one is something you'd actually get asked to
-      // defend in an interview, not just a checklist of technologies.
-      highlights: [
-        'Auth: the Cognito SDK persists the session (including the JWT) in its own localStorage-backed storage so a page refresh doesn’t force a re-login; every request re-reads a fresh token before calling the API. API Gateway’s JWT authorizer validates it before Lambda ever runs — an unauthenticated call never touches application code.',
-        'Data model: single-table DynamoDB — PK = USER#{sub}, SK = TRACKER#{id}#ENTRY#{uuid}, plus a GSI for entries ordered by creation time. Loading a tab is one Query. No scans, no joins.',
-        'This page is the proof: /portfolio runs on its own unauthenticated Lambda with the owner’s Cognito sub baked in at deploy time. No user input ever touches the partition key, and a non-whitelisted tracker 404s instead of 403s.',
-        'Also built: a Gmail scanner (new-tab OAuth to dodge Cross-Origin-Opener-Policy, metadata-only fetch, Claude Haiku extraction) and a live LeetCode profile banner (cached GraphQL proxy).',
-      ],
+      summary: 'A tracker for applications, coding practice, and activity, with a public portfolio attached. The Gmail importer suggests application updates for review before anything is saved.',
+      highlights: [],
     },
-    snippet: {
-      file: 'src/hooks/useEntries.js',
-      code: `// Optimistic update strategy:
-//   1. Apply the change to local state immediately (instant UI feedback)
-//   2. Fire the API call in the background
-//   3. On success: replace the optimistic record with the server's response
-//   4. On failure: roll back to the previous state and surface the error
-export function useEntries(trackerId) {
-  const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  // ...`,
-    },
+
   },
   {
     id: 'oncall',
@@ -194,6 +170,7 @@ export function useEntries(trackerId) {
     data: {
       name: 'On-Call Debugging Assistant',
       stack: 'AWS Lambda, Internal Web App — 1st place, AWS RDS Toronto Hackathon',
+      summary: 'A team hackathon project that turns an incident ticket into a guided troubleshooting checklist, using three diagnostic playbooks. It won first place at the AWS RDS Toronto hackathon.',
       highlights: [
         'Built an internal web tool where engineers paste a ticket link/ID to launch guided Q&A troubleshooting flows backed by 3 diagnostic playbooks, outputting actionable next-step debugging checks and mitigations.',
         'Won 1st place in a 3-day AWS RDS Toronto team hackathon for improving overnight incident triage speed and consistency.',
@@ -247,7 +224,7 @@ const NAV_GROUPS = [
     label: 'Live Demonstrations',
     items: [
       { id: 'leetcode', path: '/live/leetcode', navTitle: 'Problem-Solving Log', navSub: 'Live' },
-      { id: 'activity', path: '/live/activity', navTitle: 'Daily Practice', navSub: 'Live' },
+      { id: 'activity', path: '/live/activity', navTitle: 'Activity Archive', navSub: 'Past entries' },
       { id: 'analyzer', path: '/analyzer/score', navTitle: 'Resume Review', navSub: 'Try it' },
     ],
   },
@@ -347,15 +324,6 @@ function HighlightList({ items }) {
   )
 }
 
-function DetailPanel({ file, code }) {
-  return (
-    <div className="exh-detail">
-      <div className="exh-detail-label">Detail, enlarged — <span className="exh-detail-file">{file}</span></div>
-      <pre className="exh-detail-code"><code>{code}</code></pre>
-    </div>
-  )
-}
-
 const DIFFICULTY_BADGE = {
   Easy:   { bg: '#d1fae5', color: '#065f46' },
   Medium: { bg: '#fef3c7', color: '#92400e' },
@@ -403,65 +371,6 @@ function LeetcodeTable({ entries }) {
           })}
         </tbody>
       </table>
-    </div>
-  )
-}
-
-function AnalyzerResult({ result, onReset }) {
-  return (
-    <div className="exh-analyzer-result">
-      <div className="exh-analyzer-left">
-        <ScoreCircle score={result.overall} />
-        <p className="exh-wordcount-note">{result.wordCount} words</p>
-        <span className={`exh-source-badge ${result.source === 'claude' ? 'exh-source-badge--ai' : 'exh-source-badge--local'}`}>
-          {result.source === 'claude' ? '✦ Scored by Claude AI' : '⚙ Scored locally'}
-        </span>
-        <button className="exh-retry-btn" onClick={onReset}>
-          Try another →
-        </button>
-      </div>
-      <div className="exh-analyzer-right">
-        <div className="exh-cat-bars">
-          {result.categories.map((cat, i) => (
-            <CatBar key={cat.key} label={cat.label} score={cat.score} weight={cat.weight} delay={i * 80} />
-          ))}
-        </div>
-        {result.highlights && (
-          <div className="exh-detected-groups">
-            {result.highlights.awsServices?.length > 0 && (
-              <div className="exh-detected-group">
-                <span className="exh-detected-group-label">AWS Services</span>
-                <div className="exh-detected-tags">
-                  {result.highlights.awsServices.map(s => (
-                    <span key={s} className="exh-detected-tag exh-detected-tag--aws">{s}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {result.highlights.techStack?.length > 0 && (
-              <div className="exh-detected-group">
-                <span className="exh-detected-group-label">Tech Stack</span>
-                <div className="exh-detected-tags">
-                  {result.highlights.techStack.map(t => (
-                    <span key={t} className="exh-detected-tag exh-detected-tag--tech">{t}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        {result.recommendations?.length > 0 && (
-          <div className="exh-recs">
-            <p className="exh-recs-title">What to Fix</p>
-            {result.recommendations.map((rec, i) => (
-              <div key={i} className="exh-rec">
-                <div className="exh-rec-label">{rec.category}</div>
-                <p className="exh-rec-text">{rec.text}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   )
 }
@@ -643,11 +552,6 @@ export function RecruiterView() {
   const [feedErrors, setFeedErrors] = useState({})
   const [feedRetry, setFeedRetry] = useState(0)
 
-  const [score,       setScore]       = useState(null)
-  const [analyzing,   setAnalyzing]   = useState(false)
-  const [extracting,  setExtracting]  = useState(false)
-  const [analyzeErr,  setAnalyzeErr]  = useState(null)
-
   // Mobile gets a deliberately simpler page, not a shrunk-down copy
   // of the desktop one: no 3D guide, no speech bubble, no floor, no
   // guided tour. That whole system carries real weight (a WebGL
@@ -668,6 +572,17 @@ export function RecruiterView() {
   // plate, where "Start the tour" summons him to center stage. Resets
   // when you leave the Introduction plate, so returning later starts
   // fresh rather than staying centered forever.
+  const [guideEnabled, setGuideEnabled] = useState(false)
+  // Keep Mini Edgar visible on desktop, loading his scene after the text is ready.
+  useEffect(() => {
+    if (isMobile) return
+    if (window.requestIdleCallback) {
+      const id = window.requestIdleCallback(() => setGuideEnabled(true), { timeout: 1200 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const id = window.setTimeout(() => setGuideEnabled(true), 400)
+    return () => window.clearTimeout(id)
+  }, [isMobile])
   const [tourStarted, setTourStarted] = useState(false)
   useEffect(() => {
     if (activeId !== 'root') setTourStarted(false)
@@ -785,6 +700,7 @@ export function RecruiterView() {
   const [celebrateTick, setCelebrateTick] = useState(0)
 
   function startAutoTour() {
+    setGuideEnabled(true)
     setTourStarted(true)
     setAutoTourActive(true)
     setAutoTourStep(0)
@@ -833,7 +749,7 @@ export function RecruiterView() {
     const timer = setTimeout(() => {
       if (!autoTourActiveRef.current) return
       const path = TOUR_SEQUENCE[0]
-      const to = path === '/' ? '/portfolio' : `/portfolio${path}`
+      const to = path === '/' ? '/' : `/portfolio${path}`
       tourNavPathRef.current = to
       navigate(to)
       setAutoTourStep(1)
@@ -862,7 +778,7 @@ export function RecruiterView() {
   function advanceTour() {
     const path = TOUR_SEQUENCE[autoTourStep]
     const isLastStop = autoTourStep === TOUR_SEQUENCE.length - 1
-    const to = path === '/' ? '/portfolio' : `/portfolio${path}`
+    const to = path === '/' ? '/' : `/portfolio${path}`
     tourNavPathRef.current = to
     navigate(to)
     if (isLastStop) {
@@ -926,63 +842,34 @@ export function RecruiterView() {
     }
   }, [activeId])
 
-  useEffect(() => {
-    const previousTitle = document.title
-    const title = document.querySelector('.exh-title')
-    document.title = activeId === 'root' ? 'Edgar Setyan | Backend & Cloud Engineer' : `${title?.textContent || 'Portfolio'} | Edgar Setyan`
-    return () => { document.title = previousTitle }
-  }, [activeId])
+  useEffect(() => { updatePortfolioMetadata(activeId) }, [activeId])
 
-  const previousPathRef = useRef(location.pathname)
+  const previousPathRef = useRef(null)
   useLayoutEffect(() => {
     if (previousPathRef.current === location.pathname) return
+    const initialOverview = previousPathRef.current === null && location.pathname === '/'
     previousPathRef.current = location.pathname
+    if (initialOverview) return
     window.scrollTo({ top: 0, behavior: 'instant' })
     document.querySelector('.exh-title')?.focus({ preventScroll: true })
   }, [location.pathname])
 
   useEffect(() => {
+    if (activeId !== 'leetcode' && activeId !== 'activity') return
     let cancelled = false
+    const feed = activeId
     setLoading(true)
     setFeedErrors({})
-    Promise.allSettled([listPublicEntries('leetcode'), listPublicEntries('activity')])
-      .then(([lc, act]) => {
+    listPublicEntries(feed)
+      .then(entries => {
         if (cancelled) return
-        if (lc.status === 'fulfilled') setLeetcode(lc.value)
-        if (act.status === 'fulfilled') setActivity(act.value)
-        setFeedErrors({ leetcode: lc.status === 'rejected', activity: act.status === 'rejected' })
+        if (feed === 'leetcode') setLeetcode(entries)
+        else setActivity(entries)
       })
+      .catch(() => { if (!cancelled) setFeedErrors({ [feed]: true }) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
-  }, [feedRetry])
-
-  async function handleFile(file) {
-    setExtracting(true)
-    setAnalyzeErr(null)
-    let text
-    try {
-      text = await extractTextFromPdf(file)
-      if (text.trim().split(/\s+/).length < 50) {
-        setAnalyzeErr('PDF extracted too little text — try a text-based PDF.')
-        setExtracting(false)
-        return
-      }
-    } catch {
-      setAnalyzeErr('Could not read this PDF. Try a fresh copy.')
-      setExtracting(false)
-      return
-    }
-    setExtracting(false)
-    setAnalyzing(true)
-    try {
-      const result = await scoreResume(text)
-      setScore(result)
-    } catch {
-      setAnalyzeErr('Scoring failed. Please try again.')
-    } finally {
-      setAnalyzing(false)
-    }
-  }
+  }, [activeId, feedRetry])
 
   const activeNavItem = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.id === activeId)
   const guideIsHero = activeId === 'root' && tourStarted
@@ -1074,14 +961,7 @@ export function RecruiterView() {
                 footnote once you've already scrolled past everything
                 else. Same button, same Start/Stop state, just moved —
                 still absent on mobile, where he never renders at all. */}
-            {!isMobile && (
-              <button
-                className="exh-start-tour"
-                onClick={autoTourActive ? cancelAutoTour : startAutoTour}
-              >
-                {autoTourActive ? 'Stop the tour ✕' : tourStarted ? 'Pick a stop below ↓' : "Come on, I'll show you around →"}
-              </button>
-            )}
+
 
             {/* Only "Download résumé" is a real button — it's the one
                 action here that actually does something (starts a
@@ -1124,7 +1004,7 @@ export function RecruiterView() {
                 <span className="exh-featured-card-arrow">See the failure recovery →</span>
               </Link>
               <Link to={`/portfolio${PROJECTS.find((p) => p.id === 'ascend').path}`} className="exh-featured-card">
-                <img className="exh-featured-image" src="/previews/ascend-workflow.png" alt="Close-up of Ascend's application review interface using sample data" width="800" height="400" />
+                <img className="exh-featured-image" src="/previews/ascend-workflow.png" alt="Sample import result showing two fictional job applications" width="800" height="400" />
                 <span className="exh-featured-card-title">Ascend</span>
                 <span className="exh-featured-card-why">
                   Explore the authentication, data model, and API behind this site.
@@ -1132,6 +1012,15 @@ export function RecruiterView() {
                 <span className="exh-featured-card-arrow">Explore the engineering →</span>
               </Link>
             </div>
+
+            {!isMobile && (
+              <button
+                className="exh-start-tour"
+                onClick={autoTourActive ? cancelAutoTour : startAutoTour}
+              >
+                {autoTourActive ? 'Stop the tour ✕' : tourStarted ? 'Pick a stop below ↓' : "Take the optional guided tour →"}
+              </button>
+            )}
 
             {/* An index, not a second row of cards — Field Work and Studio
                 Projects already got their full-weight pitch in the
@@ -1170,7 +1059,7 @@ export function RecruiterView() {
           {/* Stats open the exhibit, oversized, before the prose — only
               AWS has them, so it reads heavier than the internships
               instead of every Field Work plate sharing one template. */}
-          {exp.stats && <StatRow stats={exp.stats} accent={exp.flashAccent} lead />}
+          {exp.stats && <StatRow stats={exp.stats} accent={theme === 'dark' ? '#ffb85c' : '#915000'} lead />}
           {exp.intro && <p className="exh-intro-text">{exp.intro}</p>}
           <HighlightList items={exp.data.highlights} />
         </ExhibitFrame>
@@ -1184,7 +1073,7 @@ export function RecruiterView() {
         <ExhibitFrame note={proj.note}
           title={proj.data.name} byline={proj.data.stack}
           emblem={ProjectIcon && <ProjectIcon />} emblemVariant="icon">
-          <HighlightList items={proj.data.highlights} />
+          <p className="exh-intro-text exh-project-summary">{proj.data.summary}</p>
           {proj.id === 'ascend' ? (
             // Grouped as one action row near the top of the exhibit —
             // source, the case-study reveal, and a direct shortcut
@@ -1222,7 +1111,7 @@ export function RecruiterView() {
               </a>
             )
           )}
-          {proj.snippet && <DetailPanel file={proj.snippet.file} code={proj.snippet.code} />}
+          {proj.id === 'oncall' && <p className="exh-cs-text">This was a three-day team project for internal use. The flow starts with a ticket link or ID, asks diagnostic questions, and returns the next checks and possible mitigations. Internal code and incident details are not published.</p>}
           {proj.id === 'ascend' && showEngineering && <AscendCaseStudy />}
           {/* Short enough to show outright — no reveal toggle like
               Ascend's much longer case study. */}
@@ -1255,7 +1144,7 @@ export function RecruiterView() {
     if (activeId === 'skills') {
       return (
         <ExhibitFrame title="Technical Skills"
-          byline="Grouped by domain, not proficiency level — I don't self-rate skills on a bar chart.">
+          byline="Languages and tools used across my work and projects.">
           <div className="exh-skills">
             {Object.entries(SKILLS).map(([category, items]) => (
               <div key={category} className="exh-skill-row">
@@ -1275,7 +1164,7 @@ export function RecruiterView() {
     if (activeId === 'leetcode') {
       return (
         <ExhibitFrame title="Problem-Solving Log"
-          byline="Live-fetched, not a screenshot — this reflects my actual solved count as of now.">
+          byline="Profile statistics from LeetCode, alongside selected practice entries.">
           {loading && <p className="exh-loading" role="status">Loading live data…</p>}
           {feedErrors.leetcode && <div role="alert"><p className="exh-error">The problem-solving log is temporarily unavailable.</p><button className="exh-cs-toggle" onClick={() => setFeedRetry(value => value + 1)}>Try again</button></div>}
           {!loading && !feedErrors.leetcode && (
@@ -1290,10 +1179,11 @@ export function RecruiterView() {
 
     if (activeId === 'activity') {
       return (
-        <ExhibitFrame title="Daily Practice Log"
-          byline={loading || feedErrors.activity ? "Entries from Ascend's public activity tracker." : `${activity.length} entries logged in Ascend's activity tracker.`}>
+        <ExhibitFrame title="Activity Archive"
+          byline="Historical coding, study, and activity notes from Ascend. These dates reflect the original entries.">
+          <p className="exh-archive-note">An archive of past entries, rather than a current daily streak.</p>
           {loading && <p className="exh-loading" role="status">Loading live data…</p>}
-          {feedErrors.activity && <div role="alert"><p className="exh-error">The daily practice log is temporarily unavailable.</p><button className="exh-cs-toggle" onClick={() => setFeedRetry(value => value + 1)}>Try again</button></div>}
+          {feedErrors.activity && <div role="alert"><p className="exh-error">The activity archive is temporarily unavailable.</p><button className="exh-cs-toggle" onClick={() => setFeedRetry(value => value + 1)}>Try again</button></div>}
           {!loading && !feedErrors.activity && (
             <ActivityLog tracker={activityTracker} entries={activity} readOnly />
           )}
@@ -1304,30 +1194,8 @@ export function RecruiterView() {
     if (activeId === 'analyzer') {
       return (
         <ExhibitFrame title="Resume Review, Live"
-          byline="A Claude-powered resume scorer benchmarked for early-career SWEs, built into Ascend. Drop a PDF — nothing is stored.">
-          <div className="exh-analyzer-card">
-            {analyzing ? (
-              <div className="exh-analyzer-loading">
-                <div className="exh-spinner" />
-                <div>
-                  <p className="exh-analyzer-loading-title">Analyzing with Claude AI…</p>
-                  <p className="exh-analyzer-loading-sub">Scoring across 6 categories for a 1-year SWE profile</p>
-                </div>
-              </div>
-            ) : score ? (
-              <AnalyzerResult result={score} onReset={() => { setScore(null); setAnalyzeErr(null) }} />
-            ) : (
-              <div className="exh-dropzone-wrap">
-                <div className="exh-analyzer-criteria">
-                  {['Metrics & Impact', 'Action Verbs', 'AWS Depth', 'Tech Keywords', 'Structure', 'Length & Format'].map(c => (
-                    <span key={c} className="exh-pill exh-pill--tag">{c}</span>
-                  ))}
-                </div>
-                <DropZone onFile={handleFile} isExtracting={extracting} />
-                {analyzeErr && <p className="exh-error" role="alert">{analyzeErr}</p>}
-              </div>
-            )}
-          </div>
+          byline="Feedback using an early-career AWS/backend rubric. Scores are subjective and do not predict hiring outcomes.">
+          <Suspense fallback={<p role="status">Loading resume tool...</p>}><PortfolioResumeReview /></Suspense>
         </ExhibitFrame>
       )
     }
@@ -1336,12 +1204,12 @@ export function RecruiterView() {
   }
 
   return (
-    <div className="exh-page">
+    <div className={`exh-page ${!isMobile ? 'exh-page--with-guide' : ''}`}>
       <a className="exh-skip-link" href="#portfolio-content">Skip to content</a>
       <nav className="exh-topbar" aria-label="Portfolio actions">
         <Link to="/" className="exh-brand">
           <span className="exh-brand-mark">✦</span>
-          <span className="exh-brand-name">Ascend</span>
+          <span className="exh-brand-name">Edgar Setyan</span>
         </Link>
         {/* No crumb on the home page — the name heading right below
             already says where you are, so "Overview" was one more
@@ -1375,7 +1243,7 @@ export function RecruiterView() {
             </>
           )}
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
-          <Link to="/" className="exh-back-link">← Back to app</Link>
+          <Link to="/app" className="exh-back-link">← Open tracker</Link>
         </div>
       </nav>
 
@@ -1399,7 +1267,7 @@ export function RecruiterView() {
               {group.items.map((item) => (
                 <Link
                   key={item.id}
-                  to={item.path === '/' ? '/portfolio' : `/portfolio${item.path}`}
+                  to={item.path === '/' ? '/' : `/portfolio${item.path}`}
                   className={`exh-nav-item ${activeId === item.id ? 'exh-nav-item--active' : ''}`}
                   aria-current={activeId === item.id ? 'page' : undefined}
                   onClick={() => { cancelAutoTour(); setMobileNavOpen(false) }}
@@ -1427,7 +1295,7 @@ export function RecruiterView() {
         </main>
       </div>
 
-      {!isMobile && (
+      {!isMobile && guideEnabled && (
         <div
           className={`exh-guide-wrap ${guideIsHero ? 'exh-guide-wrap--hero' : ''}`}
           style={

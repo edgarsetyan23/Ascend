@@ -1,3 +1,4 @@
+import { validateJSONRequest, reserveAIRequest, sendAIError } from './_lib/ai-protection.js'
 import Anthropic from '@anthropic-ai/sdk'
 import { resumeSchema, parseStructuredOutput, validateResume } from './_lib/structured-output.js'
 
@@ -40,10 +41,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  try { validateJSONRequest(req, 40000) } catch (error) { return sendAIError(res, error) }
+
   const { text } = req.body || {}
   if (!text || typeof text !== 'string') {
     return res.status(400).json({ error: 'Missing resume text' })
   }
+
+  if (text.length > 16000) return res.status(413).json({ error: 'Resume text must be under 16,000 characters.' })
 
   const wordCount = text.trim().split(/\s+/).length
   if (wordCount < 50) {
@@ -54,8 +59,11 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'API key not configured' })
   }
 
+  let release
   try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    release = await reserveAIRequest(req, 'resume')
+    res.setHeader?.('Cache-Control', 'no-store')
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 20_000, maxRetries: 0 })
 
     const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
@@ -64,7 +72,7 @@ export default async function handler(req, res) {
       system: SYSTEM_PROMPT,
       output_config: { format: { type: 'json_schema', schema: resumeSchema } },
       messages: [
-        { role: 'user', content: `Score this resume:\n\n${text.slice(0, 8000)}` }
+        { role: 'user', content: `Score this resume:\n\n${text}` }
       ],
     })
 
@@ -76,9 +84,11 @@ export default async function handler(req, res) {
       result.categories.reduce((sum, cat) => sum + (cat.score * (weights[cat.key] ?? 0)), 0) * 10
     )
 
-    return res.status(200).json({ ...result, overall })
+    return res.status(200).json({ ...result, wordCount, overall })
   } catch (err) {
     console.error('Resume analysis error:', err.message)
-    return res.status(500).json({ error: 'Analysis failed', detail: err.message })
+    return sendAIError(res, err)
+  } finally {
+    release?.()
   }
 }

@@ -1,3 +1,4 @@
+import { getIdToken } from '../lib/cognito.js'
 import { useState, useEffect, useRef } from 'react'
 import { useToast } from '../context/ToastContext.jsx'
 
@@ -154,9 +155,11 @@ export function EmailScanner({ addEntry, updateEntry, entries }) {
         status: e.status,
       }))
 
+      const idToken = await getIdToken()
+      if (!idToken) throw new Error('Sign in to Ascend to scan emails.')
       const scanRes = await fetch('/api/scan-emails', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
         body: JSON.stringify({ emails, existingEntries }),
         signal,
       })

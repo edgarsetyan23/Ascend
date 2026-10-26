@@ -2,12 +2,13 @@ import { StrictMode } from 'react'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import App from '../App.jsx'
+import App from '../TrackerApp.jsx'
 import { ToastProvider } from '../context/ToastContext.jsx'
 
 const auth = vi.hoisted(() => ({ user: { email: 'test@example.com' }, loading: false }))
+vi.mock('../lib/cognito.js', () => ({ getIdToken: vi.fn().mockResolvedValue('test-token') }))
 vi.mock('pdfjs-dist', () => ({ GlobalWorkerOptions: {} }))
-vi.mock('../context/AuthContext.jsx', () => ({ useAuth: () => auth }))
+vi.mock('../context/AuthContext.jsx', () => ({ useAuth: () => auth, AuthProvider: ({ children }) => children }))
 vi.mock('../lib/api.js', () => ({
   listEntries: vi.fn().mockResolvedValue([]),
   createEntry: vi.fn(), updateEntry: vi.fn(), deleteEntry: vi.fn(),

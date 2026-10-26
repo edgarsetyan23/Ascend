@@ -34,10 +34,10 @@ API Gateway (HTTP API v2)       Vercel Serverless Functions    Gmail API
 
 | File | Role |
 |---|---|
-| `src/main.jsx` | React root. Wraps the tree: `BrowserRouter > ToastProvider > AuthProvider > App` |
-| `src/App.jsx` | Route guard. `/portfolio` and `/oauth-callback` are public; `/` requires auth via `AuthGate`; `*` renders `NotFound` |
-| `src/components/AppShell` | The authenticated app: sidebar, topbar, tracker table, modals |
-| `src/components/RecruiterView.jsx` | The public `/portfolio` page — résumé content, the tour guide, the Ascend exhibit's "Show me the engineering" toggle |
+| `src/main.jsx` | React root. Wraps the tree: `BrowserRouter > ToastProvider > App` |
+| `src/App.jsx` | Route guard. `/` and the portfolio deep links are public; `/app` lazy-loads the authenticated tracker; `/oauth-callback` is public; `*` renders `NotFound` |
+| `src/TrackerApp.jsx` | AuthProvider and AuthGate wrap the tracker shell, sidebar, tables, and modals |
+| `src/components/RecruiterView.jsx` | The public homepage and portfolio deep links — résumé content, the tour guide, the Ascend exhibit's "Show me the engineering" toggle |
 | `src/components/portfolio/` | `AscendCaseStudy.jsx`, `AscendArchitectureDiagram.jsx` (inline SVG), `AscendDemo.jsx` (sample-data demo) — the case study revealed on the Ascend exhibit |
 | `src/hooks/useEntries.js` | All DynamoDB reads/writes live here. Optimistic updates with rollback |
 | `src/context/AuthContext.jsx` | Cognito session state — keeps its own React-state copy of the JWT; the underlying Cognito SDK session (which the token actually comes from) is localStorage-backed |
@@ -159,12 +159,12 @@ CDK synthesizes a CloudFormation template and uploads Lambda bundles to S3. Clou
 
 | Layer | Tool | Command | What's covered |
 |---|---|---|---|
-| Lambda shared utils | Node `node:test` (built-in) | `cd infra && npm test` | `validateTrackerId`, `validateBody`, public tracker whitelist, `OWNER_USER_ID` guard |
+| Lambda shared utils | Node `node:test` (built-in) | `cd infra && npm test` | Input validation, public tracker restrictions, owner guard, paginated reads, and authenticated partial updates |
 | React components | Vitest + Testing Library | `npm test` (root) | `StatsBar` rendering, null/empty states, inline color styles; `AscendDemo` sample-data selection/import/reset; `AscendCaseStudy` renders every required section, the diagram's accessible title, and its source links |
 
 Lambda tests use Node's built-in test runner — no extra dependencies, runs natively with ESM on Node 22.
 
-Frontend tests use Vitest (same config as Vite, zero overhead) with jsdom for a browser-like environment. `AscendCaseStudy`/`AscendDemo` are tested in isolation rather than through `RecruiterView` — the full page pulls in `pdfjs-dist` (via `ResumeReview.jsx`), which needs `DOMMatrix` and isn't available in jsdom.
+Frontend tests use Vitest with jsdom. They cover optimistic updates and rollback, OAuth state handling, public visitor controls, route compatibility, AI response validation, and signed-token and request-limit checks. Model calls and external APIs are mocked. PDF/scoring code is a separate lazy module on the portfolio.
 
 ---
 
@@ -172,13 +172,13 @@ Frontend tests use Vitest (same config as Vite, zero overhead) with jsdom for a 
 
 | Decision | Why |
 |---|---|
-| HTTP API v2 (not REST API) | 30–60% cheaper, lower latency, built-in JWT authorizer |
-| ARM_64 Lambda | ~20% cheaper than x86 at identical performance |
-| Single DynamoDB table | One query per page load, simpler IAM, no joins |
+| HTTP API v2 (not REST API) | Built-in JWT authorizer and the routes needed by this app |
+| ARM_64 Lambda | Managed ARM64 Node.js runtime |
+| Single DynamoDB table | Queries by user and tracker prefix; follows pagination |
 | Fresh token per request | `apiFetch` re-reads the token from the Cognito SDK's session on every call instead of caching it long-lived in one place |
 | Optimistic UI updates | Instant perceived performance — UI reflects changes before the API responds |
 | Separate public Lambda | Zero code path overlap with authenticated handler — can't accidentally skip auth |
-| Gmail redirect-to-new-tab OAuth | Avoids Cross-Origin-Opener-Policy restrictions that silently break popup-based OAuth flows; token passed via localStorage storage event and deleted immediately |
+| Gmail redirect-to-new-tab OAuth | Avoids Cross-Origin-Opener-Policy restrictions that silently break popup-based OAuth flows; token handed across tabs via BroadcastChannel, validated against a one-use state value with a five-minute expiry |
 | Gmail format=metadata | Email body never leaves Gmail's servers; only subject/from/date/snippet sent to Claude |
 | Gmail follow-up classification | Existing entries passed to Claude as context; Claude classifies emails as new_application or follow_up and fuzzy-matches follow-ups to tracked entries by company+role; unconfident matches fall back to new_application to avoid incorrect status updates |
 | LeetCode stats proxy (`/api/leetcode-stats`) | Vercel serverless function proxies LeetCode's GraphQL API; CDN-cached 5 min — avoids CORS issues calling LeetCode directly from the browser |

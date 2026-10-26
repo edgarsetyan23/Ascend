@@ -33,8 +33,11 @@ function scoreColor(score) {
 
 // ─── PDF text extraction ──────────────────────────────────────────────────
 export async function extractTextFromPdf(file) {
+  if (file.size > 5 * 1024 * 1024) throw new Error('Choose a PDF under 5 MB.')
+  if (file.type && file.type !== 'application/pdf') throw new Error('Choose a PDF file.')
   const arrayBuffer = await file.arrayBuffer()
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+  if (pdf.numPages > 10) { await pdf.destroy?.(); throw new Error('Choose a PDF with no more than 10 pages.') }
   const pages = []
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i)
@@ -43,12 +46,15 @@ export async function extractTextFromPdf(file) {
     let pageText = ''
     for (const item of content.items) {
       if (lastY !== null && Math.abs(item.transform[5] - lastY) > 2) pageText += '\n'
-      pageText += item.str
+      pageText += item.str + (/\s$/.test(item.str) ? '' : ' ')
       lastY = item.transform[5]
     }
     pages.push(pageText)
   }
-  return pages.join('\n')
+  await pdf.destroy?.()
+  const text = pages.join('\n')
+  if (text.length > 16000) throw new Error('Resume text must be under 16,000 characters.')
+  return text
 }
 
 // ─── SVG Score Circle ─────────────────────────────────────────────────────
@@ -160,7 +166,7 @@ export function DropZone({ onFile, isExtracting }) {
           </div>
           <p className="pdf-drop-label">{isDragging ? 'Drop your PDF here' : 'Drop your resume PDF here'}</p>
           <p className="pdf-drop-sub">or click to browse</p>
-          <p className="pdf-drop-hint">Overleaf → Menu → Download PDF</p>
+          <p className="pdf-drop-hint">Text-based PDF · up to 5 MB and 10 pages</p>
         </>
       )}
     </div>
@@ -186,6 +192,7 @@ function detectBlueprint(text) {
 
 // ─── API call with local fallback ─────────────────────────────────────────
 export async function scoreResume(text) {
+  if (text.length > 16000) throw new Error('Resume text must be under 16,000 characters.')
   const blueprintChecks = detectBlueprint(text)
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 30_000)
@@ -347,8 +354,8 @@ function InputPanel({ onAnalyze, onCancel, hasHistory, initialText = '', error }
         setExtractError('PDF extracted too little text. Try "paste text" mode.'); setIsExtracting(false); return
       }
       onAnalyze(extracted)
-    } catch {
-      setExtractError('Could not read this PDF. Try downloading a fresh copy from Overleaf.')
+    } catch (error) {
+      setExtractError(/Choose a PDF|Resume text/.test(error.message) ? error.message : 'Could not read this PDF. Try a fresh text-based PDF.')
       setIsExtracting(false)
     }
   }
@@ -363,13 +370,14 @@ function InputPanel({ onAnalyze, onCancel, hasHistory, initialText = '', error }
       <div className="resume-intro" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h2 className="resume-title">Resume Scorer</h2>
-          <p className="resume-subtitle">Benchmarked for a 1-year post-grad SWE with AWS experience.</p>
+          <p className="resume-subtitle">A fixed rubric for early-career AWS/backend resumes.</p>
         </div>
         {hasHistory && (
           <button className="resume-back-btn" onClick={onCancel}>← Back to history</button>
         )}
       </div>
 
+      <p className="resume-privacy-note">Extracted or pasted text is sent to Anthropic for feedback. This rubric emphasizes early-career AWS/backend resumes. If the service is unavailable, a local heuristic scores the text instead. Saved results appear in your private scan history.</p>
       <div className="resume-mode-tabs">
         <button className={`resume-mode-tab ${mode === 'upload' ? 'resume-mode-tab--active' : ''}`}
           onClick={() => { setMode('upload'); setExtractError('') }}>Upload PDF</button>
@@ -382,7 +390,7 @@ function InputPanel({ onAnalyze, onCancel, hasHistory, initialText = '', error }
       ) : (
         <>
           <textarea className="resume-textarea" placeholder="Paste your full resume text here…"
-            value={text} onChange={e => { setText(e.target.value); setExtractError('') }} spellCheck={false} />
+            maxLength={16000} value={text} onChange={e => { setText(e.target.value); setExtractError('') }} spellCheck={false} />
           <div className="resume-textarea-footer">
             <span className={`resume-wordcount ${wordCount > 0 && wordCount < 50 ? 'resume-wordcount--warn' : ''}`}>
               {wordCount} words {wordCount > 0 && wordCount < 50 ? '(need 50+)' : ''}
@@ -433,6 +441,7 @@ function ResultsPanel({ result, onBack }) {
         </span>
       </div>
       <div className="resume-results">
+      {source === 'local' && <p role="status">The AI service was unavailable. These results use the local heuristic scorer.</p>}
         <div className="resume-left">
           <ScoreCircle score={overall} />
           <div className="cat-bars">
@@ -552,7 +561,7 @@ export function ResumeReview({ entries = [], addEntry, deleteEntry, loading }) {
         <div className="resume-analyzing">
           <div className="pdf-spinner" style={{ width: 40, height: 40, borderWidth: 4 }} />
           <p className="resume-analyzing-label">Analyzing with Claude…</p>
-          <p className="resume-analyzing-sub">Comparing against 1yr SWE profiles at top companies</p>
+          <p className="resume-analyzing-sub">Applying the early-career AWS/backend rubric</p>
         </div>
       </div>
     )

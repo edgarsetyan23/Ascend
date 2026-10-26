@@ -2,10 +2,8 @@ import { describe, test, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { AscendCaseStudy } from '../components/portfolio/AscendCaseStudy.jsx';
 
-// Rendered in isolation, not through RecruiterView — the full page
-// pulls in pdfjs-dist (ResumeReview.jsx), which needs DOMMatrix and
-// isn't available in this jsdom test environment. AscendCaseStudy has
-// no such dependency, so it's tested directly instead.
+// Render the case study independently of routing and external APIs.
+
 describe('AscendCaseStudy', () => {
   // The "Show me the engineering" and "Try the sample workflow"
   // buttons in RecruiterView.jsx both set aria-controls="ascend-case-study"
@@ -25,7 +23,7 @@ describe('AscendCaseStudy', () => {
   test('lists all three engineering decisions', () => {
     render(<AscendCaseStudy />);
     expect(screen.getByText(/One DynamoDB table, one partition per user/)).toBeInTheDocument();
-    expect(screen.getByText(/A separate Lambda for the page you.re reading right now/)).toBeInTheDocument();
+    expect(screen.getByText(/A separate Lambda for public tracker data/)).toBeInTheDocument();
     expect(screen.getByText(/Gmail → metadata → Claude → a review modal/)).toBeInTheDocument();
   });
 

@@ -31,7 +31,7 @@ export function Sidebar({ activeId, onSelect, entryCounts }) {
         })}
       </ul>
       <MotivationQuote />
-      <a href="/portfolio" className="sidebar-recruiter-link" title="Portfolio" aria-label="Portfolio">
+      <a href="/" className="sidebar-recruiter-link" title="Portfolio" aria-label="Portfolio">
         <span>👔</span>
         <span className="sidebar-item-name">Portfolio</span>
       </a>

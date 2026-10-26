@@ -12,6 +12,15 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        // Optional route modules are fetched when visited, not during SW install.
+        globIgnores: ['**/TrackerApp-*', '**/ResumeReview-*', '**/PortfolioResumeReview-*', '**/TourGuide-*', '**/studio-*', 'mini-edgar-studio.html'],
+        runtimeCaching: [{
+          urlPattern: ({ url, request }) => url.origin === self.location.origin && url.pathname.startsWith('/assets/') && ['script', 'style', 'worker'].includes(request.destination),
+          handler: 'CacheFirst',
+          options: { cacheName: 'ascend-visited-assets', expiration: { maxEntries: 40, maxAgeSeconds: 30 * 24 * 60 * 60 } },
+        }],
+      },
       includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'Ascend — Accountability Tracker',
@@ -20,7 +29,7 @@ export default defineConfig({
         theme_color: '#0f0f0f',
         background_color: '#0f0f0f',
         display: 'standalone',
-        start_url: '/',
+        start_url: '/app',
         scope: '/',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },

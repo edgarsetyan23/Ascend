@@ -7,7 +7,7 @@ const root = path.resolve(process.env.JOBRELAY_PUBLIC_DIR || '../jobrelay/public
 (async () => {
  const browser = await chromium.launch({channel:'msedge',headless:true});
  try {
-  const page=await browser.newPage({viewport:{width:1040,height:520},deviceScaleFactor:1});
+  const page=await browser.newPage({viewport:{width:640,height:420},deviceScaleFactor:1});
   const jobs = ['queued','running','succeeded','failed'].map((status,i)=>({
    id:`sample0${i+1}-dashboard`,status,isDemo:true,attempts:i===3?3:1,
    createdAt:'2026-10-23T12:00:00Z',payload:{originalFilename:['landscape.jpg','portrait.png','sample.jpg','upload.webp'][i]},
@@ -33,7 +33,9 @@ const root = path.resolve(process.env.JOBRELAY_PUBLIC_DIR || '../jobrelay/public
    document.querySelector('.hint').remove();
   });
   await page.addStyleTag({content:'header.site-header{padding:18px 20px 12px}main{padding:16px 20px}main section{margin-bottom:12px}h2{font-size:18px}.board{gap:12px}.ticket{padding:12px;color:var(--ink)}.column{padding:12px}'});
-  await page.screenshot({path:'public/previews/jobrelay-dashboard.png',clip:{x:0,y:0,width:1040,height:420}});
+  await page.locator('#board-heading').evaluate(element => { element.textContent = 'Dispatch board · Sample data'; });
+  await page.addStyleTag({content:'.board{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.column:first-child,.column:last-child{display:none}.column{min-height:160px}'});
+  await page.locator('[aria-labelledby="board-heading"]').screenshot({path:'public/previews/jobrelay-dashboard.png'});
   console.log('Saved labelled sample dashboard preview.');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

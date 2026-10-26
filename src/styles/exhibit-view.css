@@ -1366,14 +1366,14 @@
 /* Mini Edgar's welcome belongs to the page, like a small gallery display. */
 .exh-welcome {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-columns: 160px minmax(0, 1fr);
   align-items: center;
-  gap: 28px;
-  margin: 30px 0 28px;
-  padding: 18px 30px 22px 18px;
+  gap: 20px;
+  margin: 24px 0;
+  padding: 12px 20px;
   border: 1px solid var(--exh-border);
-  border-radius: 12px;
-  background: var(--exh-sidebar-bg);
+  border-radius: 8px;
+  background: transparent;
 }
 .exh-welcome-stage {
   position: relative;
@@ -1381,15 +1381,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 264px;
+  min-height: 168px;
   isolation: isolate;
 }
 .exh-welcome-stage::before {
   content: '';
   position: absolute;
-  width: 180px;
-  height: 40px;
-  bottom: 37px;
+  width: 108px;
+  height: 22px;
+  bottom: 29px;
   border: 1px solid var(--exh-border);
   border-radius: 50%;
   background: var(--exh-accent-soft);
@@ -1400,14 +1400,13 @@
   padding-top: 8px;
   border-top: 1px solid var(--exh-border);
   color: var(--exh-ink-subtle);
-  font: 0.75rem var(--exh-font-mono);
+  font: 0.7rem var(--exh-font-mono);
 }
-.exh-welcome-loading { min-height: 240px; display: grid; place-items: center; color: var(--exh-ink-subtle); font-size: 0.85rem; }
-.exh-welcome-eyebrow { margin: 0 0 9px; color: var(--exh-accent); font-size: 0.75rem; letter-spacing: 0.07em; text-transform: uppercase; }
-.exh-welcome-copy h2 { margin: 0 0 12px; font: 600 clamp(1.5rem, 2.1vw, 1.9rem)/1.2 var(--exh-font-display); }
-.exh-welcome-copy > p:not(.exh-welcome-eyebrow) { margin: 0; max-width: 45ch; line-height: 1.7; color: var(--exh-ink-muted); }
-.exh-welcome-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-top: 20px; }
-.exh-welcome-tour { padding: 11px 16px; border: 1px solid var(--exh-accent); border-radius: 6px; background: var(--exh-accent); color: var(--exh-bg-raised); font: 600 0.9rem var(--exh-font-body); cursor: pointer; min-height: 44px; }
+.exh-welcome-loading { min-height: 144px; display: grid; place-items: center; color: var(--exh-ink-subtle); font-size: 0.85rem; }
+.exh-welcome-copy h2 { margin: 0 0 12px; font: 600 1.3rem/1.3 var(--exh-font-display); }
+.exh-welcome-copy > p { margin: 0; max-width: 50ch; font-size: 0.95rem; line-height: 1.65; color: var(--exh-ink-muted); }
+.exh-welcome-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-top: 12px; }
+.exh-welcome-tour { padding: 11px 16px; border: 1px solid var(--exh-accent); border-radius: 6px; background: transparent; color: var(--exh-accent); font: 600 0.88rem var(--exh-font-body); cursor: pointer; min-height: 44px; }
 .exh-welcome-actions a { color: var(--exh-accent); font-size: 0.88rem; text-underline-offset: 4px; padding: 10px 0; }
-[data-theme="dark"] .exh-welcome-tour { color: var(--exh-bg); }
+[data-theme="dark"] .exh-welcome-tour { color: var(--exh-accent); }
 #featured-work { scroll-margin-top: 80px; }

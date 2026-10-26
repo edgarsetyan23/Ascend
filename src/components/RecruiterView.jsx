@@ -157,7 +157,10 @@ const PROJECTS = [
       name: 'Ascend — Personal Accountability Platform',
       stack: 'React 18, Vite, AWS Lambda, DynamoDB, API Gateway, Cognito, CDK, Node 22, Vercel',
       summary: 'A tracker for applications, coding practice, and activity, with a public portfolio attached. The Gmail importer suggests application updates for review before anything is saved.',
-      highlights: [],
+      highlights: [
+        'Built a Gmail importer that sends email metadata to Claude Haiku and suggests new applications and status updates; every suggestion is shown for review, and only the ones I select are saved.',
+        'Protected the AI endpoints with Redis rate limits shared across serverless instances, request size caps, and fail-closed handling: if the shared quota store is unreachable, the request is rejected before Claude is called.',
+      ],
     },
 
   },
@@ -1068,6 +1071,7 @@ export function RecruiterView() {
               <p className="exh-cs-text">Internal code and incident details are not published.</p>
             </>
           )}
+          {proj.id === 'ascend' && <HighlightList items={proj.data.highlights} />}
           {proj.id === 'ascend' && showEngineering && <AscendCaseStudy />}
           {/* Short enough to show outright — no reveal toggle like
               Ascend's much longer case study. */}

@@ -875,61 +875,34 @@ export function RecruiterView() {
   const guideIsHero = activeId === 'root' && tourStarted
   const guideSize = 300
 
-  // Corner mode used to anchor him to the raw viewport corner
-  // (right: 20px, bottom: 12px), completely independent of where the
-  // actual content column sits — on a wide window that leaves a huge
-  // dead gap between the last content and him. Measuring the real
-  // .exh-frame instead and deriving his resting spot from ITS edges
-  // means he stands right where the content actually ends, on every
-  // page, at any window size — not a fixed distance from an
-  // unrelated screen corner. Skipped in hero mode, which already has
-  // its own deliberate centered position.
   const [guideHomeRect, setGuideHomeRect] = useState(null)
   useLayoutEffect(() => {
-    // Anchor to the stable reading column, not its animated inner plate.
-    const el = document.querySelector('.exh-main')
-    if (!el) { setGuideHomeRect(null); return }
+    const column = document.querySelector('.exh-main')
+    const wrap = document.querySelector('.exh-guide-wrap')
+    if (!column || !wrap || window.innerWidth <= 1180) return
 
     function measure() {
-      // Below this width the sidebar collapses and the whole layout
-      // stacks — content and the guide are already close together
-      // there, so defer entirely to the simpler mobile CSS corner
-      // position instead of fighting it with a computed one.
-      if (window.innerWidth <= 1180) { setGuideHomeRect(null); return }
-      const wrapEl = document.querySelector('.exh-guide-wrap')
-      if (!wrapEl) return
-      const rect = el.getBoundingClientRect()
-      // right/bottom position the WRAP'S OWN right/bottom edge — with
-      // align-items: flex-end the wrap grows leftward and upward from
-      // that anchor, so its own width/height have to be subtracted or
-      // "just past the frame's edge" still leaves the wrap's body
-      // (and the caption, which is often wider than the canvas)
-      // overlapping the content instead of clearing it. Measuring the
-      // wrap's actual current size — stable regardless of where it's
-      // positioned — makes this correct for any caption length or
-      // guide size instead of assuming one.
-      const wrapRect = wrapEl.getBoundingClientRect()
-      const GAP = 28
-      const right = Math.max(20, window.innerWidth - rect.right - GAP - wrapRect.width)
-      const rawBottom = window.innerHeight - rect.bottom - GAP - wrapRect.height
-      // Clamp so a very tall page never pushes him below the fold and
-      // a very short one never floats him implausibly close to the
-      // top — he stays in a believable "standing in the room" range.
-      const bottom = Math.min(Math.max(rawBottom, 12), window.innerHeight * 0.5)
+      const rect = column.getBoundingClientRect()
+      const guide = wrap.getBoundingClientRect()
+      const contentRight = rect.right - parseFloat(getComputedStyle(column).paddingRight)
+      const gap = activeId === 'root' ? 8 : 28
+      const right = Math.max(20, window.innerWidth - contentRight - gap - guide.width)
+      // On the overview he stands alongside the introduction, rather than
+      // deriving his position from the bottom of a long page.
+      const introTop = Math.max(84, Math.min(rect.top + 120, window.innerHeight - guide.height - 20))
+      const bottom = activeId === 'root'
+        ? Math.max(12, window.innerHeight - introTop - guide.height)
+        : Math.min(Math.max(window.innerHeight - rect.bottom - 28 - guide.height, 12), window.innerHeight * 0.5)
       setGuideHomeRect({ right, bottom })
     }
 
     measure()
-    const ro = new ResizeObserver(measure)
-    ro.observe(el)
-    const wrapEl = document.querySelector('.exh-guide-wrap')
-    if (wrapEl) ro.observe(wrapEl)
+    const observer = new ResizeObserver(measure)
+    observer.observe(column)
+    observer.observe(wrap)
     window.addEventListener('resize', measure)
-    return () => {
-      ro.disconnect()
-      window.removeEventListener('resize', measure)
-    }
-  }, [activeId, guideIsHero, autoTourActive, tourFinale])
+    return () => { observer.disconnect(); window.removeEventListener('resize', measure) }
+  }, [activeId, guideEnabled, guideIsHero, autoTourActive, tourFinale])
 
   function renderBody() {
     if (activeId === 'root') {
@@ -1297,7 +1270,7 @@ export function RecruiterView() {
 
       {!isMobile && guideEnabled && (
         <div
-          className={`exh-guide-wrap ${guideIsHero ? 'exh-guide-wrap--hero' : ''}`}
+          className={`exh-guide-wrap ${activeId === 'root' ? 'exh-guide-wrap--intro' : ''} ${guideIsHero ? 'exh-guide-wrap--hero' : ''}`}
           style={
             guideTargetRect
               ? { right: `${guideTargetRect.right}px`, bottom: `${guideTargetRect.bottom}px`, transform: 'translate(0, 0)' }

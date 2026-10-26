@@ -1352,3 +1352,6 @@
   .exh-page:not(.exh-page--with-guide) .exh-featured-card:last-child:nth-child(3) { grid-column: auto; display: flex; }
   .exh-page:not(.exh-page--with-guide) .exh-featured-card:last-child:nth-child(3) .exh-featured-image { grid-row: auto; margin-bottom: 10px; }
 }
+
+/* Keep the first desktop pose beside the introduction as the scene loads. */
+.exh-guide-wrap--intro { transition: none; }

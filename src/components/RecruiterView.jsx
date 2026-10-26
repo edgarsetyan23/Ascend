@@ -158,8 +158,8 @@ const PROJECTS = [
       stack: 'React 18, Vite, AWS Lambda, DynamoDB, API Gateway, Cognito, CDK, Node 22, Vercel',
       summary: 'A tracker for applications, coding practice, and activity, with a public portfolio attached. The Gmail importer suggests application updates for review before anything is saved.',
       highlights: [
-        'Built a Gmail importer that sends email metadata to Claude Haiku and suggests new applications and status updates; every suggestion is shown for review, and only the ones I select are saved.',
-        'Protected the AI endpoints with Redis rate limits shared across serverless instances, request size caps, and fail-closed handling: if the shared quota store is unreachable, the request is rejected before Claude is called.',
+        'Built a Gmail importer that sends each email’s subject, sender, date, and a short snippet to Claude Haiku and suggests new applications and status updates; every suggestion is shown for review, and only the ones I select are saved.',
+        'Protected the AI endpoints with per-instance rate limits, a two-call concurrency cap, and request size caps.',
       ],
     },
 

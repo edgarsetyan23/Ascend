@@ -16,7 +16,7 @@ The browser requests a public feed only when its corresponding page is opened. F
 
 ## Optional features
 
-The private tracker is a separate lazy route. The PDF/scoring module loads only for the resume tool or the private tracker's resume tab. Mini Edgar remains visible on desktop; his 3D scene loads after the main content. The tour is an optional action below the featured work. Narrow layouts use the gallery menu.
+The private tracker is a separate lazy route. The PDF/scoring module loads only for the resume tool or the private tracker's resume tab. Mini Edgar remains visible on desktop; his 3D scene loads after the main content. The homepage gives him a dedicated welcome section before the featured work, with a display platform, a tour action, and a direct link to browse the projects. He scrolls with that section; exhibit pages keep the accompanying guide. Narrow layouts use the gallery menu.
 
 The public resume tool explains that PDF text is extracted in the browser and sent to Anthropic. It does not save public uploads to DynamoDB. Scores use an early-career AWS/backend rubric. When the cloud call fails, the results explicitly identify the local heuristic fallback. The upload limit is 5 MB, 10 pages, and 16,000 extracted characters.
 

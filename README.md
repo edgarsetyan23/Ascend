@@ -130,7 +130,7 @@ See `.env.example` and `infra/.env.example` for templates.
 
 The portfolio opens at `/`; the tracker opens at `/app`. Older `/portfolio` overview links redirect to the homepage, while existing project and experience links remain valid. Legacy tracker hash bookmarks (such as `/#jobs`) redirect to `/app#jobs`. The PWA starts at `/app`.
 
-The build writes initial HTML titles, descriptions, canonical links, and social metadata for each known public route. The share image is `public/portfolio-share.png`, with its editable SVG source alongside it. Tracker and OAuth HTML are marked noindex. The PDF/scoring code loads on the resume route; private tracker code loads at `/app`. Mini Edgar remains visible on desktop, with the 3D scene loaded after the main content.
+The build writes initial HTML titles, descriptions, canonical links, and social metadata for each known public route. The share image is `public/portfolio-share.png`, with its editable SVG source alongside it. Tracker and OAuth HTML are marked noindex. The PDF/scoring code loads on the resume route; private tracker code loads at `/app`. Mini Edgar has an inline welcome section on the desktop homepage and accompanies the exhibit pages. His 3D scene loads after the main content.
 
 ## AI request limits
 

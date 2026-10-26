@@ -471,40 +471,6 @@ const PROJECT_ICONS = { jobrelay: JobRelayIcon, ascend: AscendIcon, oncall: OnCa
 // parent keys it), so building the angles/distances directly in the
 // function body is enough; no memoization needed for something that
 // only exists for under a second and remounts clean every time.
-function TourBurst() {
-  const count = 12
-  const particles = Array.from({ length: count }, (_, i) => {
-    const angle = (i / count) * Math.PI * 2 + (Math.random() * 0.3 - 0.15)
-    const distance = 70 + Math.random() * 60
-    return {
-      tx: Math.cos(angle) * distance,
-      ty: Math.sin(angle) * distance,
-      delay: Math.random() * 0.12,
-      size: 4 + Math.random() * 4,
-    }
-  })
-  return (
-    <div className="exh-tour-burst" aria-hidden="true">
-      {particles.map((p, i) => (
-        <span
-          key={i}
-          className="exh-tour-burst-particle"
-          style={{
-            '--tx': `${p.tx}px`,
-            '--ty': `${p.ty}px`,
-            width: p.size,
-            height: p.size,
-            animationDelay: `${p.delay}s`,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// No section eyebrow above the title — the sidebar already marks
-// where you are, so a boxed "Field Work" label on every plate was
-// just repeated decoration.
 function ExhibitFrame({ title, note, byline, emblem, emblemVariant = 'logo', flashAccent, noBrackets, children }) {
   return (
     <div className="exh-frame">
@@ -872,37 +838,42 @@ export function RecruiterView() {
   }, [activeId, feedRetry])
 
   const activeNavItem = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.id === activeId)
-  const guideIsHero = activeId === 'root' && tourStarted
   const guideSize = 300
 
   const [guideHomeRect, setGuideHomeRect] = useState(null)
   useLayoutEffect(() => {
+    if (activeId === 'root' || isMobile) return
     const column = document.querySelector('.exh-main')
     const wrap = document.querySelector('.exh-guide-wrap')
     if (!column || !wrap || window.innerWidth <= 1180) return
-
     function measure() {
       const rect = column.getBoundingClientRect()
       const guide = wrap.getBoundingClientRect()
       const contentRight = rect.right - parseFloat(getComputedStyle(column).paddingRight)
-      const gap = activeId === 'root' ? 8 : 28
-      const right = Math.max(20, window.innerWidth - contentRight - gap - guide.width)
-      // On the overview he stands alongside the introduction, rather than
-      // deriving his position from the bottom of a long page.
-      const introTop = Math.max(84, Math.min(rect.top + 120, window.innerHeight - guide.height - 20))
-      const bottom = activeId === 'root'
-        ? Math.max(12, window.innerHeight - introTop - guide.height)
-        : Math.min(Math.max(window.innerHeight - rect.bottom - 28 - guide.height, 12), window.innerHeight * 0.5)
+      const right = Math.max(20, window.innerWidth - contentRight - 28 - guide.width)
+      const bottom = Math.min(Math.max(window.innerHeight - rect.bottom - 28 - guide.height, 12), window.innerHeight * 0.5)
       setGuideHomeRect({ right, bottom })
     }
-
     measure()
     const observer = new ResizeObserver(measure)
     observer.observe(column)
     observer.observe(wrap)
     window.addEventListener('resize', measure)
     return () => { observer.disconnect(); window.removeEventListener('resize', measure) }
-  }, [activeId, guideEnabled, guideIsHero, autoTourActive, tourFinale])
+  }, [activeId, isMobile, guideEnabled, autoTourActive, tourFinale])
+
+  function renderGuideScene(size) {
+    return (
+          <ErrorBoundary compact compactTitle="Mini Edgar is unavailable"><Suspense fallback={<div className="exh-guide-canvas" style={{ width: size, height: size }} />}>
+            <TourGuide
+              accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light}
+              size={size}
+              walkKey={`${activeId}-${tourStarted}-${walkTick}`}
+              celebrateKey={celebrateTick}
+            />
+          </Suspense></ErrorBoundary>
+    )
+  }
 
   function renderBody() {
     if (activeId === 'root') {
@@ -927,13 +898,7 @@ export function RecruiterView() {
               Currently looking for backend/cloud software engineering roles.
             </p>
 
-            {/* The guide is a real part of the desktop experience, not
-                an afterthought below the fold — his invitation sits
-                right after the intro, before any of the evidence, so
-                it reads as a primary way to explore rather than a
-                footnote once you've already scrolled past everything
-                else. Same button, same Start/Stop state, just moved —
-                still absent on mobile, where he never renders at all. */}
+
 
 
             {/* Only "Download résumé" is a real button — it's the one
@@ -958,8 +923,28 @@ export function RecruiterView() {
               </a>
             </div>
 
+            {!isMobile && (
+              <section className="exh-welcome" aria-labelledby="mini-edgar-welcome-title">
+                <div className="exh-welcome-stage">
+                  {guideEnabled ? renderGuideScene(240) : <span className="exh-welcome-loading" role="status">Mini Edgar is getting ready...</span>}
+                  <span className="exh-welcome-plaque">Mini Edgar · Gallery guide</span>
+                </div>
+                <div className="exh-welcome-copy">
+                  <p className="exh-welcome-eyebrow">A little company while you explore</p>
+                  <h2 id="mini-edgar-welcome-title">Let me show you around.</h2>
+                  <p>A short tour through my time at AWS, the projects I've built, and a few live demos. Or jump straight to the work below.</p>
+                  <div className="exh-welcome-actions">
+                    <button type="button" className="exh-welcome-tour" onClick={autoTourActive ? cancelAutoTour : startAutoTour}>
+                      {autoTourActive ? 'Stop the tour' : 'Show me around →'}
+                    </button>
+                    <a href="#featured-work" onClick={cancelAutoTour}>Browse the work ↓</a>
+                  </div>
+                </div>
+              </section>
+            )}
+
             {/* Featured work opens directly, independently of the tour. */}
-            <div className="exh-featured-row">
+            <div id="featured-work" className="exh-featured-row">
               <Link to={`/portfolio${EXPERIENCE[0].path}`} className="exh-featured-card">
                 <img className="exh-featured-image" src="/previews/aws-rds.svg" alt="RDS engineering: backend services and production operations" width="800" height="400" />
                 <span className="exh-featured-card-title">Amazon Web Services</span>
@@ -986,14 +971,7 @@ export function RecruiterView() {
               </Link>
             </div>
 
-            {!isMobile && (
-              <button
-                className="exh-start-tour"
-                onClick={autoTourActive ? cancelAutoTour : startAutoTour}
-              >
-                {autoTourActive ? 'Stop the tour ✕' : tourStarted ? 'Pick a stop below ↓' : "Take the optional guided tour →"}
-              </button>
-            )}
+
 
             {/* An index, not a second row of cards — Field Work and Studio
                 Projects already got their full-weight pitch in the
@@ -1177,7 +1155,7 @@ export function RecruiterView() {
   }
 
   return (
-    <div className={`exh-page ${!isMobile ? 'exh-page--with-guide' : ''}`}>
+    <div className={`exh-page ${!isMobile && activeId !== 'root' ? 'exh-page--with-guide' : ''}`}>
       <a className="exh-skip-link" href="#portfolio-content">Skip to content</a>
       <nav className="exh-topbar" aria-label="Portfolio actions">
         <Link to="/" className="exh-brand">
@@ -1268,9 +1246,9 @@ export function RecruiterView() {
         </main>
       </div>
 
-      {!isMobile && guideEnabled && (
+      {!isMobile && activeId !== 'root' && guideEnabled && (
         <div
-          className={`exh-guide-wrap ${activeId === 'root' ? 'exh-guide-wrap--intro' : ''} ${guideIsHero ? 'exh-guide-wrap--hero' : ''}`}
+          className="exh-guide-wrap"
           style={
             guideTargetRect
               ? { right: `${guideTargetRect.right}px`, bottom: `${guideTargetRect.bottom}px`, transform: 'translate(0, 0)' }
@@ -1284,8 +1262,6 @@ export function RecruiterView() {
               ? 'On my way →'
               : tourFinale
               ? "That's the tour! I'd love to actually connect — pick one below."
-              : guideIsHero
-              ? "Alright, let's start with the first stop →"
               : EXHIBIT_LINES[activeId] ?? GUIDE_LINES[ID_TO_GROUP[activeId]] ?? GUIDE_LINES['Introduction']}
             {/* Points at wherever his head actually is. His head sits
                 exactly on the model's Y-rotation axis, so idle sway,
@@ -1298,34 +1274,14 @@ export function RecruiterView() {
                 override (no inline style here) is already correct. */}
             <span
               className="exh-speech-tail"
-              style={!guideIsHero ? { right: guideSize / 2 - 7.5 } : undefined}
+              style={{ right: guideSize / 2 - 7.5 }}
               aria-hidden="true"
             />
           </div>
-          <ErrorBoundary compact compactTitle="Mini Edgar is unavailable"><Suspense fallback={<div className="exh-guide-canvas" style={{ width: guideSize, height: guideSize }} />}>
-            <TourGuide
-              accentColor={theme === 'dark' ? ACCENT.dark : ACCENT.light}
-              size={guideSize}
-              walkKey={`${activeId}-${tourStarted}-${walkTick}`}
-              celebrateKey={celebrateTick}
-            />
-          </Suspense></ErrorBoundary>
+          {renderGuideScene(guideSize)}
         </div>
       )}
-      {/* Three layers for the "Start the tour" moment, all keyed to
-          celebrateTick so they replay every click, not just the
-          first: a quick bright flash announcing the spot he's headed
-          to, a slower dim-and-lift on everything else as he glides
-          there, and a burst of particles once he arrives. None of it
-          needs to be frame-perfect against the 1s CSS glide; roughly
-          bracketing it reads as one moment either way. */}
-      {!isMobile && guideIsHero && (
-        <>
-          <div key={`flash-${celebrateTick}`} className="exh-tour-flash" aria-hidden="true" />
-          <div key={`dim-${celebrateTick}`} className="exh-spotlight" aria-hidden="true" />
-          <TourBurst key={`burst-${celebrateTick}`} />
-        </>
-      )}
+
     </div>
   )
 }

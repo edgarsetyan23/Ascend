@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { resumeSchema, parseStructuredOutput, validateResume } from './_lib/structured-output.js'
 
 const SYSTEM_PROMPT = `You are a senior technical recruiter scoring resumes for 1-year post-grad software engineers with AWS cloud experience. These candidates are competing for L4/SWE2 roles at top-tier tech companies (Amazon, Google, Meta, Stripe, Figma, etc.) against CS grads from top schools with internship experience.
 
@@ -58,18 +59,16 @@ export default async function handler(req, res) {
 
     const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
+      max_tokens: 2048,
       temperature: 0,
       system: SYSTEM_PROMPT,
+      output_config: { format: { type: 'json_schema', schema: resumeSchema } },
       messages: [
         { role: 'user', content: `Score this resume:\n\n${text.slice(0, 8000)}` }
       ],
     })
 
-    const raw = message.content[0].text.trim()
-    // Strip markdown code fences if the model wraps in ```json
-    const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
-    const result = JSON.parse(cleaned)
+    const result = validateResume(parseStructuredOutput(message, resumeSchema))
 
     // Compute overall deterministically from category scores — never trust the model's arithmetic
     const weights = { metrics: 0.25, verbs: 0.15, aws: 0.20, tech: 0.15, structure: 0.10, length: 0.15 }

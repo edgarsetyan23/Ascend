@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { emailSchema, parseStructuredOutput, validateEmails } from './_lib/structured-output.js'
 
 const SYSTEM_PROMPT = `You analyze job application emails. Given a list of already-tracked applications and a set of incoming emails, classify each email and extract structured data.
 
@@ -44,6 +45,9 @@ export default async function handler(req, res) {
   if (!Array.isArray(emails) || emails.length === 0)
     return res.status(400).json({ error: 'emails array required' })
 
+  if (!Array.isArray(existingEntries))
+    return res.status(400).json({ error: 'existingEntries must be an array' })
+
   if (!process.env.ANTHROPIC_API_KEY)
     return res.status(503).json({ error: 'API key not configured' })
 
@@ -62,12 +66,11 @@ export default async function handler(req, res) {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 2048,
       system: SYSTEM_PROMPT,
+      output_config: { format: { type: 'json_schema', schema: emailSchema } },
       messages: [{ role: 'user', content: `${entriesContext}Emails to analyze:\n\n${emailText}` }],
     })
 
-    const raw = message.content[0].text.trim()
-    const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
-    const results = JSON.parse(cleaned)
+    const results = validateEmails(parseStructuredOutput(message, emailSchema), existingEntries)
 
     return res.status(200).json({
       applications: results.applications ?? [],

@@ -41,7 +41,7 @@ Browser (React + Vite)
         └── Vercel Serverless Functions
                 ├── /api/leetcode-stats   → LeetCode GraphQL (CDN-cached)
                 ├── /api/scan-emails      → Anthropic Claude Haiku
-                └── /api/analyze-resume  → Anthropic Claude Sonnet
+                └── /api/analyze-resume  → Anthropic Claude Haiku 4.5
 ```
 
 **Frontend:** React 18, Vite, React Router v7 — hosted on Vercel with a custom domain
@@ -64,13 +64,21 @@ Browser (React + Vite)
 
 **LeetCode profile banner** — Vercel serverless proxy to LeetCode's GraphQL API, CDN-cached 5 minutes. Shows solved count, difficulty breakdown, language stats.
 
-**Resume scorer** — Drop any PDF on the portfolio page. Text is extracted client-side with pdf.js, scored by Claude across 6 weighted categories (Metrics & Impact, Action Verbs, AWS Depth, Tech Keywords, Structure, Length).
+**Resume scorer** — Drop any PDF on the portfolio page. Text is extracted client-side with pdf.js, scored by Claude Haiku 4.5 across 6 weighted categories (Metrics & Impact, Action Verbs, AWS Depth, Tech Keywords, Structure, Length).
 
 **Public portfolio page** — `/portfolio` is unauthenticated. A dedicated read-only Lambda hardcodes the owner's Cognito sub as the DynamoDB partition key — no user input touches the PK. Tracker whitelist returns 404 (not 403) for non-allowed trackers.
 
 **Engineering case study** — the Ascend exhibit on `/portfolio` has a "Show me the engineering" toggle that reveals a full case study in place: the problem, a system-overview architecture diagram (inline SVG, no generated image), three engineering decisions with their tradeoffs, a step-by-step trace of the Gmail-scan-to-DynamoDB-write workflow, known limitations, and an **interactive demo with clearly labeled sample data** — reproduces the scanner's review-before-import step with four fictional applications, entirely client-side, no network/auth/storage calls. `src/components/portfolio/`.
 
 ---
+
+## AI response contracts
+
+Both AI endpoints use `claude-haiku-4-5-20251001` with JSON Schema structured outputs (`output_config.format`), replacing Markdown-fence stripping. The server rejects incomplete/refused responses and validates fields, types, enums, score bounds, six unique rubric categories, calendar dates, and follow-up IDs against supplied tracked entries. Server code controls labels, weights, and the overall weighted score.
+
+These are single-call extraction/scoring workflows, so structured responses fit the task. Strict tool use would be appropriate if Claude needed to choose and execute application actions. Schema compliance does not guarantee factual accuracy: resume scores remain subjective, and email suggestions still require user review before import. Haiku is a cost/latency choice, without a claim of benchmarked parity with Sonnet.
+
+See [Anthropic's structured output documentation](https://platform.claude.com/docs/en/build-with-claude/structured-outputs). Regression tests mock model calls; live API verification requires a configured server-side API key.
 
 ## Notable Design Decisions
 

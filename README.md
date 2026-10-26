@@ -1,8 +1,10 @@
 # Ascend
 
-A personal accountability tracker built with a production AWS stack. Tracks LeetCode progress, job applications, daily activity, and gaming sessions — with a public read-only portfolio view.
+Ascend is a tracker for job applications, LeetCode practice, daily activity, and gaming sessions. It also hosts my public portfolio, where visitors can see selected tracker data without signing in.
 
-**Live:** [edgarsetyan.com](https://edgarsetyan.com) · **Portfolio:** [edgarsetyan.com/portfolio](https://edgarsetyan.com/portfolio)
+The tracker and portfolio share an AWS backend. The Gmail importer helps fill in the Jobs tracker, and the portfolio has a PDF resume review tool. Those two features use Claude Haiku 4.5 through Vercel functions.
+
+[Open Ascend](https://edgarsetyan.com) | [View the portfolio](https://edgarsetyan.com/portfolio)
 
 <p>
   <img src="docs/screenshot-gallery-v2.jpg" width="32%" alt="The public portfolio's home page" />
@@ -15,143 +17,102 @@ A personal accountability tracker built with a production AWS stack. Tracks Leet
   <img src="docs/screenshot-jobrelay-v2.jpg" width="32%" alt="The JobRelay write-up on the portfolio: the problem and a diagram of how a job moves from the API through PostgreSQL, the outbox and Redis to the workers" />
 </p>
 
----
+## What you can try
 
-## Technical Overview
+The public portfolio is available without an account. The Ascend project page includes a walkthrough of the backend and a small Gmail-import demo with fictional applications. The demo runs locally in the browser; it doesn't connect to Gmail or save entries.
 
-Five things worth knowing about this project:
+The signed-in app has four trackers with editable entries. For Jobs, the Gmail scanner searches up to 50 matching messages from the last 90 days and reads their headers and snippets. It suggests new applications and status changes, then lets you review them before saving. Full email bodies and attachments aren't fetched.
 
-- **Auth flow** — Cognito issues a JWT (IdToken); the Cognito SDK persists the session (including the token) in its own localStorage-backed storage so a refresh doesn't force a re-login, and every API call re-reads a fresh token and sends `Authorization: Bearer <token>`. The API Gateway JWT Authorizer validates signature, audience, and expiry before Lambda even executes — an unauthenticated request never reaches application code.
-- **Data model** — Single-table DynamoDB. `PK = USER#{sub}`, `SK = TRACKER#{trackerId}#ENTRY#{uuid}`. Loading a tracker tab fires one `Query` with `begins_with(SK, "TRACKER#leetcode#ENTRY#")` — no scans, no joins.
-- **Validation and logging** — `validateTrackerId` and `validateBody` (10 KB limit) return structured 400s before any DynamoDB work. Lambda emits JSON log lines (`requestId`, `trackerId`, `latencyMs`) compatible with CloudWatch Logs Insights.
-- **Deployment** — CDK synthesizes a CloudFormation template and uploads Lambda bundles to S3; one command provisions the entire backend. `infra/.env` is auto-loaded via dotenv so `OWNER_USER_ID` is never accidentally wiped. Frontend auto-deploys from GitHub via Vercel.
+The resume tool extracts text from a PDF in the browser and sends the extracted text for scoring across six categories. The score is feedback from a model, not a prediction of hiring outcomes.
 
----
+## How it works
 
-## Architecture
-
-```
-Browser (React + Vite)
-        │
-        ├── AWS API Gateway (HTTP API v2)
-        │       ├── JWT Authorizer → Cognito
-        │       ├── Lambda (CRUD) → DynamoDB
-        │       └── Lambda (public, read-only, whitelist) → DynamoDB
-        │
-        └── Vercel Serverless Functions
-                ├── /api/leetcode-stats   → LeetCode GraphQL (CDN-cached)
-                ├── /api/scan-emails      → Anthropic Claude Haiku
-                └── /api/analyze-resume  → Anthropic Claude Haiku 4.5
+```text
+React + Vite
+  |
+  +-- API Gateway
+  |     +-- Cognito JWT authorizer -> private tracker Lambdas -> DynamoDB
+  |     +-- Public read-only Lambda -> owner's LeetCode and Activity entries
+  |
+  +-- Vercel functions
+  |     +-- /api/leetcode-stats -> LeetCode GraphQL
+  |     +-- /api/scan-emails -> Claude Haiku 4.5
+  |     +-- /api/analyze-resume -> Claude Haiku 4.5
+  |
+  +-- Gmail API (called by the browser after Google OAuth)
 ```
 
-**Frontend:** React 18, Vite, React Router v7 — hosted on Vercel with a custom domain
+The frontend is React 18 with Vite and React Router. AWS CDK in `infra/` defines the Cognito pool, HTTP API, Node.js Lambdas, and DynamoDB table. Vercel hosts the frontend and the three API proxies above.
 
-**Backend:** AWS CDK (TypeScript) — API Gateway HTTP API v2, Lambda (ARM64, Node 22), DynamoDB single-table design, Cognito User Pool
+A tracker entry has a partition key of `USER#{sub}` and a sort key of `TRACKER#{trackerId}#ENTRY#{uuid}`. The private handlers get `sub` from the verified JWT, rather than accepting a user ID from the request. Listing a tracker uses a key query and follows DynamoDB pagination.
 
-**Infrastructure as code:** Everything in `infra/` — one `cdk deploy` provisions the entire stack
+## A few implementation choices
 
----
+- **DynamoDB fits the current reads.** The app mostly loads one user's entries for one tracker. That maps to a partition key and sort-key prefix. Reporting across trackers would need more work.
+- **The public page has a separate handler.** Its Lambda has read-only table permissions, uses a configured owner ID, and only allows the LeetCode and Activity trackers. It doesn't reuse the private CRUD handler with authentication switched off.
+- **Edits update the UI immediately.** `useEntries` sends the request in the background and rolls back the local change if it fails. This keeps routine edits responsive, but it isn't an offline sync system.
+- **Gmail uses a new-tab OAuth flow.** The callback hands the token to the original tab through a storage event. This avoids the popup flow's COOP issue, at the cost of briefly putting the token in localStorage during the handoff.
+- **AI results have a schema and a review step.** Both Claude calls use JSON Schema structured outputs. The server checks the returned fields and types, score bounds, category uniqueness, dates, and follow-up IDs. The weighted resume total is calculated in code. Email suggestions still need review because a valid response can misread an email.
 
-## Key Features
+These AI features each make one extraction or scoring request. They don't need a tool-execution loop. If a future feature lets the model choose and perform actions, strict tool use would be a better fit for those actions. See [Anthropic's structured output documentation](https://platform.claude.com/docs/en/build-with-claude/structured-outputs).
 
-**Tracker types**
-- LeetCode problems — difficulty, category, status, notes
-- Job applications — company, role, status, source
-- Daily activity log — title, category, impact, duration
-- Gaming sessions
+## Current limits
 
-**Gmail scanner** — OAuth redirect flow opens a new tab, fetches metadata for up to 50 matching emails, pipes subject/from/date/snippet through Claude Haiku, shows a review modal to bulk-import detected job applications. Email body is never fetched.
+This is a personal app with a public portfolio attached. The public-data handler is configured for one owner, rather than a directory of public profiles.
 
-**LeetCode profile banner** — Vercel serverless proxy to LeetCode's GraphQL API, CDN-cached 5 minutes. Shows solved count, difficulty breakdown, language stats.
+The table has a tracker-specific date index, but the list handlers don't query it yet. The base sort key ends in a random UUID, so its order isn't creation-date order.
 
-**Resume scorer** — Drop any PDF on the portfolio page. Text is extracted client-side with pdf.js, scored by Claude Haiku 4.5 across 6 weighted categories (Metrics & Impact, Action Verbs, AWS Depth, Tech Keywords, Structure, Length).
+The AI endpoints currently have no authentication or application-level rate limiting. They need abuse controls before opening them to wider use. Resume feedback is subjective, and the Gmail scanner can miss messages outside its search terms or misclassify a snippet. Structured output handles response shape; it doesn't establish accuracy.
 
-**Public portfolio page** — `/portfolio` is unauthenticated. A dedicated read-only Lambda hardcodes the owner's Cognito sub as the DynamoDB partition key — no user input touches the PK. Tracker whitelist returns 404 (not 403) for non-allowed trackers.
+The Cognito SDK persists its session in localStorage. The Gmail handoff also uses localStorage briefly. Both depend on keeping scripts running on the app's origin trustworthy.
 
-**Engineering case study** — the Ascend exhibit on `/portfolio` has a "Show me the engineering" toggle that reveals a full case study in place: the problem, a system-overview architecture diagram (inline SVG, no generated image), three engineering decisions with their tradeoffs, a step-by-step trace of the Gmail-scan-to-DynamoDB-write workflow, known limitations, and an **interactive demo with clearly labeled sample data** — reproduces the scanner's review-before-import step with four fictional applications, entirely client-side, no network/auth/storage calls. `src/components/portfolio/`.
+## Finding the code
 
----
-
-## AI response contracts
-
-Both AI endpoints use `claude-haiku-4-5-20251001` with JSON Schema structured outputs (`output_config.format`), replacing Markdown-fence stripping. The server rejects incomplete/refused responses and validates fields, types, enums, score bounds, six unique rubric categories, calendar dates, and follow-up IDs against supplied tracked entries. Server code controls labels, weights, and the overall weighted score.
-
-These are single-call extraction/scoring workflows, so structured responses fit the task. Strict tool use would be appropriate if Claude needed to choose and execute application actions. Schema compliance does not guarantee factual accuracy: resume scores remain subjective, and email suggestions still require user review before import. Haiku is a cost/latency choice, without a claim of benchmarked parity with Sonnet.
-
-See [Anthropic's structured output documentation](https://platform.claude.com/docs/en/build-with-claude/structured-outputs). Regression tests mock model calls; live API verification requires a configured server-side API key.
-
-## Notable Design Decisions
-
-| Decision | Reason |
+| Path | Contents |
 |---|---|
-| Serverless (Lambda + DynamoDB) | Near-zero idle cost — no EC2 or RDS running 24/7; no servers to patch or scale |
-| HTTP API v2 over REST API | 30–60% cheaper, lower latency, native JWT authorizer |
-| ARM64 Lambda | ~20% cheaper than x86 at identical performance |
-| DynamoDB single-table | One `Query` per tab load — `begins_with(SK, "TRACKER#{id}#ENTRY#")` |
-| Fresh token read per request | `apiFetch` re-reads the token from the Cognito SDK's session before every call rather than caching it long-lived in a variable |
-| Optimistic UI updates | Changes reflect instantly; rolls back if the API call fails |
-| Separate public Lambda | Zero code path overlap with authenticated handler |
-| Gmail new-tab OAuth | Avoids Cross-Origin-Opener-Policy restrictions on popup-based flows |
-| Gmail `format=metadata` | Email body never leaves Gmail's servers |
+| `src/hooks/useEntries.js` | Tracker reads, writes, and optimistic updates |
+| `src/lib/` | Cognito session and API clients |
+| `src/trackers/` | Columns and defaults for each tracker |
+| `src/components/EmailScanner.jsx` | Gmail scan and review flow |
+| `src/components/ResumeReview.jsx` | PDF text extraction and scoring UI |
+| `src/components/portfolio/` | Project walkthroughs and sample-data demos |
+| `api/` | Vercel handlers and shared AI response validation |
+| `infra/lambda/` | Tracker handlers and backend tests |
+| `infra/lib/` | CDK resource definitions |
 
----
+## Running locally
 
-## Project Structure
+Use Node.js 22. For the tracker backend, you'll need an AWS deployment or access to an existing one. Copy the frontend configuration and fill in its values:
 
-```
-├── src/
-│   ├── components/       React components
-│   │   └── portfolio/    Ascend engineering case study, architecture diagram, sample-data demo
-│   ├── context/          AuthContext, ToastContext
-│   ├── hooks/            useEntries (DynamoDB CRUD), useTheme, useNotifications
-│   ├── lib/              Cognito SDK wrapper, API client
-│   ├── styles/           exhibit-view.css (portfolio page), ascend-case-study.css
-│   ├── trackers/         Per-tracker config (columns, badges, sort defaults)
-│   └── utils/            Stats, streaks, CSV export
-├── api/                  Vercel serverless functions
-│   ├── leetcode-stats.js
-│   ├── scan-emails.js
-│   └── analyze-resume.js
-├── infra/                AWS CDK (TypeScript)
-│   ├── lib/constructs/   API Gateway, Cognito, DynamoDB constructs
-│   ├── lambda/           Lambda handler source
-│   └── bin/              CDK app entry
-└── docs/                 Architecture, positioning, Gmail scanner, roadmap
-```
-
----
-
-## Running Locally
-
-**Prerequisites:** Node 22, AWS CLI configured, CDK bootstrapped
-
-```bash
-# Install dependencies
-npm install
-cd infra && npm install && cd ..
-
-# Set environment variables
+```sh
+npm ci
 cp .env.example .env.local
-# Fill in values from your CDK outputs and Google Cloud Console
-
-# Start dev server
 npm run dev
 ```
 
-**Deploy infrastructure:**
-```bash
-cd infra && npx cdk deploy --require-approval never
-# infra/.env is auto-loaded — OWNER_USER_ID is always set
+The Vite server serves the frontend. It does not run the Vercel functions in `api/`; those features need a Vercel-compatible runtime and `ANTHROPIC_API_KEY` configured server-side.
+
+To provision your own AWS backend, install the infrastructure dependencies, configure AWS credentials, and bootstrap CDK for your account and region. Set `OWNER_USER_ID` in `infra/.env` for the public-data handler, using `infra/.env.example` as a template.
+
+```sh
+cd infra
+npm ci
+npx cdk deploy
 ```
 
-**Deploy frontend:**
-```bash
-git push origin master  # Vercel auto-deploys from GitHub
+Use the deployment outputs to fill in the frontend's API and Cognito settings. Google OAuth also needs its own client configuration; the setup is in [the Gmail scanner notes](docs/05-gmail-scanner.md).
+
+## Checks
+
+```sh
+npm test
+npm run build
+npm --prefix infra test
 ```
 
----
+The frontend suite includes mocked AI endpoint tests for successful responses and rejected output. It doesn't call Claude. A passing test suite doesn't verify live AWS, Gmail, or Anthropic credentials.
 
-## Environment Variables
+## Configuration
 
 | Variable | Where | Purpose |
 |---|---|---|
@@ -165,10 +126,8 @@ git push origin master  # Vercel auto-deploys from GitHub
 
 See `.env.example` and `infra/.env.example` for templates.
 
----
+## More detail
 
-## Docs
-
-- `docs/01-architecture.md` — system design, data model, auth flow, infrastructure
-- `docs/03-recruiter-layer.md` — public portfolio layer and security model
-- `docs/05-gmail-scanner.md` — OAuth flow, Gmail API, Claude extraction
+- [Architecture](docs/01-architecture.md): data model, authentication, and deployment
+- [Public portfolio](docs/03-recruiter-layer.md): public route and portfolio components
+- [Gmail scanner](docs/05-gmail-scanner.md): OAuth, message fetching, and import review

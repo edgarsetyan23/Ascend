@@ -926,26 +926,6 @@ export function RecruiterView() {
               </a>
             </div>
 
-            {!isMobile && (
-              <section className="exh-welcome" aria-labelledby="mini-edgar-welcome-title">
-                <div className="exh-welcome-stage">
-                  {guideEnabled ? renderGuideScene(240) : <span className="exh-welcome-loading" role="status">Mini Edgar is getting ready...</span>}
-                  <span className="exh-welcome-plaque">Mini Edgar · Gallery guide</span>
-                </div>
-                <div className="exh-welcome-copy">
-                  <p className="exh-welcome-eyebrow">A little company while you explore</p>
-                  <h2 id="mini-edgar-welcome-title">Let me show you around.</h2>
-                  <p>A short tour through my time at AWS, the projects I've built, and a few live demos. Or jump straight to the work below.</p>
-                  <div className="exh-welcome-actions">
-                    <button type="button" className="exh-welcome-tour" onClick={autoTourActive ? cancelAutoTour : startAutoTour}>
-                      {autoTourActive ? 'Stop the tour' : 'Show me around →'}
-                    </button>
-                    <a href="#featured-work" onClick={cancelAutoTour}>Browse the work ↓</a>
-                  </div>
-                </div>
-              </section>
-            )}
-
             {/* Featured work opens directly, independently of the tour. */}
             <div id="featured-work" className="exh-featured-row">
               <Link to={`/portfolio${EXPERIENCE[0].path}`} className="exh-featured-card">
@@ -975,6 +955,25 @@ export function RecruiterView() {
             </div>
 
 
+
+            {!isMobile && (
+              <section className="exh-welcome" aria-labelledby="mini-edgar-welcome-title">
+                <div className="exh-welcome-stage">
+                  {guideEnabled ? renderGuideScene(144) : <span className="exh-welcome-loading" role="status">Mini Edgar is getting ready...</span>}
+                  <span className="exh-welcome-plaque">Mini Edgar</span>
+                </div>
+                <div className="exh-welcome-copy">
+                  <h2 id="mini-edgar-welcome-title">Prefer a guided tour?</h2>
+                  <p>Mini Edgar can walk you through my experience, projects, and live demos.</p>
+                  <div className="exh-welcome-actions">
+                    <button type="button" className="exh-welcome-tour" onClick={autoTourActive ? cancelAutoTour : startAutoTour}>
+                      {autoTourActive ? 'Stop the tour' : 'Take the tour →'}
+                    </button>
+                    <a href="#featured-work" onClick={cancelAutoTour}>Back to projects ↑</a>
+                  </div>
+                </div>
+              </section>
+            )}
 
             {/* An index, not a second row of cards — Field Work and Studio
                 Projects already got their full-weight pitch in the

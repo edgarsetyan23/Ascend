@@ -1062,7 +1062,12 @@ export function RecruiterView() {
               </a>
             )
           )}
-          {proj.id === 'oncall' && <HighlightList items={proj.data.highlights} />}
+          {proj.id === 'oncall' && (
+            <>
+              <HighlightList items={proj.data.highlights} />
+              <p className="exh-cs-text">Internal code and incident details are not published.</p>
+            </>
+          )}
           {proj.id === 'ascend' && showEngineering && <AscendCaseStudy />}
           {/* Short enough to show outright — no reveal toggle like
               Ascend's much longer case study. */}

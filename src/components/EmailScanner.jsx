@@ -150,9 +150,9 @@ export function EmailScanner({ addEntry, updateEntry, entries }) {
       // 4. Send to serverless function — pass existing entries so Claude can match follow-ups
       const existingEntries = currentEntries.current.map((e) => ({
         id: e.id,
-        company: e.company,
-        role: e.role,
-        status: e.status,
+        company: e.company ?? '',
+        role: e.role ?? '',
+        status: e.status ?? '',
       }))
 
       const idToken = await getIdToken()

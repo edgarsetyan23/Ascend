@@ -26,6 +26,23 @@ beforeEach(() => {
   resetLocalLimits()
 })
 describe('AI response contracts', () => {
+  it('scans legacy jobs with omitted or null optional fields', async () => {
+    create.mockResolvedValue(response({ applications: [], followUps: [] }))
+    const [status] = await call(emails, {
+      emails: [{ subject: 'Application', from: 'jobs@example.com', date: '2026-10-26', snippet: 'Thanks for applying' }],
+      existingEntries: [{ id: 'legacy', company: 'Acme', role: null }],
+    })
+    expect(status).toBe(200)
+    expect(create.mock.calls[0][0].messages[0].content).toContain('id=legacy | Acme |  | status=')
+  })
+  it.each([{ company: 123 }, { id: null }, { role: {} }])('rejects malformed job fields %j before AI usage', async (invalid) => {
+    const [status] = await call(emails, {
+      emails: [{ subject: '', from: '', date: '', snippet: '' }],
+      existingEntries: [{ id: '1', company: 'Acme', role: 'SWE', status: 'Applied', ...invalid }],
+    })
+    expect(status).toBe(400)
+    expect(create).not.toHaveBeenCalled()
+  })
   it('requests structured Haiku output and computes the resume score', async () => {
     create.mockResolvedValue(response(report()))
     const [status, result] = await call(resume, { text: 'word '.repeat(100) })

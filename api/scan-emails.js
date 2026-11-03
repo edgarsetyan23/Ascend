@@ -44,17 +44,27 @@ export default async function handler(req, res) {
 
   try { validateJSONRequest(req, 150000) } catch (error) { return sendAIError(res, error) }
 
-  const { emails, existingEntries = [] } = req.body || {}
+  const { emails, existingEntries: suppliedEntries = [] } = req.body || {}
   if (!Array.isArray(emails) || emails.length === 0)
     return res.status(400).json({ error: 'emails array required' })
 
-  if (!Array.isArray(existingEntries))
+  if (!Array.isArray(suppliedEntries))
     return res.status(400).json({ error: 'existingEntries must be an array' })
+
+  // Older clients omit empty optional job fields when serializing to JSON.
+  const existingEntries = suppliedEntries.map(entry => entry && ({
+    ...entry,
+    company: entry.company ?? '',
+    role: entry.role ?? '',
+    status: entry.status ?? '',
+  }))
 
   const validString = value => typeof value === 'string' && value.length <= 2000
   if (emails.length > 50 || emails.some(email => !email || !['subject', 'from', 'date', 'snippet'].every(key => validString(email[key]))))
     return res.status(400).json({ error: 'Send up to 50 emails with subject, from, date, and snippet strings (2,000 characters each).' })
-  if (existingEntries.length > 500 || existingEntries.some(entry => !entry || !['id', 'company', 'role', 'status'].every(key => validString(entry[key]))))
+  if (existingEntries.length > 500)
+    return res.status(400).json({ error: 'Gmail scanning supports up to 500 tracked jobs. Your tracker exceeds this limit.' })
+  if (existingEntries.some(entry => !entry || !['id', 'company', 'role', 'status'].every(key => validString(entry[key]))))
     return res.status(400).json({ error: 'Send up to 500 tracked entries with id, company, role, and status strings.' })
 
   if (!process.env.ANTHROPIC_API_KEY)

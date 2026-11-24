@@ -153,7 +153,7 @@ The public resume tool remains anonymous. Its local heuristic fallback works whe
 | **Subagent: `ascend-reviewer`** | `.claude/agents/ascend-reviewer.md` | Read-only security reviewer with a two-pass process: find candidates, then try to disprove each as a concrete "who sends what, and what leaks" path. Only surviving findings are reported, labeled CONFIRMED or PLAUSIBLE, with a merge verdict. |
 | **Subagent: `portfolio-fact-checker`** | `.claude/agents/portfolio-fact-checker.md` | Checks every claim on the public portfolio (metrics, dates, titles, project details) against the résumé PDF and the project repos' actual code and docs. Flags anything contradicted, unverified, inflated, or inconsistent across pages. |
 
-The hooks are tested code: `npm run test:hooks` runs 12 tests that feed each hook a real event, using throwaway git repos for the Stop gate and session checks.
+The hooks are tested code: `npm run test:hooks` runs 12 tests that feed each hook a real event, using throwaway git repos for the Stop gate and session checks. GitHub Actions runs them on every PR that touches `.claude/`.
 
 The project settings also ask before `cdk deploy` or a push to `master`, and block reads of `.env.local` and `infra/.env`. Personal overrides go in `.claude/settings.local.json`, which is gitignored.
 

@@ -17,8 +17,8 @@ infra/.env
 # CDK outputs (contains real API URLs and Cognito IDs)
 infra/cdk-outputs.json
 
-# Claude Code local config
-.claude/
+# Claude Code: share .claude/ (skills, agents, hooks); keep personal overrides local
+.claude/settings.local.json
 
 # Vercel
 .vercel

@@ -138,6 +138,21 @@ Local runtime caps are five requests per client per ten minutes, twenty per feat
 
 The public resume tool remains anonymous. Its local heuristic fallback works when cloud scoring is unavailable. Scanning emails requires a valid Cognito ID token using the existing `VITE_USER_POOL_ID` and `VITE_USER_POOL_CLIENT_ID` deployment settings. Tests verify signature rejection and issuer, audience, token-use, and expiry checks. No new secrets are needed for that authentication check.
 
+## Working on this repo with Claude Code
+
+`CLAUDE.md` and `.claude/` hold a shared Claude Code setup. The project rules are written down in the repo, where everyone who works on it gets the same ones.
+
+| Piece | File | Why |
+|---|---|---|
+| Project instructions | `CLAUDE.md` | The architecture and where each part lives, plus the rules that matter most here: identity only from the verified JWT, the public handler stays narrow, the required steps for every AI endpoint, no secrets in `VITE_*`, and no invented content on the portfolio. It also records the local-testing problems that took the longest to figure out (Cognito in dev mode, dummy env values, the PWA cache serving stale code). |
+| Skill: `/add-tracker` | `.claude/skills/add-tracker/` | A new tracker touches the frontend config, the registry, stats, and the backend `VALID_TRACKERS` allowlist. That last one is easy to miss, and saves return 400 until it's deployed. The skill lists each step and says to keep new trackers private by default. |
+| Skill: `/add-ai-endpoint` | `.claude/skills/add-ai-endpoint/` | Both Claude endpoints follow one pattern: request validation, rate limiting, `maxRetries: 0`, structured output, server-side checks of the result, and mocked tests. The skill gives that pattern step by step so a third endpoint doesn't skip a protection. |
+| Hook: check after edit | `.claude/settings.json`, `.claude/hooks/check-after-edit.mjs` | After an edit, runs only the affected tests: `vitest related <file>` for `src/` and `api/`, or the `node --test` suite for `infra/lambda/`. Failures go back to Claude right away. CSS and docs edits are skipped. |
+| Subagent: `ascend-reviewer` | `.claude/agents/ascend-reviewer.md` | A read-only reviewer for auth boundaries, AI endpoint protections, leaked secrets, PWA caching, and whether public portfolio text matches the résumé. It runs in a separate context from the author. |
+
+The project settings also ask before `cdk deploy` or a push to `master`, and block reads of `.env.local` and `infra/.env`. Personal overrides go in `.claude/settings.local.json`, which is gitignored.
+
+
 ## More detail
 
 - [Architecture](docs/01-architecture.md): data model, authentication, and deployment

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm test)",
+      "Bash(npm run build)",
+      "Bash(npm --prefix infra test)",
+      "Bash(npx vitest run *)",
+      "Bash(npx vitest related *)",
+      "Bash(git diff*)",
+      "Bash(git status*)",
+      "Bash(git log*)"
+    ],
+    "ask": [
+      "Bash(git push*origin master*)",
+      "Bash(npx cdk deploy*)",
+      "Bash(npx vercel*)"
+    ],
+    "deny": [
+      "Read(./.env.local)",
+      "Read(./.env.production)",
+      "Read(./infra/.env)",
+      "Read(./infra/cdk-outputs.json)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-after-edit.mjs\"",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}

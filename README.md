@@ -140,18 +140,22 @@ The public resume tool remains anonymous. Its local heuristic fallback works whe
 
 ## Working on this repo with Claude Code
 
-`CLAUDE.md` and `.claude/` hold a shared Claude Code setup. The project rules are written down in the repo, where everyone who works on it gets the same ones.
+`CLAUDE.md` and `.claude/` hold a shared Claude Code setup. The design goal is that this repo's rules (auth boundaries, AI endpoint protections, no secrets in the bundle, no invented content on a page recruiters read) are *enforced* on AI-assisted changes, not just written down. Anything that must always happen is a hook, which Claude Code runs and Claude can't skip; anything that needs judgment is a skill or a subagent.
 
-| Piece | File | Why |
+| Piece | File | What it does and why |
 |---|---|---|
-| Project instructions | `CLAUDE.md` | The architecture and where each part lives, plus the rules that matter most here: identity only from the verified JWT, the public handler stays narrow, the required steps for every AI endpoint, no secrets in `VITE_*`, and no invented content on the portfolio. It also records the local-testing problems that took the longest to figure out (Cognito in dev mode, dummy env values, the PWA cache serving stale code). |
-| Skill: `/add-tracker` | `.claude/skills/add-tracker/` | A new tracker touches the frontend config, the registry, stats, and the backend `VALID_TRACKERS` allowlist. That last one is easy to miss, and saves return 400 until it's deployed. The skill lists each step and says to keep new trackers private by default. |
-| Skill: `/add-ai-endpoint` | `.claude/skills/add-ai-endpoint/` | Both Claude endpoints follow one pattern: request validation, rate limiting, `maxRetries: 0`, structured output, server-side checks of the result, and mocked tests. The skill gives that pattern step by step so a third endpoint doesn't skip a protection. |
-| Hook: check after edit | `.claude/settings.json`, `.claude/hooks/check-after-edit.mjs` | After an edit, runs only the affected tests: `vitest related <file>` for `src/` and `api/`, or the `node --test` suite for `infra/lambda/`. Failures go back to Claude right away. CSS and docs edits are skipped. |
-| Subagent: `ascend-reviewer` | `.claude/agents/ascend-reviewer.md` | A read-only reviewer for auth boundaries, AI endpoint protections, leaked secrets, PWA caching, and whether public portfolio text matches the résumé. It runs in a separate context from the author. |
+| Project instructions | `CLAUDE.md` | Architecture, code map, the rules that matter, and the local-testing problems that took the longest to figure out. |
+| **SessionStart hook** | `.claude/hooks/session-context.mjs` | Warns when a session starts on `master` (which deploys to production) or without the local env values the build needs. |
+| **PreToolUse guard** | `.claude/hooks/guard-edits.mjs` | Blocks writes to real env files and CDK outputs, credentials in any file, secret-looking `VITE_*` variables (Vite inlines those into public JavaScript), and an Anthropic client configured to run in the browser. |
+| **PostToolUse check** | `.claude/hooks/check-after-edit.mjs` | After each edit, runs only the affected tests (`vitest related`, or the Lambda tests) and sends failures back to Claude. |
+| **Stop gate** | `.claude/hooks/stop-gate.mjs` | Before Claude finishes: runs the full suite for whatever changed (re-running until green), and requires a security review or a fact check when those areas changed, once per change set. |
+| Skills | `/add-tracker`, `/add-ai-endpoint` | Step-by-step procedures for the two most common cross-cutting changes. |
+| **Subagent: `ascend-reviewer`** | `.claude/agents/ascend-reviewer.md` | Read-only security reviewer with a two-pass process: find candidates, then try to disprove each as a concrete "who sends what, and what leaks" path. Only surviving findings are reported, labeled CONFIRMED or PLAUSIBLE, with a merge verdict. |
+| **Subagent: `portfolio-fact-checker`** | `.claude/agents/portfolio-fact-checker.md` | Checks every claim on the public portfolio (metrics, dates, titles, project details) against the résumé PDF and the project repos' actual code and docs. Flags anything contradicted, unverified, inflated, or inconsistent across pages. |
+
+The hooks are tested code: `npm run test:hooks` runs 12 tests that feed each hook a real event, using throwaway git repos for the Stop gate and session checks.
 
 The project settings also ask before `cdk deploy` or a push to `master`, and block reads of `.env.local` and `infra/.env`. Personal overrides go in `.claude/settings.local.json`, which is gitignored.
-
 
 ## More detail
 

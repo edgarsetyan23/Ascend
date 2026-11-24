@@ -7,21 +7,12 @@
 //   anything else      -> skip (CSS, docs, images, config)
 //
 // Exit 2 sends stderr to Claude as feedback; exit 0 stays silent.
-import { spawnSync } from "node:child_process";
-import { relative } from "node:path";
+import { readEvent, repoPath, sh, tail } from "./lib.mjs";
 
-let input = "";
-for await (const chunk of process.stdin) input += chunk;
-
-let filePath = "";
-try {
-  filePath = JSON.parse(input).tool_input?.file_path ?? "";
-} catch {
-  process.exit(0); // malformed event: never block on our own bug
-}
-
-const projectDir = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
-const rel = relative(projectDir, filePath).replaceAll("\\", "/");
+const event = await readEvent();
+const filePath = event.tool_input?.file_path;
+if (!filePath) process.exit(0);
+const rel = repoPath(filePath);
 if (!/\.(js|jsx|mjs)$/.test(rel)) process.exit(0);
 
 let label, command;
@@ -35,9 +26,8 @@ if (rel.startsWith("infra/lambda/")) {
   process.exit(0);
 }
 
-const result = spawnSync(command, { cwd: projectDir, encoding: "utf8", shell: true, env: { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" } });
+const result = sh(command);
 if (result.status !== 0) {
-  const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim().split("\n").slice(-40).join("\n");
-  process.stderr.write(`${label} failed after editing ${rel}:\n\n${output}\n`);
+  process.stderr.write(`${label} failed after editing ${rel}:\n\n${tail(result.output)}\n`);
   process.exit(2);
 }

@@ -94,9 +94,23 @@ Merging to `master` needs an explicit go-ahead. Backend changes need
 
 ## Claude Code setup in this repo
 
-- Hook (`.claude/settings.json` → `.claude/hooks/check-after-edit.mjs`):
-  after an edit, runs only the related Vitest tests (or the infra tests for
-  Lambda edits) and sends failures back.
-- Skills: `/add-tracker`, `/add-ai-endpoint`.
-- Subagent: `ascend-reviewer`, which checks auth boundaries, AI endpoint
-  protections, secrets, and portfolio factuality. Use it before merging.
+Hooks (`.claude/settings.json`, scripts in `.claude/hooks/`, tested by
+`npm run test:hooks`):
+
+| Event | Hook | What it does |
+|---|---|---|
+| SessionStart | `session-context.mjs` | Warns if you're on `master` (production) or missing `.env.local`, and reminds you about the PWA cache. |
+| PreToolUse | `guard-edits.mjs` | Blocks edits to real env files and CDK outputs, credentials in any file, secret-looking `VITE_*` variables, and `dangerouslyAllowBrowser: true`. |
+| PostToolUse | `check-after-edit.mjs` | Runs `vitest related` for the edited file, or the infra tests for Lambda edits. |
+| Stop | `stop-gate.mjs` | Before finishing: runs the full suite(s) for what changed, and requires `ascend-reviewer` for security-relevant changes and `portfolio-fact-checker` for public portfolio changes, once per change set. |
+
+Skills: `/add-tracker`, `/add-ai-endpoint`.
+
+Subagents:
+- `ascend-reviewer`: read-only. Finds candidate issues, then tries to
+  disprove each as a concrete actor + request + outcome path, and reports
+  only what survives (CONFIRMED / PLAUSIBLE) with a merge verdict.
+- `portfolio-fact-checker`: checks every claim on the public portfolio
+  against `public/Edgar_Resume.pdf` and the project repos, and flags
+  anything contradicted, unverified, inflated, or inconsistent across
+  pages. Pass "full" for a whole-site audit.

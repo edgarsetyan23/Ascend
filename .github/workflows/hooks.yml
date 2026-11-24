@@ -1,0 +1,20 @@
+name: Hook tests
+
+# Tests for the Claude Code hooks in .claude/hooks. They use only Node
+# built-ins and git, so no npm install is needed.
+on:
+  push:
+    branches: [master]
+    paths: [".claude/**", "package.json", ".github/workflows/hooks.yml"]
+  pull_request:
+    paths: [".claude/**", "package.json", ".github/workflows/hooks.yml"]
+
+jobs:
+  hook-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run test:hooks
